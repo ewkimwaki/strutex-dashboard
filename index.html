@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strutex Builders - Site Deployment Dashboard</title>
+    <title>Strutex Builders - Site Deployment & Maintenance Dashboard</title>
     <!-- Supabase Library CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -13,7 +13,10 @@
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #334155;
-            --border-color: #e2e8f0;
+            --border-color: #cbd5e1;
+            --tier1-color: #b91c1c;
+            --tier2-color: #c2410c;
+            --tier3-color: #15803d;
         }
 
         body {
@@ -21,11 +24,11 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -35,22 +38,35 @@
             align-items: center;
             background: var(--primary-color);
             color: white;
-            padding: 20px 30px;
+            padding: 20px 25px;
             border-radius: 8px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         header h1 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
+        }
+
+        header p {
+            margin: 5px 0 0 0;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
 
         .btn {
             background-color: var(--accent-color);
             color: #0f172a;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 16px;
             font-weight: bold;
+            font-size: 0.85rem;
             border-radius: 6px;
             cursor: pointer;
             transition: opacity 0.2s;
@@ -60,12 +76,60 @@
             opacity: 0.9;
         }
 
+        .btn-secondary {
+            background-color: #475569;
+            color: white;
+        }
+
         .card {
             background: var(--card-bg);
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        /* Modal for Pre-Deployment Checklist */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .checklist-group {
+            margin: 15px 0;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .checklist-group h4 {
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .checklist-group label {
+            display: block;
+            margin: 6px 0;
+            font-size: 0.9rem;
+            cursor: pointer;
         }
 
         table {
@@ -76,9 +140,9 @@
         }
 
         th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.9rem;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
         }
 
         th {
@@ -91,21 +155,52 @@
             background-color: #f8fafc;
         }
 
-        .status-badge {
-            padding: 4px 8px;
+        .badge-tier1 { color: var(--tier1-color); font-weight: bold; }
+        .badge-tier2 { color: var(--tier2-color); font-weight: bold; }
+        .badge-tier3 { color: var(--tier3-color); font-weight: bold; }
+
+        .map-link {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 3px 8px;
             border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
             font-size: 0.8rem;
+        }
+        .map-link:hover { background: #bae6fd; }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            box-sizing: border-box;
+        }
+
+        .status-select {
+            padding: 4px;
+            border-radius: 4px;
             font-weight: bold;
         }
 
-        .status-pending {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-completed {
-            background-color: #d1fae5;
-            color: #059669;
+        @media print {
+            header, .btn-group, .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            .card {
+                box-shadow: none;
+                padding: 0;
+            }
+            table {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -115,119 +210,347 @@
         <header>
             <div>
                 <h1>Strutex Builders - Site Deployment Dashboard</h1>
-                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #94a3b8;">Petroleum Retail Infrastructure Maintenance & Tracking</p>
+                <p>Petroleum Retail Infrastructure Maintenance & Tracking (Strutex-Operations)</p>
             </div>
-            <button class="btn" onclick="saveDashboard()">Save to Cloud</button>
+            <div class="btn-group no-print">
+                <button class="btn btn-secondary" onclick="addNewRow()">+ Add Row</button>
+                <button class="btn btn-secondary" onclick="window.print()">Print / PDF</button>
+                <button class="btn btn-secondary" onclick="saveLocally()">Save Locally</button>
+                <button class="btn" onclick="saveToCloud()">Save to Cloud (Supabase)</button>
+            </div>
         </header>
 
         <div class="card">
-            <h3 style="margin-top: 0;">Priority Station Rollout Schedule</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Tier</th>
-                        <th>Station Name</th>
-                        <th>Region / Supervisor</th>
-                        <th>Scope of Work</th>
-                        <th>Status</th>
-                        <th>Comments</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: #64748b;">Loading deployment data...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0;">Master Priority & Deployment Schedule</h3>
+                <span style="font-size: 0.8rem; color: #64748b;">Click table cells to edit text directly.</span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="deploymentTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Rank</th>
+                            <th style="width: 130px;">Priority Tier</th>
+                            <th>Station Name</th>
+                            <th style="width: 90px;">Geo-Location</th>
+                            <th style="width: 90px;">Region / Eng</th>
+                            <th>Scope of Work</th>
+                            <th style="width: 110px;">Work Status</th>
+                            <th style="width: 130px;">Technician Comments</th>
+                            <th style="width: 100px;" class="no-print">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pre-Deployment Checklist Modal -->
+    <div id="checklistModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalStationTitle" style="margin-top:0; color: #1e293b;">Pre-Deployment Verification</h3>
+            <p style="font-size: 0.85rem; color: #64748b;">Technicians must verify all requirements before initiating site deployment.</p>
+            
+            <div class="checklist-group">
+                <h4>1. Materials Availability</h4>
+                <label><input type="checkbox" class="chk-item" value="paint"> Paint, Primers & Thinners verified on site</label>
+                <label><input type="checkbox" class="chk-item" value="sheets"> Roofing sheets, fasteners or replacement parts ready</label>
+                <label><input type="checkbox" class="chk-item" value="plumbing"> Plumbing fittings, tapes or sealants available</label>
+            </div>
+
+            <div class="checklist-group">
+                <h4>2. Tools Availability</h4>
+                <label><input type="checkbox" class="chk-item" value="breaker"> Breakers, drills or heavy power tools ready</label>
+                <label><input type="checkbox" class="chk-item" value="scaffolds"> Scaffolding / Ladders loaded for transit</label>
+                <label><input type="checkbox" class="chk-item" value="handtools"> Hand tools, brushes & measurement gear checked</label>
+            </div>
+
+            <div class="checklist-group">
+                <h4>3. PPEs & Safety</h4>
+                <label><input type="checkbox" class="chk-item" value="ppe"> Safety aprons, high-vis vests & boots</label>
+                <label><input type="checkbox" class="chk-item" value="cones"> Traffic cones, warning tapes & safety signage</label>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn" id="confirmDeployBtn" onclick="executeDeployment()" disabled style="opacity: 0.5;">Confirm & Deploy</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION & UNIQUE CLIENT NAME ---
+        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
         
-        // Using a unique variable name prevents any scope collisions entirely
         let dbClient = null;
-        
         if (window.supabase) {
             dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else {
-            console.warn("Supabase library not found on window object.");
         }
 
-        // --- 2. DEFAULT FALLBACK DATASET ---
+        // --- MASTER DATASET ---
         const defaultStations = [
-            {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", info: "NAIROBI / Timothy", scope: "Review civil deficiencies", status: "Pending", comments: "", cleared: false},
-            {rank: 2, tier: "Tier 1: High Risk", name: "Rubis Jogoo Road", info: "NAIROBI / Timothy", scope: "Guest washroom taps & shower leak", status: "Pending", comments: "", cleared: false},
-            {rank: 3, tier: "Tier 1: High Risk", name: "Rubis - Limuru Town", info: "CENTRAL / Everlyne", scope: "High priority corrective maintenance", status: "Pending", comments: "", cleared: false},
-            {rank: 4, tier: "Tier 1: High Risk", name: "Rubis - Limuru Greens", info: "CENTRAL / Everlyne", scope: "DODO equipment servicing", status: "Pending", comments: "", cleared: false},
-            {rank: 5, tier: "Tier 1: High Risk", name: "Rubis - View Point", info: "CENTRAL / Everlyne", scope: "Civil repairs & painting", status: "Pending", comments: "", cleared: false},
-            {rank: 6, tier: "Tier 1: High Risk", name: "Rubis Banana", info: "NAIROBI / Everlyne", scope: "Site assessment & fixes", status: "Pending", comments: "", cleared: false},
-            {rank: 7, tier: "Tier 1: High Risk", name: "Rubis Kangundo Road", info: "NAIROBI / Timothy", scope: "High severity maintenance", status: "Pending", comments: "", cleared: false},
-            {rank: 8, tier: "Tier 1: High Risk", name: "Rubis Rabai Road", info: "NAIROBI / Timothy", scope: "Corrective works", status: "Pending", comments: "", cleared: false},
-            {rank: 9, tier: "Tier 1: High Risk", name: "Rubis - Nyambari", info: "CENTRAL / Everlyne", scope: "Civil works inspection", status: "Pending", comments: "", cleared: false},
-            {rank: 10, tier: "Tier 1: High Risk", name: "Rubis Buruburu", info: "NAIROBI / Timothy", scope: "General site repairs", status: "Pending", comments: "", cleared: false}
+            {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", mapQuery: "Rubis Mesora Kenya", info: "NAIROBI / Timothy", scope: "Review civil deficiencies", status: "Pending", comments: ""},
+            {rank: 2, tier: "Tier 1: High Risk", name: "Rubis Jogoo Road", mapQuery: "Rubis Jogoo Road Nairobi", info: "NAIROBI / Timothy", scope: "Guest washroom taps & shower leak", status: "Pending", comments: ""},
+            {rank: 3, tier: "Tier 1: High Risk", name: "Rubis - Limuru Town", mapQuery: "Rubis Limuru Town", info: "CENTRAL / Everlyne", scope: "High priority corrective maintenance", status: "Pending", comments: ""},
+            {rank: 4, tier: "Tier 1: High Risk", name: "Rubis - Limuru Greens", mapQuery: "Rubis Limuru Greens", info: "CENTRAL / Everlyne", scope: "DODO equipment servicing", status: "Pending", comments: ""},
+            {rank: 5, tier: "Tier 1: High Risk", name: "Rubis - View Point", mapQuery: "Rubis View Point Limuru", info: "CENTRAL / Everlyne", scope: "Civil repairs & painting", status: "Pending", comments: ""},
+            {rank: 6, tier: "Tier 1: High Risk", name: "Rubis Banana", mapQuery: "Rubis Banana Hill", info: "NAIROBI / Everlyne", scope: "Site assessment & fixes", status: "Pending", comments: ""},
+            {rank: 7, tier: "Tier 1: High Risk", name: "Rubis Kangundo Road", mapQuery: "Rubis Kangundo Road", info: "NAIROBI / Timothy", scope: "High severity maintenance", status: "Pending", comments: ""},
+            {rank: 8, tier: "Tier 1: High Risk", name: "Rubis Rabai Road", mapQuery: "Rubis Rabai Road Nairobi", info: "NAIROBI / Timothy", scope: "Corrective works", status: "Pending", comments: ""},
+            {rank: 9, tier: "Tier 1: High Risk", name: "Rubis - Nyambari", mapQuery: "Rubis Nyambari", info: "CENTRAL / Everlyne", scope: "Civil works inspection", status: "Pending", comments: ""},
+            {rank: 10, tier: "Tier 1: High Risk", name: "Rubis Buruburu", mapQuery: "Rubis Buruburu Nairobi", info: "NAIROBI / Timothy", scope: "General site repairs", status: "Pending", comments: ""},
+            {rank: 11, tier: "Tier 1: High Risk", name: "Rubis - Flyover", mapQuery: "Rubis Flyover", info: "CENTRAL / Everlyne", scope: "DODO equipment checks", status: "Pending", comments: ""},
+            {rank: 12, tier: "Tier 1: High Risk", name: "Rubis - Tigoni", mapQuery: "Rubis Tigoni", info: "CENTRAL / Everlyne", scope: "High risk structural check", status: "Pending", comments: ""},
+            {rank: 13, tier: "Tier 2: Moderate", name: "Rubis Kayole", mapQuery: "Rubis Kayole Nairobi", info: "NAIROBI / Timothy", scope: "Moderate priority repairs", status: "Pending", comments: ""},
+            {rank: 14, tier: "Tier 2: Moderate", name: "Rubis Thome", mapQuery: "Rubis Thome Nairobi", info: "NAIROBI / Kelvin", scope: "Canopy & drainage check", status: "Pending", comments: ""},
+            {rank: 15, tier: "Tier 2: Moderate", name: "Rubis - Membley", mapQuery: "Rubis Membley Ruiru", info: "NAIROBI / Kelvin", scope: "Moderate maintenance items", status: "Pending", comments: ""},
+            {rank: 16, tier: "Tier 2: Moderate", name: "Rubis - Westbay", mapQuery: "Rubis Westbay", info: "NAIROBI / Everlyne", scope: "DODO re-equipment check", status: "Pending", comments: ""},
+            {rank: 17, tier: "Tier 2: Moderate", name: "Rubis - Uplands", mapQuery: "Rubis Uplands", info: "CENTRAL / Everlyne", scope: "Civil works & cleanup", status: "Pending", comments: ""},
+            {rank: 18, tier: "Tier 2: Moderate", name: "Rubis Komarock", mapQuery: "Rubis Komarock Nairobi", info: "NAIROBI / Timothy", scope: "DODO maintenance", status: "Pending", comments: ""},
+            {rank: 19, tier: "Tier 2: Moderate", name: "Rubis Garden Estate", mapQuery: "Rubis Garden Estate", info: "NAIROBI / Kelvin", scope: "DODO re-equipment check", status: "Pending", comments: ""},
+            {rank: 20, tier: "Tier 2: Moderate", name: "Rubis - Magina", mapQuery: "Rubis Magina", info: "CENTRAL / Everlyne", scope: "Moderate priority fixes", status: "Pending", comments: ""},
+            {rank: 21, tier: "Tier 2: Moderate", name: "Rubis - Limuru", mapQuery: "Rubis Limuru", info: "CENTRAL / Everlyne", scope: "DODO re-equipment check", status: "Pending", comments: ""},
+            {rank: 22, tier: "Tier 3: Routine", name: "Rubis Kamiti Road", mapQuery: "Rubis Kamiti Road", info: "NAIROBI / Kelvin", scope: "Routine servicing", status: "Pending", comments: ""},
+            {rank: 23, tier: "Tier 3: Routine", name: "Rubis Kiambu Road", mapQuery: "Rubis Kiambu Road", info: "KIAMBU / Kelvin", scope: "DODO re-equipment routine check", status: "Pending", comments: ""},
+            {rank: 24, tier: "Tier 3: Routine", name: "Rubis Kahawa West", mapQuery: "Rubis Kahawa West", info: "NAIROBI / Kelvin", scope: "Routine maintenance", status: "Pending", comments: ""},
+            {rank: 25, tier: "Tier 3: Routine", name: "Rubis - Membley View", mapQuery: "Rubis Membley View", info: "NAIROBI / Kelvin", scope: "DODO routine works", status: "Pending", comments: ""},
+            {rank: 26, tier: "Tier 3: Routine", name: "Rubis - Mugumo", mapQuery: "Rubis Mugumo", info: "KIAMBU / Kelvin", scope: "DODO re-equipment check", status: "Pending", comments: ""},
+            {rank: 27, tier: "Tier 3: Routine", name: "Rubis - Runda View", mapQuery: "Rubis Runda View", info: "KIAMBU / Kelvin", scope: "Routine inspection", status: "Pending", comments: ""},
+            {rank: 28, tier: "Unassigned", name: "Rubis Kenol", mapQuery: "Rubis Kenol Murang'a", info: "MURANG'A / Kelvin", scope: "Pending assessment works", status: "Pending", comments: ""},
+            {rank: 29, tier: "Unassigned", name: "Rubis Magumu", mapQuery: "Rubis Magumu", info: "CENTRAL / Everlyne", scope: "DODO re-equipment setup", status: "Pending", comments: ""}
         ];
 
-        // --- 3. CORE FUNCTIONS ---
-        window.onload = loadData;
+        let activeDeploymentRow = null;
 
-        async function loadData() {
-            const tbody = document.getElementById("tableBody");
-            
-            try {
-                if (!dbClient) {
-                    throw new Error("Database client is uninitialized.");
-                }
-
-                // Attempt fetching using 'dbClient'
-                const { data, error } = await dbClient
-                    .from('strutex_stations')
-                    .select('*')
-                    .order('rank', { ascending: true });
-
-                tbody.innerHTML = "";
-
-                if (error || !data || data.length === 0) {
-                    loadDefaults(tbody);
-                } else {
-                    data.forEach(s => createRowElement(s.rank, s.tier, s.station_name, s.region_eng, s.scope_of_work, s.status, s.comments, tbody));
-                }
-            } catch (err) {
-                console.error("Falling back to local data due to error:", err);
-                loadDefaults(tbody);
+        window.onload = async function() {
+            // Check local storage first for instant technician persistence
+            const localData = localStorage.getItem('strutex_stations_local');
+            if (localData) {
+                renderTable(JSON.parse(localData));
+            } else {
+                renderTable(defaultStations);
             }
-        }
 
-        function loadDefaults(tbody) {
-            defaultStations.forEach(s => {
-                createRowElement(s.rank, s.tier, s.name, s.info, s.scope, s.status, s.comments, tbody);
+            // Attempt cloud fetch from Supabase
+            if (dbClient) {
+                try {
+                    const { data, error } = await dbClient
+                        .from('strutex_stations')
+                        .select('*')
+                        .order('rank', { ascending: true });
+                    
+                    if (!error && data && data.length > 0) {
+                        // Map database column names to frontend format if needed
+                        const formatted = data.map(s => ({
+                            rank: s.rank,
+                            tier: s.tier,
+                            name: s.station_name || s.name,
+                            mapQuery: s.map_query || s.name + " Kenya",
+                            info: s.region_eng || s.info,
+                            scope: s.scope_of_work || s.scope,
+                            status: s.status || 'Pending',
+                            comments: s.comments || ''
+                        }));
+                        renderTable(formatted);
+                    }
+                } catch (err) {
+                    console.warn("Using local/default data due to cloud fetch issue:", err);
+                }
+            }
+        };
+
+        function renderTable(stations) {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+
+            stations.forEach((s, index) => {
+                const tr = document.createElement("tr");
+                let tierClass = "";
+                if (s.tier && s.tier.includes("Tier 1")) tierClass = "badge-tier1";
+                else if (s.tier && s.tier.includes("Tier 2")) tierClass = "badge-tier2";
+                else if (s.tier && s.tier.includes("Tier 3")) tierClass = "badge-tier3";
+
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.mapQuery || s.name)}`;
+
+                tr.innerHTML = `
+                    <td contenteditable="true" class="editable-cell">${s.rank || (index + 1)}</td>
+                    <td contenteditable="true" class="editable-cell ${tierClass}">${s.tier || 'Unassigned'}</td>
+                    <td contenteditable="true" class="editable-cell"><strong>${s.name}</strong></td>
+                    <td><a href="${mapsUrl}" target="_blank" class="map-link">📍 Map</a></td>
+                    <td contenteditable="true" class="editable-cell">${s.info || 'NA'}</td>
+                    <td contenteditable="true" class="editable-cell">${s.scope}</td>
+                    <td>
+                        <select class="status-select" onchange="updateStatusColor(this)">
+                            <option value="Pending" ${s.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="In Progress" ${s.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Completed" ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                        </select>
+                    </td>
+                    <td><input type="text" value="${s.comments || ''}" placeholder="Add comment..." style="width:100%;"></td>
+                    <td class="no-print" style="text-align: center;">
+                        <button class="btn" style="padding: 5px 10px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying to Site</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                updateStatusColor(tr.querySelector('.status-select'));
             });
         }
 
-        function createRowElement(rank, tier, name, info, scope, status, comments, tbody) {
-            const tr = document.createElement("tr");
-            const statusClass = status === 'Completed' ? 'status-completed' : 'status-pending';
-
-            tr.innerHTML = `
-                <td><strong>${rank}</strong></td>
-                <td>${tier}</td>
-                <td><strong>${name}</strong></td>
-                <td>${info}</td>
-                <td>${scope}</td>
-                <td><span class="status-badge ${statusClass}">${status}</span></td>
-                <td>${comments || '-'}</td>
-            `;
-            tbody.appendChild(tr);
+        function updateStatusColor(selectElem) {
+            const val = selectElem.value;
+            if (val === 'Completed') {
+                selectElem.style.backgroundColor = '#d1fae5';
+                selectElem.style.color = '#065f46';
+            } else if (val === 'In Progress') {
+                selectElem.style.backgroundColor = '#fef3c7';
+                selectElem.style.color = '#92400e';
+            } else {
+                selectElem.style.backgroundColor = '#f1f5f9';
+                selectElem.style.color = '#334155';
+            }
         }
 
-        function saveDashboard() {
-            if (!dbClient) {
-                return alert("Cloud sync unavailable: Client is not connected.");
+        function addNewRow() {
+            const tbody = document.getElementById("tableBody");
+            const rowCount = tbody.rows.length + 1;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td contenteditable="true" class="editable-cell">${rowCount}</td>
+                <td contenteditable="true" class="editable-cell">Tier 3: Routine</td>
+                <td contenteditable="true" class="editable-cell"><strong>New Station</strong></td>
+                <td><a href="https://www.google.com/maps" target="_blank" class="map-link">📍 Map</a></td>
+                <td contenteditable="true" class="editable-cell">NAIROBI / Engineer</td>
+                <td contenteditable="true" class="editable-cell">General maintenance</td>
+                <td>
+                    <select class="status-select" onchange="updateStatusColor(this)">
+                        <option value="Pending" selected>Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </td>
+                <td><input type="text" value="" placeholder="Add comment..." style="width:100%;"></td>
+                <td class="no-print" style="text-align: center;">
+                    <button class="btn" style="padding: 5px 10px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying to Site</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            updateStatusColor(tr.querySelector('.status-select'));
+        }
+
+        // --- CHECKLIST MODAL LOGIC ---
+        function openChecklist(btn) {
+            activeDeploymentRow = btn.closest('tr');
+            const stationName = activeDeploymentRow.cells[2].innerText;
+            document.getElementById("modalStationTitle").innerText = "Pre-Deployment: " + stationName;
+            
+            // Reset checkboxes
+            document.querySelectorAll('.chk-item').forEach(chk => chk.checked = false);
+            document.getElementById("confirmDeployBtn").disabled = true;
+            document.getElementById("confirmDeployBtn").style.opacity = "0.5";
+            
+            document.getElementById("checklistModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("checklistModal").style.display = "none";
+            activeDeploymentRow = null;
+        }
+
+        // Enable confirm button only when all checkboxes are checked
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('chk-item')) {
+                const allCheckboxes = document.querySelectorAll('.chk-item');
+                const allChecked = Array.from(allCheckboxes).every(chk => chk.checked);
+                const confirmBtn = document.getElementById("confirmDeployBtn");
+                if (allChecked) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.opacity = "1";
+                } else {
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = "0.5";
+                }
             }
-            alert("Cloud sync triggered successfully!");
+        });
+
+        function executeDeployment() {
+            if (activeDeploymentRow) {
+                const selectElem = activeDeploymentRow.querySelector('.status-select');
+                selectElem.value = "In Progress";
+                updateStatusColor(selectElem);
+                
+                const commentInput = activeDeploymentRow.querySelector('input[type="text"]');
+                commentInput.value = "Deployment initiated after checklist verification.";
+                
+                alert("Checklist verified successfully! Station status updated to 'In Progress'. Saving locally.");
+                saveLocally();
+            }
+            closeModal();
+        }
+
+        // --- SAVING DATA ---
+        function gatherTableData() {
+            const rows = document.querySelectorAll("#tableBody tr");
+            const data = [];
+            rows.forEach(tr => {
+                data.push({
+                    rank: tr.cells[0].innerText.trim(),
+                    tier: tr.cells[1].innerText.trim(),
+                    name: tr.cells[2].innerText.trim(),
+                    mapQuery: tr.cells[2].innerText.trim(),
+                    info: tr.cells[4].innerText.trim(),
+                    scope: tr.cells[5].innerText.trim(),
+                    status: tr.querySelector('.status-select').value,
+                    comments: tr.querySelector('input[type="text"]').value
+                });
+            });
+            return data;
+        }
+
+        function saveLocally() {
+            const data = gatherTableData();
+            localStorage.setItem('strutex_stations_local', JSON.stringify(data));
+            alert("Progress saved locally on this device!");
+        }
+
+        async function saveToCloud() {
+            if (!dbClient) {
+                return alert("Cloud sync unavailable: Supabase client is not initialized.");
+            }
+
+            const data = gatherTableData();
+            try {
+                // Save locally first
+                localStorage.setItem('strutex_stations_local', JSON.stringify(data));
+
+                // Upsert to Supabase
+                const payload = data.map(s => ({
+                    rank: parseInt(s.rank) || 1,
+                    tier: s.tier,
+                    station_name: s.name,
+                    region_eng: s.info,
+                    scope_of_work: s.scope,
+                    status: s.status,
+                    comments: s.comments
+                }));
+
+                const { error } = await dbClient
+                    .from('strutex_stations')
+                    .upsert(payload, { onConflict: 'station_name' });
+
+                if (error) {
+                    console.error(error);
+                    alert("Error saving to Supabase cloud: " + error.message);
+                } else {
+                    alert("Successfully synced and saved to Supabase cloud ('Strutex-Operations')!");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Cloud sync failed. Check console for details.");
+            }
         }
     </script>
 </body>
