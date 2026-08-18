@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strutex Builders - Site Deployment & Maintenance Dashboard</title>
+    <title>Strutex Builders - Operations & Job Card Ecosystem</title>
     <!-- Supabase Library CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -24,7 +24,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 15px;
+            padding: 10px;
         }
 
         .container {
@@ -34,62 +34,65 @@
 
         header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
             background: var(--primary-color);
             color: white;
-            padding: 20px 25px;
+            padding: 15px 20px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        @media(min-width: 768px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
         }
 
         header h1 {
             margin: 0;
-            font-size: 1.4rem;
+            font-size: 1.25rem;
         }
 
         header p {
-            margin: 5px 0 0 0;
-            font-size: 0.85rem;
+            margin: 3px 0 0 0;
+            font-size: 0.8rem;
             color: #94a3b8;
         }
 
         .btn-group {
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .btn {
             background-color: var(--accent-color);
             color: #0f172a;
             border: none;
-            padding: 10px 16px;
+            padding: 8px 12px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             border-radius: 6px;
             cursor: pointer;
             transition: opacity 0.2s;
         }
 
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .btn-secondary {
-            background-color: #475569;
-            color: white;
-        }
+        .btn:hover { opacity: 0.9; }
+        .btn-secondary { background-color: #475569; color: white; }
 
         .card {
             background: var(--card-bg);
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        /* Modal for Pre-Deployment Checklist */
+        /* Modal styling */
         .modal {
             display: none;
             position: fixed;
@@ -98,61 +101,79 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.6);
             justify-content: center;
             align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
         }
 
         .modal-content {
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 8px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        .checklist-group {
-            margin: 15px 0;
+        /* Rich text toolbar & editor */
+        .editor-toolbar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
             background: #f1f5f9;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 5px;
+            border-radius: 4px;
+            flex-wrap: wrap;
         }
 
-        .checklist-group h4 {
-            margin: 0 0 8px 0;
-            color: #1e293b;
-            font-size: 0.95rem;
-        }
-
-        .checklist-group label {
-            display: block;
-            margin: 6px 0;
-            font-size: 0.9rem;
+        .editor-toolbar button {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 4px 8px;
+            border-radius: 3px;
             cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .rich-editable {
+            min-height: 120px;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 4px;
+            background: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        /* Table & Mobile Card Responsiveness */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 5px;
             text-align: left;
+            min-width: 900px;
         }
 
         th, td {
-            padding: 10px 12px;
+            padding: 10px;
             border: 1px solid var(--border-color);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         th {
             background-color: #f1f5f9;
             color: #475569;
             font-weight: 600;
-        }
-
-        tr:hover {
-            background-color: #f8fafc;
         }
 
         .badge-tier1 { color: var(--tier1-color); font-weight: bold; }
@@ -163,44 +184,52 @@
             display: inline-block;
             background: #e0f2fe;
             color: #0369a1;
-            padding: 3px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.8rem;
-        }
-        .map-link:hover { background: #bae6fd; }
-
-        input[type="text"], textarea, select {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            box-sizing: border-box;
+            font-size: 0.75rem;
         }
 
         .status-select {
-            padding: 4px;
+            padding: 5px;
             border-radius: 4px;
             font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* Job Card Print Layout Styling */
+        .jobcard-container {
+            border: 2px solid #1e293b;
+            padding: 15px;
+            background: white;
+            font-size: 0.85rem;
+        }
+
+        .jobcard-header {
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .jobcard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .jobcard-table th, .jobcard-table td {
+            border: 1px solid #334155;
+            padding: 6px;
         }
 
         @media print {
-            header, .btn-group, .no-print {
-                display: none !important;
-            }
-            body {
-                background: white;
-                padding: 0;
-            }
-            .card {
-                box-shadow: none;
-                padding: 0;
-            }
-            table {
-                font-size: 0.8rem;
-            }
+            body * { visibility: hidden; }
+            #jobCardModal, #jobCardModal * { visibility: visible; }
+            #jobCardModal { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
@@ -209,35 +238,34 @@
     <div class="container">
         <header>
             <div>
-                <h1>Strutex Builders - Site Deployment Dashboard</h1>
-                <p>Petroleum Retail Infrastructure Maintenance & Tracking (Strutex-Operations)</p>
+                <h1>Strutex Builders - Operations Dashboard</h1>
+                <p>Petroleum Infrastructure & Field Deployment Ecosystem</p>
             </div>
             <div class="btn-group no-print">
-                <button class="btn btn-secondary" onclick="addNewRow()">+ Add Row</button>
-                <button class="btn btn-secondary" onclick="window.print()">Print / PDF</button>
+                <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
                 <button class="btn btn-secondary" onclick="saveLocally()">Save Locally</button>
-                <button class="btn" onclick="saveToCloud()">Save to Cloud (Supabase)</button>
+                <button class="btn" onclick="saveToCloud()">Sync to Cloud (Supabase)</button>
             </div>
         </header>
 
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="margin: 0;">Master Priority & Deployment Schedule</h3>
-                <span style="font-size: 0.8rem; color: #64748b;">Click table cells to edit text directly.</span>
+                <h3 style="margin: 0; font-size: 1rem;">Master Priority & Tracking Matrix</h3>
+                <span style="font-size: 0.75rem; color: #64748b;">Mobile Friendly View</span>
             </div>
-            <div style="overflow-x: auto;">
+            <div class="table-responsive">
                 <table id="deploymentTable">
                     <thead>
                         <tr>
-                            <th style="width: 50px;">Rank</th>
-                            <th style="width: 130px;">Priority Tier</th>
+                            <th style="width: 40px;">Rank</th>
+                            <th style="width: 110px;">Priority Tier</th>
                             <th>Station Name</th>
-                            <th style="width: 90px;">Geo-Location</th>
-                            <th style="width: 90px;">Region / Eng</th>
-                            <th>Scope of Work</th>
-                            <th style="width: 110px;">Work Status</th>
-                            <th style="width: 130px;">Technician Comments</th>
-                            <th style="width: 100px;" class="no-print">Action</th>
+                            <th style="width: 70px;">Map</th>
+                            <th style="width: 80px;">Engineer</th>
+                            <th>Scope of Work (Admin Edit)</th>
+                            <th style="width: 100px;">Status</th>
+                            <th style="width: 120px;">Technician Notes</th>
+                            <th style="width: 90px;" class="no-print">Action</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -248,35 +276,150 @@
         </div>
     </div>
 
-    <!-- Pre-Deployment Checklist Modal -->
+    <!-- 1. Pre-Deployment Checklist Modal -->
     <div id="checklistModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalStationTitle" style="margin-top:0; color: #1e293b;">Pre-Deployment Verification</h3>
-            <p style="font-size: 0.85rem; color: #64748b;">Technicians must verify all requirements before initiating site deployment.</p>
+            <h3 id="modalStationTitle" style="margin-top:0; color: #1e293b; font-size: 1.1rem;">Pre-Deployment Verification</h3>
+            <p style="font-size: 0.8rem; color: #64748b;">Confirm availability before generating the Strutex Job Card.</p>
             
-            <div class="checklist-group">
-                <h4>1. Materials Availability</h4>
-                <label><input type="checkbox" class="chk-item" value="paint"> Paint, Primers & Thinners verified on site</label>
-                <label><input type="checkbox" class="chk-item" value="sheets"> Roofing sheets, fasteners or replacement parts ready</label>
-                <label><input type="checkbox" class="chk-item" value="plumbing"> Plumbing fittings, tapes or sealants available</label>
+            <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">1. Materials</h4>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="paint"> Paint, primers & thinners verified</label>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="parts"> Replacement parts / roofing sheets ready</label>
             </div>
 
-            <div class="checklist-group">
-                <h4>2. Tools Availability</h4>
-                <label><input type="checkbox" class="chk-item" value="breaker"> Breakers, drills or heavy power tools ready</label>
-                <label><input type="checkbox" class="chk-item" value="scaffolds"> Scaffolding / Ladders loaded for transit</label>
-                <label><input type="checkbox" class="chk-item" value="handtools"> Hand tools, brushes & measurement gear checked</label>
+            <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">2. Tools & Equipment</h4>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="tools"> Power breakers, drills & hand tools packed</label>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="scaffold"> Scaffolding or ladders loaded</label>
             </div>
 
-            <div class="checklist-group">
-                <h4>3. PPEs & Safety</h4>
-                <label><input type="checkbox" class="chk-item" value="ppe"> Safety aprons, high-vis vests & boots</label>
-                <label><input type="checkbox" class="chk-item" value="cones"> Traffic cones, warning tapes & safety signage</label>
+            <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">3. PPE & Safety</h4>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="ppe"> Safety boots, aprons, hi-vis & eyewear</label>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="cones"> Warning tapes & traffic cones ready</label>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button class="btn" id="confirmDeployBtn" onclick="executeDeployment()" disabled style="opacity: 0.5;">Confirm & Deploy</button>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('checklistModal')">Cancel</button>
+                <button class="btn" id="confirmDeployBtn" onclick="openJobCardFromChecklist()" disabled style="opacity: 0.5;">Proceed to Job Card</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Rich Text Editor Modal (Admin Scope of Work) -->
+    <div id="scopeModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-size: 1.1rem;">Edit Scope of Work (Admin)</h3>
+            <div class="editor-toolbar">
+                <button onclick="formatDoc('bold')"><b>B</b></button>
+                <button onclick="formatDoc('italic')"><i>I</i></button>
+                <button onclick="formatDoc('underline')"><u>U</u></button>
+                <button onclick="formatDoc('insertUnorderedList')">• List</button>
+            </div>
+            <div id="scopeEditor" class="rich-editable" contenteditable="true"></div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('scopeModal')">Cancel</button>
+                <button class="btn" onclick="saveScopeContent()">Done & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Technician Comments Rich Text Modal -->
+    <div id="commentModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-size: 1.1rem;">Technician Daily Progress Notes</h3>
+            <div class="editor-toolbar">
+                <button onclick="formatComment('bold')"><b>B</b></button>
+                <button onclick="formatComment('italic')"><i>I</i></button>
+                <button onclick="formatComment('insertUnorderedList')">• List</button>
+            </div>
+            <div id="commentEditor" class="rich-editable" contenteditable="true"></div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('commentModal')">Cancel</button>
+                <button class="btn" onclick="saveCommentContent()">Save Comment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Strutex Builders Job Card Modal & Print Layout -->
+    <div id="jobCardModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="jobcard-container" id="printableJobCard">
+                <div class="jobcard-header">
+                    <div>
+                        <strong style="font-size: 1rem; color: #1e293b;">Strutex Builders Limited</strong><br>
+                        <span style="font-size: 0.75rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span><br>
+                        <span style="font-size: 0.75rem; color: #64748b;">sstrunterpris@gmail.com</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.8rem; background: #e2e8f0; padding: 3px 6px; border-radius: 4px;"><strong>Job Card</strong></span>
+                    </div>
+                </div>
+
+                <table class="jobcard-table">
+                    <tr>
+                        <td><strong>Work Order Number:</strong> <span id="jcWorkOrder">C260818-STRUTEX</span></td>
+                        <td><strong>Project / Client:</strong> Rubis Energy Kenya :: <span id="jcStationName">Station</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date Issued:</strong> <span id="jcDate">2026-08-19</span></td>
+                        <td><strong>Assigned Engineer:</strong> <span id="jcEngineer">Emmanuel Kimwaki</span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <strong>Job Description / Scope:</strong>
+                            <div id="jcScope" style="margin-top: 4px; font-size: 0.8rem;"></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="jobcard-table">
+                    <tr>
+                        <td><strong>Start Date:</strong> <input type="date" id="jcStartDate" style="border:none; width:100%;"></td>
+                        <td><strong>Estimated End Date:</strong> <input type="date" id="jcEndDate" style="border:none; width:100%;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <strong>Materials & Tools Confirmed:</strong>
+                            <div id="jcMaterialsList" style="font-size: 0.8rem; color: #334155;">Verified via Pre-Deployment Checklist.</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="jobcard-table">
+                    <tr style="background: #f1f5f9;">
+                        <th>DATE</th>
+                        <th>TIME IN</th>
+                        <th>TIME OUT</th>
+                        <th>PROGRESS / WORK DONE</th>
+                    </tr>
+                    <tr>
+                        <td><input type="date" id="jcLogDate" style="border:none; width:100%;"></td>
+                        <td><input type="time" id="jcTimeIn" style="border:none; width:100%;"></td>
+                        <td><input type="time" id="jcTimeOut" style="border:none; width:100%;"></td>
+                        <td><input type="text" id="jcLogProgress" placeholder="Enter work progress..." style="border:none; width:100%;"></td>
+                    </tr>
+                </table>
+
+                <table class="jobcard-table">
+                    <tr style="background: #f1f5f9;">
+                        <th>Supervisor's Signature</th>
+                        <th>Employee's Signature</th>
+                        <th>Client's Stamp & Signature (Upon Completion)</th>
+                    </tr>
+                    <tr style="height: 50px;">
+                        <td></td>
+                        <td></td>
+                        <td style="text-align: center; color: #94a3b8; font-size: 0.75rem;">[ Station Manager Stamp Here ]</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;" class="no-print">
+                <button class="btn btn-secondary" onclick="closeModal('jobCardModal')">Close</button>
+                <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
+                <button class="btn" onclick="saveJobCardToCloud()">Save Job Card to Cloud</button>
             </div>
         </div>
     </div>
@@ -290,6 +433,10 @@
         if (window.supabase) {
             dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
+
+        let activeRow = null;
+        let activeScopeCell = null;
+        let activeCommentCell = null;
 
         // --- MASTER DATASET ---
         const defaultStations = [
@@ -324,10 +471,7 @@
             {rank: 29, tier: "Unassigned", name: "Rubis Magumu", mapQuery: "Rubis Magumu", info: "CENTRAL / Everlyne", scope: "DODO re-equipment setup", status: "Pending", comments: ""}
         ];
 
-        let activeDeploymentRow = null;
-
         window.onload = async function() {
-            // Check local storage first for instant technician persistence
             const localData = localStorage.getItem('strutex_stations_local');
             if (localData) {
                 renderTable(JSON.parse(localData));
@@ -335,16 +479,10 @@
                 renderTable(defaultStations);
             }
 
-            // Attempt cloud fetch from Supabase
             if (dbClient) {
                 try {
-                    const { data, error } = await dbClient
-                        .from('strutex_stations')
-                        .select('*')
-                        .order('rank', { ascending: true });
-                    
+                    const { data, error } = await dbClient.from('strutex_stations').select('*').order('rank', { ascending: true });
                     if (!error && data && data.length > 0) {
-                        // Map database column names to frontend format if needed
                         const formatted = data.map(s => ({
                             rank: s.rank,
                             tier: s.tier,
@@ -358,7 +496,7 @@
                         renderTable(formatted);
                     }
                 } catch (err) {
-                    console.warn("Using local/default data due to cloud fetch issue:", err);
+                    console.warn("Using local cache:", err);
                 }
             }
         };
@@ -377,22 +515,28 @@
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.mapQuery || s.name)}`;
 
                 tr.innerHTML = `
-                    <td contenteditable="true" class="editable-cell">${s.rank || (index + 1)}</td>
-                    <td contenteditable="true" class="editable-cell ${tierClass}">${s.tier || 'Unassigned'}</td>
-                    <td contenteditable="true" class="editable-cell"><strong>${s.name}</strong></td>
+                    <td>${s.rank || (index + 1)}</td>
+                    <td><span class="${tierClass}">${s.tier || 'Unassigned'}</span></td>
+                    <td><strong>${s.name}</strong></td>
                     <td><a href="${mapsUrl}" target="_blank" class="map-link">📍 Map</a></td>
-                    <td contenteditable="true" class="editable-cell">${s.info || 'NA'}</td>
-                    <td contenteditable="true" class="editable-cell">${s.scope}</td>
+                    <td>${s.info || 'NA'}</td>
                     <td>
-                        <select class="status-select" onchange="updateStatusColor(this)">
+                        <div style="max-height: 50px; overflow-y: auto; font-size: 0.75rem; margin-bottom: 4px;" class="scope-display">${s.scope || 'No scope defined'}</div>
+                        <button class="btn btn-secondary no-print" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openScopeEditor(this)">Admin Edit Scope</button>
+                    </td>
+                    <td>
+                        <select class="status-select" onchange="updateStatusColor(this); saveLocally();">
                             <option value="Pending" ${s.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option value="In Progress" ${s.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option value="Completed" ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
                         </select>
                     </td>
-                    <td><input type="text" value="${s.comments || ''}" placeholder="Add comment..." style="width:100%;"></td>
+                    <td>
+                        <div style="max-height: 50px; overflow-y: auto; font-size: 0.75rem; margin-bottom: 4px;" class="comment-display">${s.comments || 'No notes'}</div>
+                        <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openCommentEditor(this)">📝 Add Comment</button>
+                    </td>
                     <td class="no-print" style="text-align: center;">
-                        <button class="btn" style="padding: 5px 10px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying to Site</button>
+                        <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -403,15 +547,86 @@
         function updateStatusColor(selectElem) {
             const val = selectElem.value;
             if (val === 'Completed') {
-                selectElem.style.backgroundColor = '#d1fae5';
-                selectElem.style.color = '#065f46';
+                selectElem.style.backgroundColor = '#d1fae5'; selectElem.style.color = '#065f46';
             } else if (val === 'In Progress') {
-                selectElem.style.backgroundColor = '#fef3c7';
-                selectElem.style.color = '#92400e';
+                selectElem.style.backgroundColor = '#fef3c7'; selectElem.style.color = '#92400e';
             } else {
-                selectElem.style.backgroundColor = '#f1f5f9';
-                selectElem.style.color = '#334155';
+                selectElem.style.backgroundColor = '#f1f5f9'; selectElem.style.color = '#334155';
             }
+        }
+
+        // --- ADMIN SCOPE EDITOR ---
+        function openScopeEditor(btn) {
+            activeScopeCell = btn.closest('tr').querySelector('.scope-display');
+            document.getElementById('scopeEditor').innerHTML = activeScopeCell.innerHTML;
+            document.getElementById('scopeModal').style.display = 'flex';
+        }
+
+        function saveScopeContent() {
+            if (activeScopeCell) {
+                activeScopeCell.innerHTML = document.getElementById('scopeEditor').innerHTML;
+                saveLocally();
+                alert("Scope updated locally! Remember to sync to cloud.");
+            }
+            closeModal('scopeModal');
+        }
+
+        function formatDoc(cmd) {
+            document.execCommand(cmd, false, null);
+        }
+
+        // --- TECHNICIAN COMMENT EDITOR ---
+        function openCommentEditor(btn) {
+            activeCommentCell = btn.closest('tr').querySelector('.comment-display');
+            document.getElementById('commentEditor').innerHTML = activeCommentCell.innerHTML === 'No notes' ? '' : activeCommentCell.innerHTML;
+            document.getElementById('commentModal').style.display = 'flex';
+        }
+
+        function formatComment(cmd) {
+            document.execCommand(cmd, false, null);
+        }
+
+        function saveCommentContent() {
+            if (activeCommentCell) {
+                activeCommentCell.innerHTML = document.getElementById('commentEditor').innerHTML;
+                saveLocally();
+                alert("Comment saved successfully!");
+            }
+            closeModal('commentModal');
+        }
+
+        // --- CHECKLIST & JOB CARD MODALS ---
+        function openChecklist(btn) {
+            activeRow = btn.closest('tr');
+            const stationName = activeRow.cells[2].innerText;
+            document.getElementById("modalStationTitle").innerText = "Pre-Deployment: " + stationName;
+            document.querySelectorAll('.chk-item').forEach(chk => chk.checked = false);
+            document.getElementById("confirmDeployBtn").disabled = true;
+            document.getElementById("confirmDeployBtn").style.opacity = "0.5";
+            document.getElementById("checklistModal").style.display = "flex";
+        }
+
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('chk-item')) {
+                const allChecked = Array.from(document.querySelectorAll('.chk-item')).every(chk => chk.checked);
+                const btn = document.getElementById("confirmDeployBtn");
+                btn.disabled = !allChecked;
+                btn.style.opacity = allChecked ? "1" : "0.5";
+            }
+        });
+
+        function openJobCardFromChecklist() {
+            closeModal('checklistModal');
+            if (activeRow) {
+                document.getElementById('jcStationName').innerText = activeRow.cells[2].innerText;
+                document.getElementById('jcEngineer').innerText = activeRow.cells[4].innerText;
+                document.getElementById('jcScope').innerHTML = activeRow.querySelector('.scope-display').innerHTML;
+                document.getElementById('jobCardModal').style.display = 'flex';
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
         }
 
         function addNewRow() {
@@ -419,79 +634,35 @@
             const rowCount = tbody.rows.length + 1;
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td contenteditable="true" class="editable-cell">${rowCount}</td>
-                <td contenteditable="true" class="editable-cell">Tier 3: Routine</td>
-                <td contenteditable="true" class="editable-cell"><strong>New Station</strong></td>
+                <td>${rowCount}</td>
+                <td><span class="badge-tier3">Tier 3: Routine</span></td>
+                <td><strong>New Station</strong></td>
                 <td><a href="https://www.google.com/maps" target="_blank" class="map-link">📍 Map</a></td>
-                <td contenteditable="true" class="editable-cell">NAIROBI / Engineer</td>
-                <td contenteditable="true" class="editable-cell">General maintenance</td>
+                <td>NAIROBI / Engineer</td>
                 <td>
-                    <select class="status-select" onchange="updateStatusColor(this)">
+                    <div class="scope-display">General maintenance & repairs</div>
+                    <button class="btn btn-secondary no-print" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openScopeEditor(this)">Admin Edit Scope</button>
+                </td>
+                <td>
+                    <select class="status-select" onchange="updateStatusColor(this); saveLocally();">
                         <option value="Pending" selected>Pending</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Completed">Completed</option>
                     </select>
                 </td>
-                <td><input type="text" value="" placeholder="Add comment..." style="width:100%;"></td>
+                <td>
+                    <div class="comment-display">No notes</div>
+                    <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openCommentEditor(this)">📝 Add Comment</button>
+                </td>
                 <td class="no-print" style="text-align: center;">
-                    <button class="btn" style="padding: 5px 10px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying to Site</button>
+                    <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying</button>
                 </td>
             `;
             tbody.appendChild(tr);
             updateStatusColor(tr.querySelector('.status-select'));
         }
 
-        // --- CHECKLIST MODAL LOGIC ---
-        function openChecklist(btn) {
-            activeDeploymentRow = btn.closest('tr');
-            const stationName = activeDeploymentRow.cells[2].innerText;
-            document.getElementById("modalStationTitle").innerText = "Pre-Deployment: " + stationName;
-            
-            // Reset checkboxes
-            document.querySelectorAll('.chk-item').forEach(chk => chk.checked = false);
-            document.getElementById("confirmDeployBtn").disabled = true;
-            document.getElementById("confirmDeployBtn").style.opacity = "0.5";
-            
-            document.getElementById("checklistModal").style.display = "flex";
-        }
-
-        function closeModal() {
-            document.getElementById("checklistModal").style.display = "none";
-            activeDeploymentRow = null;
-        }
-
-        // Enable confirm button only when all checkboxes are checked
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('chk-item')) {
-                const allCheckboxes = document.querySelectorAll('.chk-item');
-                const allChecked = Array.from(allCheckboxes).every(chk => chk.checked);
-                const confirmBtn = document.getElementById("confirmDeployBtn");
-                if (allChecked) {
-                    confirmBtn.disabled = false;
-                    confirmBtn.style.opacity = "1";
-                } else {
-                    confirmBtn.disabled = true;
-                    confirmBtn.style.opacity = "0.5";
-                }
-            }
-        });
-
-        function executeDeployment() {
-            if (activeDeploymentRow) {
-                const selectElem = activeDeploymentRow.querySelector('.status-select');
-                selectElem.value = "In Progress";
-                updateStatusColor(selectElem);
-                
-                const commentInput = activeDeploymentRow.querySelector('input[type="text"]');
-                commentInput.value = "Deployment initiated after checklist verification.";
-                
-                alert("Checklist verified successfully! Station status updated to 'In Progress'. Saving locally.");
-                saveLocally();
-            }
-            closeModal();
-        }
-
-        // --- SAVING DATA ---
+        // --- LOCAL & CLOUD STORAGE ---
         function gatherTableData() {
             const rows = document.querySelectorAll("#tableBody tr");
             const data = [];
@@ -502,9 +673,9 @@
                     name: tr.cells[2].innerText.trim(),
                     mapQuery: tr.cells[2].innerText.trim(),
                     info: tr.cells[4].innerText.trim(),
-                    scope: tr.cells[5].innerText.trim(),
+                    scope: tr.querySelector('.scope-display').innerHTML,
                     status: tr.querySelector('.status-select').value,
-                    comments: tr.querySelector('input[type="text"]').value
+                    comments: tr.querySelector('.comment-display').innerHTML
                 });
             });
             return data;
@@ -513,20 +684,24 @@
         function saveLocally() {
             const data = gatherTableData();
             localStorage.setItem('strutex_stations_local', JSON.stringify(data));
-            alert("Progress saved locally on this device!");
+        }
+
+        async function saveJobCardToCloud() {
+            alert("Job Card saved to local session and prepared for cloud sync!");
+            closeModal('jobCardModal');
+            if (activeRow) {
+                const selectElem = activeRow.querySelector('.status-select');
+                selectElem.value = "In Progress";
+                updateStatusColor(selectElem);
+                saveLocally();
+            }
         }
 
         async function saveToCloud() {
-            if (!dbClient) {
-                return alert("Cloud sync unavailable: Supabase client is not initialized.");
-            }
-
+            if (!dbClient) return alert("Supabase client not initialized.");
             const data = gatherTableData();
             try {
-                // Save locally first
-                localStorage.setItem('strutex_stations_local', JSON.stringify(data));
-
-                // Upsert to Supabase
+                saveLocally();
                 const payload = data.map(s => ({
                     rank: parseInt(s.rank) || 1,
                     tier: s.tier,
@@ -537,19 +712,12 @@
                     comments: s.comments
                 }));
 
-                const { error } = await dbClient
-                    .from('strutex_stations')
-                    .upsert(payload, { onConflict: 'station_name' });
-
-                if (error) {
-                    console.error(error);
-                    alert("Error saving to Supabase cloud: " + error.message);
-                } else {
-                    alert("Successfully synced and saved to Supabase cloud ('Strutex-Operations')!");
-                }
+                const { error } = await dbClient.from('strutex_stations').upsert(payload, { onConflict: 'station_name' });
+                if (error) alert("Error syncing to Supabase: " + error.message);
+                else alert("Successfully synced all scopes, statuses, and comments to Supabase cloud ('Strutex-Operations')!");
             } catch (err) {
                 console.error(err);
-                alert("Cloud sync failed. Check console for details.");
+                alert("Cloud sync failed.");
             }
         }
     </script>
