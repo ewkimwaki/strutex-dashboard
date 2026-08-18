@@ -144,15 +144,15 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURATION & SINGLE DECLARATION OF SUPABASE ---
+        // --- 1. CONFIGURATION & UNIQUE CLIENT NAME ---
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
         
-        // Declared ONCE globally using 'let'
-        let supabase = null;
+        // Using a unique variable name prevents any scope collisions entirely
+        let dbClient = null;
         
         if (window.supabase) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } else {
             console.warn("Supabase library not found on window object.");
         }
@@ -178,12 +178,12 @@
             const tbody = document.getElementById("tableBody");
             
             try {
-                if (!supabase) {
-                    throw new Error("Supabase client is uninitialized.");
+                if (!dbClient) {
+                    throw new Error("Database client is uninitialized.");
                 }
 
-                // Attempt fetching from Supabase table
-                const { data, error } = await supabase
+                // Attempt fetching using 'dbClient'
+                const { data, error } = await dbClient
                     .from('strutex_stations')
                     .select('*')
                     .order('rank', { ascending: true });
@@ -191,13 +191,12 @@
                 tbody.innerHTML = "";
 
                 if (error || !data || data.length === 0) {
-                    console.warn("Cloud data unavailable or empty. Loading default stations.");
                     loadDefaults(tbody);
                 } else {
                     data.forEach(s => createRowElement(s.rank, s.tier, s.station_name, s.region_eng, s.scope_of_work, s.status, s.comments, tbody));
                 }
             } catch (err) {
-                console.error("Error connecting to Supabase database. Falling back to local data:", err);
+                console.error("Falling back to local data due to error:", err);
                 loadDefaults(tbody);
             }
         }
@@ -225,8 +224,8 @@
         }
 
         function saveDashboard() {
-            if (!supabase) {
-                return alert("Cloud sync unavailable: Supabase client is not connected.");
+            if (!dbClient) {
+                return alert("Cloud sync unavailable: Client is not connected.");
             }
             alert("Cloud sync triggered successfully!");
         }
