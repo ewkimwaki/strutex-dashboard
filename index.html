@@ -201,22 +201,29 @@
         async function loadData() {
             const tbody = document.getElementById("tableBody");
             
-            // Try fetching from Supabase
-            const { data, error } = await supabase
-                .from('strutex_stations')
-                .select('*')
-                .order('rank', { ascending: true });
+            try {
+                // Try fetching from Supabase
+                const { data, error } = await supabase
+                    .from('strutex_stations')
+                    .select('*')
+                    .order('rank', { ascending: true });
 
-            tbody.innerHTML = "";
+                tbody.innerHTML = "";
 
-            if (error || !data || data.length === 0) {
-                // Fallback to default index if cloud table is empty
+                if (error || !data || data.length === 0) {
+                    // Fallback to default index if cloud table is empty or returns an error
+                    defaultStations.forEach(s => createRowElement(s.rank, s.tier, s.name, s.info, s.scope, s.status, s.comments, s.cleared));
+                } else {
+                    // Load live cloud data
+                    data.forEach(s => createRowElement(s.rank, s.tier, s.station_name, s.region_eng, s.scope_of_work, s.status, s.comments, s.checklist_cleared));
+                }
+            } catch (err) {
+                // Safety Net: If the connection completely crashes, catch it and load the defaults anyway!
+                console.error("Hard crash connecting to Supabase:", err);
+                tbody.innerHTML = "";
                 defaultStations.forEach(s => createRowElement(s.rank, s.tier, s.name, s.info, s.scope, s.status, s.comments, s.cleared));
-            } else {
-                data.forEach(s => createRowElement(s.rank, s.tier, s.station_name, s.region_eng, s.scope_of_work, s.status, s.comments, s.checklist_cleared));
             }
         }
-
         async function saveDashboard() {
             const saveBtn = document.querySelector('.btn-save');
             saveBtn.innerText = "⏳ Saving...";
