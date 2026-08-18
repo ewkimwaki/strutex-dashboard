@@ -28,7 +28,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1450px;
             margin: 0 auto;
         }
 
@@ -83,6 +83,7 @@
 
         .btn:hover { opacity: 0.9; }
         .btn-secondary { background-color: #475569; color: white; }
+        .btn-success { background-color: #15803d; color: white; }
 
         .card {
             background: var(--card-bg);
@@ -113,10 +114,35 @@
             padding: 20px;
             border-radius: 8px;
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* Passport Style Wizard Form */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+            color: #1e293b;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            box-sizing: border-box;
         }
 
         /* Rich text toolbar & editor */
@@ -141,7 +167,7 @@
         }
 
         .rich-editable {
-            min-height: 120px;
+            min-height: 100px;
             border: 1px solid #cbd5e1;
             padding: 10px;
             border-radius: 4px;
@@ -161,7 +187,7 @@
             border-collapse: collapse;
             margin-top: 5px;
             text-align: left;
-            min-width: 900px;
+            min-width: 1050px;
         }
 
         th, td {
@@ -225,10 +251,16 @@
             padding: 6px;
         }
 
+        #autosaveIndicator {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            align-self: center;
+        }
+
         @media print {
             body * { visibility: hidden; }
             #jobCardModal, #jobCardModal * { visibility: visible; }
-            #jobCardModal { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+            #jobCardModal { position: absolute; left: 0; top: 0; width: 100%; background: white; z-index: 9999; }
             .no-print { display: none !important; }
         }
     </style>
@@ -241,10 +273,13 @@
                 <h1>Strutex Builders - Operations Dashboard</h1>
                 <p>Petroleum Infrastructure & Field Deployment Ecosystem</p>
             </div>
-            <div class="btn-group no-print">
-                <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
-                <button class="btn btn-secondary" onclick="saveLocally()">Save Locally</button>
-                <button class="btn" onclick="saveToCloud()">Sync to Cloud (Supabase)</button>
+            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                <div class="btn-group no-print">
+                    <span id="autosaveIndicator">Auto-saved (Every 10 min)</span>
+                    <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
+                    <button class="btn btn-secondary" onclick="saveLocally()">Save Now</button>
+                    <button class="btn" onclick="saveToCloud()">Sync to Cloud</button>
+                </div>
             </div>
         </header>
 
@@ -257,15 +292,16 @@
                 <table id="deploymentTable">
                     <thead>
                         <tr>
-                            <th style="width: 40px;">Rank</th>
-                            <th style="width: 110px;">Priority Tier</th>
+                            <th style="width: 35px;">Rank</th>
+                            <th style="width: 100px;">Priority Tier</th>
                             <th>Station Name</th>
-                            <th style="width: 70px;">Map</th>
-                            <th style="width: 80px;">Engineer</th>
+                            <th style="width: 60px;">Map</th>
+                            <th style="width: 75px;">Engineer</th>
                             <th>Scope of Work (Admin Edit)</th>
-                            <th style="width: 100px;">Status</th>
-                            <th style="width: 120px;">Technician Notes</th>
-                            <th style="width: 90px;" class="no-print">Action</th>
+                            <th style="width: 90px;">Status</th>
+                            <th style="width: 110px;">Technician Notes</th>
+                            <th style="width: 110px;">Job Card Preview</th>
+                            <th style="width: 80px;" class="no-print">Action</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -280,34 +316,195 @@
     <div id="checklistModal" class="modal">
         <div class="modal-content">
             <h3 id="modalStationTitle" style="margin-top:0; color: #1e293b; font-size: 1.1rem;">Pre-Deployment Verification</h3>
-            <p style="font-size: 0.8rem; color: #64748b;">Confirm availability before generating the Strutex Job Card.</p>
+            <p style="font-size: 0.8rem; color: #64748b;">Confirm availability before starting the Strutex Job Card Wizard.</p>
             
             <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">1. Materials</h4>
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">1. Materials & Supplies</h4>
                 <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="paint"> Paint, primers & thinners verified</label>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="parts"> Replacement parts / roofing sheets ready</label>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="parts"> Replacement parts / equipment ready</label>
             </div>
 
             <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
                 <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">2. Tools & Equipment</h4>
                 <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="tools"> Power breakers, drills & hand tools packed</label>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="scaffold"> Scaffolding or ladders loaded</label>
+                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="scaffold"> Scaffolding or safety ladders loaded</label>
             </div>
 
             <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">3. PPE & Safety</h4>
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">3. PPE & Safety Compliance</h4>
                 <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="ppe"> Safety boots, aprons, hi-vis & eyewear</label>
                 <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="cones"> Warning tapes & traffic cones ready</label>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
                 <button class="btn btn-secondary" onclick="closeModal('checklistModal')">Cancel</button>
-                <button class="btn" id="confirmDeployBtn" onclick="openJobCardFromChecklist()" disabled style="opacity: 0.5;">Proceed to Job Card</button>
+                <button class="btn" id="confirmDeployBtn" onclick="openJobCardWizard()" disabled style="opacity: 0.5;">Proceed to Job Card Form</button>
             </div>
         </div>
     </div>
 
-    <!-- 2. Rich Text Editor Modal (Admin Scope of Work) -->
+    <!-- 2. Passport-Style Job Card Wizard Modal -->
+    <div id="jobCardWizardModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-size: 1.1rem; color: #1e293b;">Strutex Job Card Application Wizard</h3>
+            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Fill in all required fields below. Once reviewed, it will generate your official printable job card and save automatically.</p>
+
+            <!-- Wizard Step 1: General Info & Dates -->
+            <div class="wizard-step active" id="wizStep1">
+                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 1: Work Order & Schedule</h4>
+                <div class="form-group">
+                    <label>Work Order Number</label>
+                    <input type="text" id="wizWorkOrder" class="form-control" value="C260819-STRUTEX">
+                </div>
+                <div class="form-group">
+                    <label>Assigned Engineer / Technician</label>
+                    <input type="text" id="wizEngineer" class="form-control" value="Emmanuel Kimwaki">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Start Date</label>
+                        <input type="date" id="wizStartDate" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Estimated End Date</label>
+                        <input type="date" id="wizEndDate" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Materials & Tools Required</label>
+                    <input type="text" id="wizMaterials" class="form-control" value="Standard PPE, Hand tools, DODO servicing kit">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="closeModal('jobCardWizardModal')">Cancel</button>
+                    <button class="btn" onclick="nextWizardStep(2)">Next: Work Log & Progress</button>
+                </div>
+            </div>
+
+            <!-- Wizard Step 2: Work Log & Safety -->
+            <div class="wizard-step" id="wizStep2">
+                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 2: Daily Log & Safety Precautions</h4>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Log Date</label>
+                        <input type="date" id="wizLogDate" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Time In</label>
+                        <input type="time" id="wizTimeIn" class="form-control" value="08:00">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Time Out</label>
+                        <input type="time" id="wizTimeOut" class="form-control" value="17:00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Progress / Work Done on Site</label>
+                    <textarea id="wizProgress" class="form-control" rows="3" placeholder="Describe work completed..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Safety Precautions & Hazards Noted</label>
+                    <textarea id="wizSafety" class="form-control" rows="2">Hazard: Open Area Works. Mitigation: Barricaded zone, warning tape, PPEs deployed.</textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="nextWizardStep(1)">Back</button>
+                    <button class="btn btn-success" onclick="reviewJobCard()">Review Job Card Preview</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Final Rendered Job Card Print Preview Modal -->
+    <div id="jobCardModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="jobcard-container" id="printableJobCard">
+                <div class="jobcard-header">
+                    <div>
+                        <strong style="font-size: 1rem; color: #1e293b;">Strutex Builders Limited</strong><br>
+                        <span style="font-size: 0.75rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span><br>
+                        <span style="font-size: 0.75rem; color: #64748b;">sstrunterpris@gmail.com</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.8rem; background: #e2e8f0; padding: 3px 6px; border-radius: 4px;"><strong>Official Job Card</strong></span>
+                    </div>
+                </div>
+
+                <table class="jobcard-table">
+                    <tr>
+                        <td><strong>Work Order Number:</strong> <span id="jcWorkOrder"></span></td>
+                        <td><strong>Project / Client:</strong> Rubis Energy Kenya :: <span id="jcStationName"></span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date Issued:</strong> <span id="jcDate"></span></td>
+                        <td><strong>Assigned Engineer:</strong> <span id="jcEngineer"></span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <strong>Job Description / Scope:</strong>
+                            <div id="jcScope" style="margin-top: 4px; font-size: 0.8rem;"></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="jobcard-table">
+                    <tr>
+                        <td><strong>Start Date:</strong> <span id="jcStartDateDisp"></span></td>
+                        <td><strong>Estimated End Date:</strong> <span id="jcEndDateDisp"></span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <strong>Materials & Tools Required:</strong>
+                            <div id="jcMaterialsDisp" style="font-size: 0.8rem; color: #334155;"></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="jobcard-table">
+                    <tr style="background: #f1f5f9;">
+                        <th>SAFETY PRECAUTIONS</th>
+                    </tr>
+                    <tr>
+                        <td><div id="jcSafetyDisp" style="font-size: 0.75rem;"></div></td>
+                    </tr>
+                </table>
+
+                <table class="jobcard-table">
+                    <tr style="background: #f1f5f9;">
+                        <th>DATE</th>
+                        <th>TIME IN</th>
+                        <th>TIME OUT</th>
+                        <th>PROGRESS / WORK DONE</th>
+                    </tr>
+                    <tr>
+                        <td id="jcLogDateDisp"></td>
+                        <td id="jcTimeInDisp"></td>
+                        <td id="jcTimeOutDisp"></td>
+                        <td id="jcProgressDisp"></td>
+                    </tr>
+                </table>
+
+                <table class="jobcard-table">
+                    <tr style="background: #f1f5f9;">
+                        <th>Supervisor's Signature</th>
+                        <th>Employee's Signature</th>
+                        <th>Client's Stamp & Signature (Upon Completion)</th>
+                    </tr>
+                    <tr style="height: 55px;">
+                        <td></td>
+                        <td></td>
+                        <td style="text-align: center; color: #94a3b8; font-size: 0.75rem;">[ Station Manager Stamp Here ]</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;" class="no-print">
+                <button class="btn btn-secondary" onclick="closeModal('jobCardModal')">Close</button>
+                <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
+                <button class="btn btn-success" onclick="completeAndSaveJobCard()">Complete & Save to Cloud</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Admin Scope Editor Modal -->
     <div id="scopeModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-top:0; font-size: 1.1rem;">Edit Scope of Work (Admin)</h3>
@@ -325,10 +522,10 @@
         </div>
     </div>
 
-    <!-- 3. Technician Comments Rich Text Modal -->
+    <!-- 5. Technician Comments Modal -->
     <div id="commentModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-top:0; font-size: 1.1rem;">Technician Daily Progress Notes</h3>
+            <h3 style="margin-top:0; font-size: 1.1rem;">Technician Daily Notes</h3>
             <div class="editor-toolbar">
                 <button onclick="formatComment('bold')"><b>B</b></button>
                 <button onclick="formatComment('italic')"><i>I</i></button>
@@ -337,89 +534,7 @@
             <div id="commentEditor" class="rich-editable" contenteditable="true"></div>
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
                 <button class="btn btn-secondary" onclick="closeModal('commentModal')">Cancel</button>
-                <button class="btn" onclick="saveCommentContent()">Save Comment</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. Strutex Builders Job Card Modal & Print Layout -->
-    <div id="jobCardModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="jobcard-container" id="printableJobCard">
-                <div class="jobcard-header">
-                    <div>
-                        <strong style="font-size: 1rem; color: #1e293b;">Strutex Builders Limited</strong><br>
-                        <span style="font-size: 0.75rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span><br>
-                        <span style="font-size: 0.75rem; color: #64748b;">sstrunterpris@gmail.com</span>
-                    </div>
-                    <div style="text-align: right;">
-                        <span style="font-size: 0.8rem; background: #e2e8f0; padding: 3px 6px; border-radius: 4px;"><strong>Job Card</strong></span>
-                    </div>
-                </div>
-
-                <table class="jobcard-table">
-                    <tr>
-                        <td><strong>Work Order Number:</strong> <span id="jcWorkOrder">C260818-STRUTEX</span></td>
-                        <td><strong>Project / Client:</strong> Rubis Energy Kenya :: <span id="jcStationName">Station</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Date Issued:</strong> <span id="jcDate">2026-08-19</span></td>
-                        <td><strong>Assigned Engineer:</strong> <span id="jcEngineer">Emmanuel Kimwaki</span></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <strong>Job Description / Scope:</strong>
-                            <div id="jcScope" style="margin-top: 4px; font-size: 0.8rem;"></div>
-                        </td>
-                    </tr>
-                </table>
-
-                <table class="jobcard-table">
-                    <tr>
-                        <td><strong>Start Date:</strong> <input type="date" id="jcStartDate" style="border:none; width:100%;"></td>
-                        <td><strong>Estimated End Date:</strong> <input type="date" id="jcEndDate" style="border:none; width:100%;"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <strong>Materials & Tools Confirmed:</strong>
-                            <div id="jcMaterialsList" style="font-size: 0.8rem; color: #334155;">Verified via Pre-Deployment Checklist.</div>
-                        </td>
-                    </tr>
-                </table>
-
-                <table class="jobcard-table">
-                    <tr style="background: #f1f5f9;">
-                        <th>DATE</th>
-                        <th>TIME IN</th>
-                        <th>TIME OUT</th>
-                        <th>PROGRESS / WORK DONE</th>
-                    </tr>
-                    <tr>
-                        <td><input type="date" id="jcLogDate" style="border:none; width:100%;"></td>
-                        <td><input type="time" id="jcTimeIn" style="border:none; width:100%;"></td>
-                        <td><input type="time" id="jcTimeOut" style="border:none; width:100%;"></td>
-                        <td><input type="text" id="jcLogProgress" placeholder="Enter work progress..." style="border:none; width:100%;"></td>
-                    </tr>
-                </table>
-
-                <table class="jobcard-table">
-                    <tr style="background: #f1f5f9;">
-                        <th>Supervisor's Signature</th>
-                        <th>Employee's Signature</th>
-                        <th>Client's Stamp & Signature (Upon Completion)</th>
-                    </tr>
-                    <tr style="height: 50px;">
-                        <td></td>
-                        <td></td>
-                        <td style="text-align: center; color: #94a3b8; font-size: 0.75rem;">[ Station Manager Stamp Here ]</td>
-                    </tr>
-                </table>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;" class="no-print">
-                <button class="btn btn-secondary" onclick="closeModal('jobCardModal')">Close</button>
-                <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
-                <button class="btn" onclick="saveJobCardToCloud()">Save Job Card to Cloud</button>
+                <button class="btn" onclick="saveCommentContent()">Save Note</button>
             </div>
         </div>
     </div>
@@ -437,38 +552,39 @@
         let activeRow = null;
         let activeScopeCell = null;
         let activeCommentCell = null;
+        let cachedJobCardData = {};
 
         // --- MASTER DATASET ---
         const defaultStations = [
-            {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", mapQuery: "Rubis Mesora Kenya", info: "NAIROBI / Timothy", scope: "Review civil deficiencies", status: "Pending", comments: ""},
-            {rank: 2, tier: "Tier 1: High Risk", name: "Rubis Jogoo Road", mapQuery: "Rubis Jogoo Road Nairobi", info: "NAIROBI / Timothy", scope: "Guest washroom taps & shower leak", status: "Pending", comments: ""},
-            {rank: 3, tier: "Tier 1: High Risk", name: "Rubis - Limuru Town", mapQuery: "Rubis Limuru Town", info: "CENTRAL / Everlyne", scope: "High priority corrective maintenance", status: "Pending", comments: ""},
-            {rank: 4, tier: "Tier 1: High Risk", name: "Rubis - Limuru Greens", mapQuery: "Rubis Limuru Greens", info: "CENTRAL / Everlyne", scope: "DODO equipment servicing", status: "Pending", comments: ""},
-            {rank: 5, tier: "Tier 1: High Risk", name: "Rubis - View Point", mapQuery: "Rubis View Point Limuru", info: "CENTRAL / Everlyne", scope: "Civil repairs & painting", status: "Pending", comments: ""},
-            {rank: 6, tier: "Tier 1: High Risk", name: "Rubis Banana", mapQuery: "Rubis Banana Hill", info: "NAIROBI / Everlyne", scope: "Site assessment & fixes", status: "Pending", comments: ""},
-            {rank: 7, tier: "Tier 1: High Risk", name: "Rubis Kangundo Road", mapQuery: "Rubis Kangundo Road", info: "NAIROBI / Timothy", scope: "High severity maintenance", status: "Pending", comments: ""},
-            {rank: 8, tier: "Tier 1: High Risk", name: "Rubis Rabai Road", mapQuery: "Rubis Rabai Road Nairobi", info: "NAIROBI / Timothy", scope: "Corrective works", status: "Pending", comments: ""},
-            {rank: 9, tier: "Tier 1: High Risk", name: "Rubis - Nyambari", mapQuery: "Rubis Nyambari", info: "CENTRAL / Everlyne", scope: "Civil works inspection", status: "Pending", comments: ""},
-            {rank: 10, tier: "Tier 1: High Risk", name: "Rubis Buruburu", mapQuery: "Rubis Buruburu Nairobi", info: "NAIROBI / Timothy", scope: "General site repairs", status: "Pending", comments: ""},
-            {rank: 11, tier: "Tier 1: High Risk", name: "Rubis - Flyover", mapQuery: "Rubis Flyover", info: "CENTRAL / Everlyne", scope: "DODO equipment checks", status: "Pending", comments: ""},
-            {rank: 12, tier: "Tier 1: High Risk", name: "Rubis - Tigoni", mapQuery: "Rubis Tigoni", info: "CENTRAL / Everlyne", scope: "High risk structural check", status: "Pending", comments: ""},
-            {rank: 13, tier: "Tier 2: Moderate", name: "Rubis Kayole", mapQuery: "Rubis Kayole Nairobi", info: "NAIROBI / Timothy", scope: "Moderate priority repairs", status: "Pending", comments: ""},
-            {rank: 14, tier: "Tier 2: Moderate", name: "Rubis Thome", mapQuery: "Rubis Thome Nairobi", info: "NAIROBI / Kelvin", scope: "Canopy & drainage check", status: "Pending", comments: ""},
-            {rank: 15, tier: "Tier 2: Moderate", name: "Rubis - Membley", mapQuery: "Rubis Membley Ruiru", info: "NAIROBI / Kelvin", scope: "Moderate maintenance items", status: "Pending", comments: ""},
-            {rank: 16, tier: "Tier 2: Moderate", name: "Rubis - Westbay", mapQuery: "Rubis Westbay", info: "NAIROBI / Everlyne", scope: "DODO re-equipment check", status: "Pending", comments: ""},
-            {rank: 17, tier: "Tier 2: Moderate", name: "Rubis - Uplands", mapQuery: "Rubis Uplands", info: "CENTRAL / Everlyne", scope: "Civil works & cleanup", status: "Pending", comments: ""},
-            {rank: 18, tier: "Tier 2: Moderate", name: "Rubis Komarock", mapQuery: "Rubis Komarock Nairobi", info: "NAIROBI / Timothy", scope: "DODO maintenance", status: "Pending", comments: ""},
-            {rank: 19, tier: "Tier 2: Moderate", name: "Rubis Garden Estate", mapQuery: "Rubis Garden Estate", info: "NAIROBI / Kelvin", scope: "DODO re-equipment check", status: "Pending", comments: ""},
-            {rank: 20, tier: "Tier 2: Moderate", name: "Rubis - Magina", mapQuery: "Rubis Magina", info: "CENTRAL / Everlyne", scope: "Moderate priority fixes", status: "Pending", comments: ""},
-            {rank: 21, tier: "Tier 2: Moderate", name: "Rubis - Limuru", mapQuery: "Rubis Limuru", info: "CENTRAL / Everlyne", scope: "DODO re-equipment check", status: "Pending", comments: ""},
-            {rank: 22, tier: "Tier 3: Routine", name: "Rubis Kamiti Road", mapQuery: "Rubis Kamiti Road", info: "NAIROBI / Kelvin", scope: "Routine servicing", status: "Pending", comments: ""},
-            {rank: 23, tier: "Tier 3: Routine", name: "Rubis Kiambu Road", mapQuery: "Rubis Kiambu Road", info: "KIAMBU / Kelvin", scope: "DODO re-equipment routine check", status: "Pending", comments: ""},
-            {rank: 24, tier: "Tier 3: Routine", name: "Rubis Kahawa West", mapQuery: "Rubis Kahawa West", info: "NAIROBI / Kelvin", scope: "Routine maintenance", status: "Pending", comments: ""},
-            {rank: 25, tier: "Tier 3: Routine", name: "Rubis - Membley View", mapQuery: "Rubis Membley View", info: "NAIROBI / Kelvin", scope: "DODO routine works", status: "Pending", comments: ""},
-            {rank: 26, tier: "Tier 3: Routine", name: "Rubis - Mugumo", mapQuery: "Rubis Mugumo", info: "KIAMBU / Kelvin", scope: "DODO re-equipment check", status: "Pending", comments: ""},
-            {rank: 27, tier: "Tier 3: Routine", name: "Rubis - Runda View", mapQuery: "Rubis Runda View", info: "KIAMBU / Kelvin", scope: "Routine inspection", status: "Pending", comments: ""},
-            {rank: 28, tier: "Unassigned", name: "Rubis Kenol", mapQuery: "Rubis Kenol Murang'a", info: "MURANG'A / Kelvin", scope: "Pending assessment works", status: "Pending", comments: ""},
-            {rank: 29, tier: "Unassigned", name: "Rubis Magumu", mapQuery: "Rubis Magumu", info: "CENTRAL / Everlyne", scope: "DODO re-equipment setup", status: "Pending", comments: ""}
+            {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", mapQuery: "Rubis Mesora Kenya", info: "NAIROBI / Timothy", scope: "Review civil deficiencies", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 2, tier: "Tier 1: High Risk", name: "Rubis Jogoo Road", mapQuery: "Rubis Jogoo Road Nairobi", info: "NAIROBI / Timothy", scope: "Guest washroom taps & shower leak", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 3, tier: "Tier 1: High Risk", name: "Rubis - Limuru Town", mapQuery: "Rubis Limuru Town", info: "CENTRAL / Everlyne", scope: "High priority corrective maintenance", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 4, tier: "Tier 1: High Risk", name: "Rubis - Limuru Greens", mapQuery: "Rubis Limuru Greens", info: "CENTRAL / Everlyne", scope: "DODO equipment servicing", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 5, tier: "Tier 1: High Risk", name: "Rubis - View Point", mapQuery: "Rubis View Point Limuru", info: "CENTRAL / Everlyne", scope: "Civil repairs & painting", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 6, tier: "Tier 1: High Risk", name: "Rubis Banana", mapQuery: "Rubis Banana Hill", info: "NAIROBI / Everlyne", scope: "Site assessment & fixes", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 7, tier: "Tier 1: High Risk", name: "Rubis Kangundo Road", mapQuery: "Rubis Kangundo Road", info: "NAIROBI / Timothy", scope: "High severity maintenance", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 8, tier: "Tier 1: High Risk", name: "Rubis Rabai Road", mapQuery: "Rubis Rabai Road Nairobi", info: "NAIROBI / Timothy", scope: "Corrective works", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 9, tier: "Tier 1: High Risk", name: "Rubis - Nyambari", mapQuery: "Rubis Nyambari", info: "CENTRAL / Everlyne", scope: "Civil works inspection", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 10, tier: "Tier 1: High Risk", name: "Rubis Buruburu", mapQuery: "Rubis Buruburu Nairobi", info: "NAIROBI / Timothy", scope: "General site repairs", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 11, tier: "Tier 1: High Risk", name: "Rubis - Flyover", mapQuery: "Rubis Flyover", info: "CENTRAL / Everlyne", scope: "DODO equipment checks", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 12, tier: "Tier 1: High Risk", name: "Rubis - Tigoni", mapQuery: "Rubis Tigoni", info: "CENTRAL / Everlyne", scope: "High risk structural check", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 13, tier: "Tier 2: Moderate", name: "Rubis Kayole", mapQuery: "Rubis Kayole Nairobi", info: "NAIROBI / Timothy", scope: "Moderate priority repairs", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 14, tier: "Tier 2: Moderate", name: "Rubis Thome", mapQuery: "Rubis Thome Nairobi", info: "NAIROBI / Kelvin", scope: "Canopy & drainage check", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 15, tier: "Tier 2: Moderate", name: "Rubis - Membley", mapQuery: "Rubis Membley Ruiru", info: "NAIROBI / Kelvin", scope: "Moderate maintenance items", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 16, tier: "Tier 2: Moderate", name: "Rubis - Westbay", mapQuery: "Rubis Westbay", info: "NAIROBI / Everlyne", scope: "DODO re-equipment check", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 17, tier: "Tier 2: Moderate", name: "Rubis - Uplands", mapQuery: "Rubis Uplands", info: "CENTRAL / Everlyne", scope: "Civil works & cleanup", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 18, tier: "Tier 2: Moderate", name: "Rubis Komarock", mapQuery: "Rubis Komarock Nairobi", info: "NAIROBI / Timothy", scope: "DODO maintenance", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 19, tier: "Tier 2: Moderate", name: "Rubis Garden Estate", mapQuery: "Rubis Garden Estate", info: "NAIROBI / Kelvin", scope: "DODO re-equipment check", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 20, tier: "Tier 2: Moderate", name: "Rubis - Magina", mapQuery: "Rubis Magina", info: "CENTRAL / Everlyne", scope: "Moderate priority fixes", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 21, tier: "Tier 2: Moderate", name: "Rubis - Limuru", mapQuery: "Rubis Limuru", info: "CENTRAL / Everlyne", scope: "DODO re-equipment check", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 22, tier: "Tier 3: Routine", name: "Rubis Kamiti Road", mapQuery: "Rubis Kamiti Road", info: "NAIROBI / Kelvin", scope: "Routine servicing", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 23, tier: "Tier 3: Routine", name: "Rubis Kiambu Road", mapQuery: "Rubis Kiambu Road", info: "KIAMBU / Kelvin", scope: "DODO re-equipment routine check", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 24, tier: "Tier 3: Routine", name: "Rubis Kahawa West", mapQuery: "Rubis Kahawa West", info: "NAIROBI / Kelvin", scope: "Routine maintenance", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 25, tier: "Tier 3: Routine", name: "Rubis - Membley View", mapQuery: "Rubis Membley View", info: "NAIROBI / Kelvin", scope: "DODO routine works", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 26, tier: "Tier 3: Routine", name: "Rubis - Mugumo", mapQuery: "Rubis Mugumo", info: "KIAMBU / Kelvin", scope: "DODO re-equipment check", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 27, tier: "Tier 3: Routine", name: "Rubis - Runda View", mapQuery: "Rubis Runda View", info: "KIAMBU / Kelvin", scope: "Routine inspection", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 28, tier: "Unassigned", name: "Rubis Kenol", mapQuery: "Rubis Kenol Murang'a", info: "MURANG'A / Kelvin", scope: "Pending assessment works", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null},
+            {rank: 29, tier: "Unassigned", name: "Rubis Magumu", mapQuery: "Rubis Magumu", info: "CENTRAL / Everlyne", scope: "DODO re-equipment setup", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null}
         ];
 
         window.onload = async function() {
@@ -491,7 +607,9 @@
                             info: s.region_eng || s.info,
                             scope: s.scope_of_work || s.scope,
                             status: s.status || 'Pending',
-                            comments: s.comments || ''
+                            comments: s.comments || '',
+                            jobCardSaved: s.job_card_saved || false,
+                            jobCardPayload: s.job_card_payload || null
                         }));
                         renderTable(formatted);
                     }
@@ -499,6 +617,15 @@
                     console.warn("Using local cache:", err);
                 }
             }
+
+            // --- 10-MINUTE AUTO-SAVE INTERVAL ---
+            setInterval(() => {
+                saveLocally();
+                const indicator = document.getElementById("autosaveIndicator");
+                indicator.style.color = "#4ade80";
+                indicator.innerText = "Auto-saved at " + new Date().toLocaleTimeString();
+                setTimeout(() => { indicator.style.color = "#cbd5e1"; }, 3000);
+            }, 600000); // 10 minutes
         };
 
         function renderTable(stations) {
@@ -513,6 +640,12 @@
                 else if (s.tier && s.tier.includes("Tier 3")) tierClass = "badge-tier3";
 
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.mapQuery || s.name)}`;
+                
+                // Job card preview column state
+                let jcButtonHtml = `<span style="font-size:0.75rem; color:#94a3b8;">No Card Yet</span>`;
+                if (s.jobCardSaved && s.jobCardPayload) {
+                    jcButtonHtml = `<button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>👁️ View Job Card</button>`;
+                }
 
                 tr.innerHTML = `
                     <td>${s.rank || (index + 1)}</td>
@@ -522,7 +655,7 @@
                     <td>${s.info || 'NA'}</td>
                     <td>
                         <div style="max-height: 50px; overflow-y: auto; font-size: 0.75rem; margin-bottom: 4px;" class="scope-display">${s.scope || 'No scope defined'}</div>
-                        <button class="btn btn-secondary no-print" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openScopeEditor(this)">Admin Edit Scope</button>
+                        <button class="btn btn-secondary no-print" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openScopeEditor(this)">Admin Edit</button>
                     </td>
                     <td>
                         <select class="status-select" onchange="updateStatusColor(this); saveLocally();">
@@ -533,13 +666,16 @@
                     </td>
                     <td>
                         <div style="max-height: 50px; overflow-y: auto; font-size: 0.75rem; margin-bottom: 4px;" class="comment-display">${s.comments || 'No notes'}</div>
-                        <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openCommentEditor(this)">📝 Add Comment</button>
+                        <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openCommentEditor(this)">📝 Add Note</button>
                     </td>
+                    <td class="jc-cell" style="text-align: center;">${jcButtonHtml}</td>
                     <td class="no-print" style="text-align: center;">
-                        <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying</button>
+                        <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploy</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
+                tr._jobCardPayload = s.jobCardPayload || null;
+                tr._jobCardSaved = s.jobCardSaved || false;
                 updateStatusColor(tr.querySelector('.status-select'));
             });
         }
@@ -555,6 +691,106 @@
             }
         }
 
+        // --- CHECKLIST & WIZARD WORKFLOW ---
+        function openChecklist(btn) {
+            activeRow = btn.closest('tr');
+            const stationName = activeRow.cells[2].innerText;
+            document.getElementById("modalStationTitle").innerText = "Pre-Deployment: " + stationName;
+            document.querySelectorAll('.chk-item').forEach(chk => chk.checked = false);
+            document.getElementById("confirmDeployBtn").disabled = true;
+            document.getElementById("confirmDeployBtn").style.opacity = "0.5";
+            document.getElementById("checklistModal").style.display = "flex";
+        }
+
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('chk-item')) {
+                const allChecked = Array.from(document.querySelectorAll('.chk-item')).every(chk => chk.checked);
+                const btn = document.getElementById("confirmDeployBtn");
+                btn.disabled = !allChecked;
+                btn.style.opacity = allChecked ? "1" : "0.5";
+            }
+        });
+
+        function openJobCardWizard() {
+            closeModal('checklistModal');
+            if (activeRow) {
+                document.getElementById('wizStartDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('wizEndDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('wizLogDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('wizProgress').value = activeRow.querySelector('.scope-display').innerText;
+                nextWizardStep(1);
+                document.getElementById('jobCardWizardModal').style.display = 'flex';
+            }
+        }
+
+        function nextWizardStep(stepNum) {
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            document.getElementById('wizStep' + stepNum).classList.add('active');
+        }
+
+        function reviewJobCard() {
+            closeModal('jobCardWizardModal');
+            if (activeRow) {
+                cachedJobCardData = {
+                    workOrder: document.getElementById('wizWorkOrder').value,
+                    stationName: activeRow.cells[2].innerText,
+                    dateIssued: new Date().toISOString().split('T')[0],
+                    engineer: document.getElementById('wizEngineer').value,
+                    scope: activeRow.querySelector('.scope-display').innerHTML,
+                    startDate: document.getElementById('wizStartDate').value,
+                    endDate: document.getElementById('wizEndDate').value,
+                    materials: document.getElementById('wizMaterials').value,
+                    safety: document.getElementById('wizSafety').value,
+                    logDate: document.getElementById('wizLogDate').value,
+                    timeIn: document.getElementById('wizTimeIn').value,
+                    timeOut: document.getElementById('wizTimeOut').value,
+                    progress: document.getElementById('wizProgress').value
+                };
+
+                populateJobCardModal(cachedJobCardData);
+                document.getElementById('jobCardModal').style.display = 'flex';
+            }
+        }
+
+        function populateJobCardModal(data) {
+            document.getElementById('jcWorkOrder').innerText = data.workOrder;
+            document.getElementById('jcStationName').innerText = data.stationName;
+            document.getElementById('jcDate').innerText = data.dateIssued;
+            document.getElementById('jcEngineer').innerText = data.engineer;
+            document.getElementById('jcScope').innerHTML = data.scope;
+            document.getElementById('jcStartDateDisp').innerText = data.startDate;
+            document.getElementById('jcEndDateDisp').innerText = data.endDate;
+            document.getElementById('jcMaterialsDisp').innerText = data.materials;
+            document.getElementById('jcSafetyDisp').innerText = data.safety;
+            document.getElementById('jcLogDateDisp').innerText = data.logDate;
+            document.getElementById('jcTimeInDisp').innerText = data.timeIn;
+            document.getElementById('jcTimeOutDisp').innerText = data.timeOut;
+            document.getElementById('jcProgressDisp').innerText = data.progress;
+        }
+
+        function viewSavedJobCard(payload) {
+            populateJobCardModal(payload);
+            document.getElementById('jobCardModal').style.display = 'flex';
+        }
+
+        function completeAndSaveJobCard() {
+            if (activeRow) {
+                activeRow._jobCardSaved = true;
+                activeRow._jobCardPayload = cachedJobCardData;
+                
+                const jcCell = activeRow.querySelector('.jc-cell');
+                jcCell.innerHTML = `<button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(cachedJobCardData)})'>👁️ View Job Card</button>`;
+
+                const selectElem = activeRow.querySelector('.status-select');
+                selectElem.value = "In Progress";
+                updateStatusColor(selectElem);
+
+                saveLocally();
+                alert("Job card successfully finalized and automatically saved to cloud/local ecosystem!");
+            }
+            closeModal('jobCardModal');
+        }
+
         // --- ADMIN SCOPE EDITOR ---
         function openScopeEditor(btn) {
             activeScopeCell = btn.closest('tr').querySelector('.scope-display');
@@ -566,7 +802,6 @@
             if (activeScopeCell) {
                 activeScopeCell.innerHTML = document.getElementById('scopeEditor').innerHTML;
                 saveLocally();
-                alert("Scope updated locally! Remember to sync to cloud.");
             }
             closeModal('scopeModal');
         }
@@ -590,39 +825,8 @@
             if (activeCommentCell) {
                 activeCommentCell.innerHTML = document.getElementById('commentEditor').innerHTML;
                 saveLocally();
-                alert("Comment saved successfully!");
             }
             closeModal('commentModal');
-        }
-
-        // --- CHECKLIST & JOB CARD MODALS ---
-        function openChecklist(btn) {
-            activeRow = btn.closest('tr');
-            const stationName = activeRow.cells[2].innerText;
-            document.getElementById("modalStationTitle").innerText = "Pre-Deployment: " + stationName;
-            document.querySelectorAll('.chk-item').forEach(chk => chk.checked = false);
-            document.getElementById("confirmDeployBtn").disabled = true;
-            document.getElementById("confirmDeployBtn").style.opacity = "0.5";
-            document.getElementById("checklistModal").style.display = "flex";
-        }
-
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('chk-item')) {
-                const allChecked = Array.from(document.querySelectorAll('.chk-item')).every(chk => chk.checked);
-                const btn = document.getElementById("confirmDeployBtn");
-                btn.disabled = !allChecked;
-                btn.style.opacity = allChecked ? "1" : "0.5";
-            }
-        });
-
-        function openJobCardFromChecklist() {
-            closeModal('checklistModal');
-            if (activeRow) {
-                document.getElementById('jcStationName').innerText = activeRow.cells[2].innerText;
-                document.getElementById('jcEngineer').innerText = activeRow.cells[4].innerText;
-                document.getElementById('jcScope').innerHTML = activeRow.querySelector('.scope-display').innerHTML;
-                document.getElementById('jobCardModal').style.display = 'flex';
-            }
         }
 
         function closeModal(modalId) {
@@ -633,6 +837,8 @@
             const tbody = document.getElementById("tableBody");
             const rowCount = tbody.rows.length + 1;
             const tr = document.createElement("tr");
+            tr._jobCardSaved = false;
+            tr._jobCardPayload = null;
             tr.innerHTML = `
                 <td>${rowCount}</td>
                 <td><span class="badge-tier3">Tier 3: Routine</span></td>
@@ -641,7 +847,7 @@
                 <td>NAIROBI / Engineer</td>
                 <td>
                     <div class="scope-display">General maintenance & repairs</div>
-                    <button class="btn btn-secondary no-print" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openScopeEditor(this)">Admin Edit Scope</button>
+                    <button class="btn btn-secondary no-print" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openScopeEditor(this)">Admin Edit</button>
                 </td>
                 <td>
                     <select class="status-select" onchange="updateStatusColor(this); saveLocally();">
@@ -652,10 +858,11 @@
                 </td>
                 <td>
                     <div class="comment-display">No notes</div>
-                    <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openCommentEditor(this)">📝 Add Comment</button>
+                    <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="openCommentEditor(this)">📝 Add Note</button>
                 </td>
+                <td class="jc-cell" style="text-align: center;"><span style="font-size:0.75rem; color:#94a3b8;">No Card Yet</span></td>
                 <td class="no-print" style="text-align: center;">
-                    <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploying</button>
+                    <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploy</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -675,7 +882,9 @@
                     info: tr.cells[4].innerText.trim(),
                     scope: tr.querySelector('.scope-display').innerHTML,
                     status: tr.querySelector('.status-select').value,
-                    comments: tr.querySelector('.comment-display').innerHTML
+                    comments: tr.querySelector('.comment-display').innerHTML,
+                    jobCardSaved: tr._jobCardSaved || false,
+                    jobCardPayload: tr._jobCardPayload || null
                 });
             });
             return data;
@@ -684,17 +893,6 @@
         function saveLocally() {
             const data = gatherTableData();
             localStorage.setItem('strutex_stations_local', JSON.stringify(data));
-        }
-
-        async function saveJobCardToCloud() {
-            alert("Job Card saved to local session and prepared for cloud sync!");
-            closeModal('jobCardModal');
-            if (activeRow) {
-                const selectElem = activeRow.querySelector('.status-select');
-                selectElem.value = "In Progress";
-                updateStatusColor(selectElem);
-                saveLocally();
-            }
         }
 
         async function saveToCloud() {
@@ -709,12 +907,14 @@
                     region_eng: s.info,
                     scope_of_work: s.scope,
                     status: s.status,
-                    comments: s.comments
+                    comments: s.comments,
+                    job_card_saved: s.jobCardSaved,
+                    job_card_payload: s.jobCardPayload
                 }));
 
                 const { error } = await dbClient.from('strutex_stations').upsert(payload, { onConflict: 'station_name' });
                 if (error) alert("Error syncing to Supabase: " + error.message);
-                else alert("Successfully synced all scopes, statuses, and comments to Supabase cloud ('Strutex-Operations')!");
+                else alert("Successfully synced all updates, notes, and saved job cards to Supabase cloud!");
             } catch (err) {
                 console.error(err);
                 alert("Cloud sync failed.");
