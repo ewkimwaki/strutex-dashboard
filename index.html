@@ -981,5 +981,69 @@
         }
     }, 60000); // Checks every 1 minute
     </script>
+    // ==========================================
+    // DESKTOP-ONLY ADJUSTABLE COLUMN BOUNDARIES
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", () => {
+        // Detect if the user is on a desktop/laptop (has a precise mouse pointer and a wider screen)
+        const isDesktop = window.matchMedia("(pointer: fine)").matches && window.innerWidth > 768;
+
+        if (!isDesktop) {
+            console.log("📱 Mobile device detected: Column resizing disabled for smoother swiping.");
+            return; // Stops the script completely for mobile users
+        }
+
+        console.log("💻 Desktop detected: Enabling mouse-driven column resizing.");
+        const headers = document.querySelectorAll('th');
+        
+        headers.forEach(th => {
+            th.style.position = 'relative'; // Required for absolute positioning of the handle
+            
+            // Create the drag handle
+            const resizer = document.createElement('div');
+            resizer.style.width = '8px'; // Thinner handle since it's for a precise mouse, not a thumb
+            resizer.style.height = '100%';
+            resizer.style.position = 'absolute';
+            resizer.style.right = '0';
+            resizer.style.top = '0';
+            resizer.style.cursor = 'col-resize';
+            resizer.style.zIndex = '1';
+            
+            // Subtle border to show it's draggable
+            resizer.style.borderRight = '2px solid rgba(148, 163, 184, 0.4)'; 
+            
+            th.appendChild(resizer);
+
+            let startX, startWidth;
+
+            // Triggered when the user clicks the boundary
+            const startDrag = (e) => {
+                startX = e.pageX;
+                startWidth = th.offsetWidth;
+                e.stopPropagation(); // Prevents click from bubbling up and triggering sorting, if any
+            };
+
+            // Triggered while dragging the mouse
+            const doDrag = (e) => {
+                if (!startX) return;
+                const newWidth = startWidth + (e.pageX - startX);
+                
+                if (newWidth > 50) { // Prevents shrinking the column completely out of existence
+                    th.style.minWidth = `${newWidth}px`;
+                    th.style.width = `${newWidth}px`;
+                }
+            };
+
+            // Triggered when the mouse click is released
+            const stopDrag = () => {
+                startX = null;
+            };
+
+            // Attach event listeners ONLY for standard mouse inputs
+            resizer.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('mouseup', stopDrag);
+        });
+    });
 </body>
 </html>
