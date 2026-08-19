@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">head
     <title>Strutex Builders - Operations & Job Card Ecosystem</title>
     <!-- Supabase Library CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -278,14 +278,42 @@
             .stamp-box { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 2px dashed #666666 !important; }
         }
     </style>
-    <style>
+ <style>
         /* ==========================================
-           GLOBAL TABLE TEXT WRAPPING FIX
+           MOBILE-FRIENDLY RESPONSIVE TABLE FIX
            ========================================== */
+        
+        /* Wrap your main table or its parent container in this class if it isn't already */
+        .table-responsive, body {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            max-width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* Prevent columns from shrinking too much on mobile */
         table th, table td {
+            padding: 8px 12px;
+            white-space: nowrap; /* Keep standard columns clean and single-line */
+        }
+
+        /* Specifically target the Station Name column to allow wrapping so it never overlaps */
+        /* (Assuming your station name is in the first or second column, or has a specific text class) */
+        table td:nth-child(2), table th:nth-child(2) { 
             white-space: normal !important;
             word-break: break-word !important;
-            overflow-wrap: break-word !important;
+            min-width: 140px; /* Gives the station name enough breathing room on mobile */
+        }
+
+        /* If your station name column uses a specific class instead, use this: */
+        .station-name-cell, .station-col {
+            white-space: normal !important;
+            word-break: break-word !important;
+            min-width: 140px;
         }
     </style>
 </head>
