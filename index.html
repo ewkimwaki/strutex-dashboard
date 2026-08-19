@@ -3,656 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strutex Builders - Operations & Job Card Ecosystem</title>
-    <!-- Supabase Library CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Strutex Builders - Field Operations Dashboard</title>
+    
+    <!-- Offline DB -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <!-- Zip Generator for Image Downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <style>
         :root {
-            --primary-color: #1e293b;
-            --accent-color: #f59e0b;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #334155;
-            --border-color: #cbd5e1;
-            --tier1-color: #b91c1c;
-            --tier2-color: #c2410c;
-            --tier3-color: #15803d;
+            --primary: #1e293b; --accent: #f59e0b; --bg: #f8fafc;
+            --card: #ffffff; --border: #cbd5e1; --text: #334155;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 10px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .app-wrapper { max-width: 1400px; margin: 0 auto; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 1.3rem; }
+        header p { margin: 3px 0 0 0; font-size: 0.85rem; color: #94a3b8; }
 
-        /* Wrap main app content so we can hide it easily during print */
-        .app-wrapper {
-            max-width: 1450px;
-            margin: 0 auto;
-        }
-
-        header {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: var(--primary-color);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        @media(min-width: 768px) {
-            header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-
-        header h1 { margin: 0; font-size: 1.25rem; }
-        header p { margin: 3px 0 0 0; font-size: 0.8rem; color: #94a3b8; }
-
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
-
-        .btn {
-            background-color: var(--accent-color);
-            color: #0f172a;
-            border: none;
-            padding: 8px 12px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
+        .btn { background: var(--accent); color: #0f172a; border: none; padding: 8px 12px; font-weight: bold; font-size: 0.8rem; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
         .btn:hover { opacity: 0.9; }
-        .btn-secondary { background-color: #475569; color: white; }
-        .btn-success { background-color: #15803d; color: white; }
-        .btn-danger { background-color: #b91c1c; color: white; }
+        .btn-secondary { background: #475569; color: white; }
+        .btn-success { background: #15803d; color: white; }
+        .btn-info { background: #0284c7; color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-        }
+        /* Analytics & Controls */
+        .analytics-ribbon { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .stat-box { background: var(--card); padding: 12px; border-radius: 6px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid var(--accent); }
+        .stat-val { font-size: 1.3rem; font-weight: bold; color: var(--primary); display: block; }
+        .stat-lbl { font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
 
-        /* Modal styling */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            box-sizing: border-box;
-        }
+        .controls-ribbon { display: flex; gap: 10px; margin-bottom: 10px; background: white; padding: 10px; border-radius: 6px; border: 1px solid var(--border); }
+        .controls-ribbon input, .controls-ribbon select { padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; flex: 1; }
 
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 750px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-sizing: border-box;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+        /* Matrix */
+        .card { background: var(--card); border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1100px; }
+        th, td { padding: 10px; border: 1px solid var(--border); font-size: 0.85rem; }
+        th { background: #f1f5f9; color: #475569; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; border: none; text-align: center; display: inline-block; width: 90px; }
+        .st-pending { background: #fef3c7; color: #92400e; }
+        .st-active { background: #e0f2fe; color: #0369a1; cursor: pointer; transition: transform 0.1s; }
+        .st-active:hover { transform: scale(1.05); background: #bae6fd; box-shadow: 0 0 5px rgba(3,105,161,0.3); }
+        .st-completed { background: #dcfce3; color: #166534; }
 
-        /* Wizard Form */
+        /* Modals */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; padding: 10px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 750px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; position: relative; }
         .wizard-step { display: none; }
         .wizard-step.active { display: block; }
         .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; color: #1e293b; }
-        .form-control { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; box-sizing: border-box; }
-        .dynamic-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
-        .dynamic-row input { flex: 1; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; color: var(--primary); }
+        .form-control { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; box-sizing: border-box; }
 
-        .editor-toolbar { display: flex; gap: 5px; margin-bottom: 8px; background: #f1f5f9; padding: 5px; border-radius: 4px; flex-wrap: wrap; }
-        .editor-toolbar button { background: white; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
-        .rich-editable { min-height: 100px; border: 1px solid #cbd5e1; padding: 10px; border-radius: 4px; background: white; font-size: 0.9rem; outline: none; }
+        /* Media Areas */
+        .media-dropzone { border: 2px dashed #94a3b8; padding: 15px; border-radius: 6px; text-align: center; background: #f8fafc; margin-bottom: 15px; position: relative; }
+        .preview-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .preview-grid img { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; cursor: pointer; transition: transform 0.2s; }
+        .preview-grid img:hover { transform: scale(1.1); }
+        .loading-overlay { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8); justify-content: center; align-items: center; font-weight: bold; color: #0284c7; z-radius: 6px; }
 
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; text-align: left; min-width: 1050px; }
-        th, td { padding: 10px; border: 1px solid var(--border-color); font-size: 0.8rem; }
-        th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
-
-        .badge-tier1 { color: var(--tier1-color); font-weight: bold; }
-        .badge-tier2 { color: var(--tier2-color); font-weight: bold; }
-        .badge-tier3 { color: var(--tier3-color); font-weight: bold; }
-
-        .map-link { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 6px; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.75rem; }
-        .status-select { padding: 5px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
-
-        /* --- SCREEN VIEW: PORTRAIT COMFORTABLE CONTAINER --- */
-        .jobcard-container {
-            background: white;
-            border: 2px solid #1e293b;
-            border-radius: 8px;
-            padding: 16px;
-            box-sizing: border-box;
-            width: 100%;
-            max-width: 210mm;
-            margin: 0 auto;
-            font-size: 0.85rem;
-            color: #1e293b;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .jc-header { display: flex; flex-direction: column; gap: 6px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
-        .jc-box { border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; background: #f8fafc; box-sizing: border-box; width: 100%; word-break: break-word; overflow-wrap: break-word; }
-        .jc-box strong { display: block; color: #0f172a; margin-bottom: 6px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        /* Job Card Print */
+        .jobcard-container { background: white; border: 2px solid var(--primary); border-radius: 8px; padding: 16px; margin: 0 auto; font-size: 0.85rem; }
+        .jc-box { border: 1px solid var(--border); padding: 10px; border-radius: 6px; background: #f8fafc; margin-bottom: 8px; }
         
-        .jc-data-row { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
-        @media(min-width: 480px) { .jc-data-row { flex-direction: row; justify-content: space-between; } }
-
-        .jc-table-clean { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 6px; }
-        .jc-table-clean th, .jc-table-clean td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 0.8rem; text-align: left; word-break: break-word; overflow-wrap: break-word; }
-        .jc-table-clean th { background-color: #f1f5f9; color: #334155; }
-
-        /* Dedicated Signature / Stamp Layout for Screen */
-        .signature-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        @media(min-width: 600px) {
-            .signature-grid { flex-direction: row; }
-        }
-        .sig-box {
-            flex: 1;
-            border: 1px solid #94a3b8;
-            padding: 10px;
-            border-radius: 4px;
-            height: 90px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background: white;
-        }
-        .stamp-box {
-            flex: 1;
-            border: 2px dashed #94a3b8;
-            padding: 10px;
-            border-radius: 4px;
-            height: 90px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f1f5f9;
-        }
-
-        #autosaveIndicator { font-size: 0.75rem; color: #cbd5e1; align-self: center; }
-
-        /* --- SEAMLESS LANDSCAPE PRINT & PDF EXPORT RULES --- */
-        @page {
-            size: A4 landscape;
-            margin: 10mm; /* Standard margins let the browser engine handle strict bounds */
-        }
-
         @media print {
-            /* 1. COMPLETELY HIDE the background app to prevent ghost blank pages */
-            .app-wrapper { display: none !important; }
-            .modal:not(#jobCardModal) { display: none !important; }
+            body * { visibility: hidden; }
+            #jobCardModal, #jobCardModal * { visibility: visible; }
+            #jobCardModal { position: absolute; left: 0; top: 0; width: 100%; background: transparent; }
+            .modal-content { box-shadow: none; padding: 0; }
             .no-print { display: none !important; }
-
-            /* 2. Reset Body & HTML to allow PDF generator to tightly wrap the job card */
-            html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: white !important;
-                color: black !important;
-                height: auto !important; /* Prevents 100vh from forcing pages */
-                overflow: visible !important;
-            }
-
-            /* 3. Make the modal act like the normal document body */
-            #jobCardModal {
-                position: relative !important;
-                display: block !important;
-                background: transparent !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                height: auto !important;
-            }
-            .modal-content {
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                max-height: none !important;
-                overflow: visible !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                background: white !important;
-            }
-
-            /* 4. LANDSCAPE GRID LAYOUT FOR MAXIMUM LEGIBILITY */
-            .jobcard-container {
-                border: 1.5px solid #000000 !important;
-                max-width: 100% !important;
-                width: 100% !important;
-                padding: 14px !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                font-size: 11pt !important;
-                line-height: 1.45 !important;
-                color: #000000 !important;
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important; /* 2-column landscape spread */
-                gap: 12px !important;
-                page-break-after: avoid !important;
-            }
-
-            .jc-header { grid-column: span 2 !important; border-bottom: 2px solid #000000 !important; }
-            .jc-header strong { font-size: 15pt !important; color: #000000 !important; }
-            
-            /* Structural alignment for boxes */
-            .jc-box {
-                break-inside: avoid; /* Prevents a box from splitting across a PDF page */
-                page-break-inside: avoid;
-                background: #ffffff !important;
-                border: 1px solid #333333 !important;
-                padding: 10px 12px !important;
-            }
-            .jc-box.span-2 { grid-column: span 2 !important; } /* Full width in grid */
-
-            .jc-box strong { font-size: 10.5pt !important; color: #000000 !important; border-bottom: 1px solid #888888 !important; }
-            .jc-table-clean th, .jc-table-clean td { font-size: 10pt !important; padding: 8px 10px !important; border: 1px solid #444444 !important; color: #000000 !important; }
-            .jc-table-clean th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            tr { break-inside: avoid; page-break-inside: avoid; }
-
-            /* Optimize the signature grid for physical printing */
-            .signature-grid { display: flex !important; flex-direction: row !important; gap: 15px !important; }
-            .sig-box, .stamp-box { height: 95px !important; border-color: #000000 !important; }
-            .stamp-box { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 2px dashed #666666 !important; }
+            .jobcard-container { border: 1.5px solid #000 !important; padding: 14px !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Main Application Wrapper -->
     <div class="app-wrapper">
-        <div class="container">
-            <header>
-                <div>
-                    <h1>Strutex Builders - Operations Dashboard</h1>
-                    <p>Petroleum Infrastructure & Field Deployment Ecosystem</p>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
-                    <div class="btn-group no-print">
-                        <span id="autosaveIndicator">Auto-saved (Every 10 min)</span>
-                        <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
-                        <button class="btn btn-secondary" onclick="saveLocally()">Save Now</button>
-                        <button class="btn" onclick="saveToCloud()">Sync to Cloud</button>
-                    </div>
-                </div>
-            </header>
+        <header>
+            <div>
+                <h1>Strutex Builders - Field Operations</h1>
+                <p>Offline-First | Auto-Watermarking | Visual Accountability</p>
+            </div>
+            <button class="btn btn-secondary">Sync DB to Cloud</button>
+        </header>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0; font-size: 1rem;">Master Priority & Tracking Matrix</h3>
-                    <span style="font-size: 0.75rem; color: #64748b;">Mobile Friendly View</span>
-                </div>
-                <div class="table-responsive">
-                    <table id="deploymentTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 35px;">Rank</th>
-                                <th style="width: 100px;">Priority Tier</th>
-                                <th>Station Name</th>
-                                <th style="width: 60px;">Map</th>
-                                <th style="width: 75px;">Engineer</th>
-                                <th>Scope of Work (Admin Edit)</th>
-                                <th style="width: 90px;">Status</th>
-                                <th style="width: 110px;">Technician Notes</th>
-                                <th style="width: 130px;">Job Card Actions</th>
-                                <th style="width: 80px;" class="no-print">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
+        <div class="analytics-ribbon no-print">
+            <div class="stat-box"><span class="stat-lbl">Active / In Progress</span><span class="stat-val" id="statActive">0</span></div>
+            <div class="stat-box" style="border-color: #c2410c;"><span class="stat-lbl">Pending Deployments</span><span class="stat-val" id="statPending">0</span></div>
+            <div class="stat-box" style="border-color: #15803d;"><span class="stat-lbl">Completed Sites</span><span class="stat-val" id="statCompleted">0</span></div>
+        </div>
+
+        <div class="card">
+            <div class="controls-ribbon no-print">
+                <input type="text" id="searchInput" placeholder="Search station name..." onkeyup="filterMatrix()">
+                <select id="tierFilter" onchange="filterMatrix()">
+                    <option value="All">All Priority Tiers</option>
+                    <option value="Tier 1">Tier 1: High Risk</option>
+                    <option value="Tier 2">Tier 2: Medium Risk</option>
+                </select>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table id="deploymentTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;">#</th>
+                            <th style="width: 110px;">Tier</th>
+                            <th>Station Name</th>
+                            <th>Scope of Work</th>
+                            <th style="width: 100px; text-align: center;">Status</th>
+                            <th style="width: 100px; text-align: center;">Job Card</th>
+                            <th style="width: 100px; text-align: center;">Visuals</th>
+                            <th style="width: 80px; text-align: center;" class="no-print">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- 1. Pre-Deployment Checklist Modal -->
-    <div id="checklistModal" class="modal">
-        <!-- ... (Unchanged checklist modal logic) ... -->
-        <div class="modal-content">
-            <h3 id="modalStationTitle" style="margin-top:0; color: #1e293b; font-size: 1.1rem;">Pre-Deployment Verification</h3>
-            <p style="font-size: 0.8rem; color: #64748b;">Confirm availability before starting the Strutex Job Card Wizard.</p>
-            
-            <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">1. Materials & Supplies</h4>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="paint"> Paint, primers & thinners verified</label>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="parts"> Replacement parts / equipment ready</label>
-            </div>
-
-            <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">2. Tools & Equipment</h4>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="tools"> Power breakers, drills & hand tools packed</label>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="scaffold"> Scaffolding or safety ladders loaded</label>
-            </div>
-
-            <div style="background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">3. PPE & Safety Compliance</h4>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="ppe"> Safety boots, aprons, hi-vis & eyewear</label>
-                <label style="display:block; font-size:0.8rem; margin:4px 0;"><input type="checkbox" class="chk-item" value="cones"> Warning tapes & traffic cones ready</label>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
-                <button class="btn btn-secondary" onclick="closeModal('checklistModal')">Cancel</button>
-                <button class="btn" id="confirmDeployBtn" onclick="openJobCardWizard()" disabled style="opacity: 0.5;">Proceed to Job Card Form</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. Passport-Style Multi-Step Job Card Wizard Modal -->
+    <!-- Wizard Modal -->
     <div id="jobCardWizardModal" class="modal">
-        <!-- ... (Unchanged wizard logic) ... -->
-        <div class="modal-content" style="max-width: 750px;">
-            <h3 style="margin-top:0; font-size: 1.1rem; color: #1e293b;">Strutex Job Card Interactive Wizard</h3>
-            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Complete all sections below. Supports multi-day schedules and itemized scopes.</p>
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">Site Deployment Wizard</h3>
+                <span id="draftMsg" style="font-size:0.75rem; color:#15803d; display:none;">Draft saved</span>
+            </div>
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin:10px 0 15px 0;">
 
             <!-- Step 1 -->
             <div class="wizard-step active" id="wizStep1">
-                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 1: Work Order & Schedule</h4>
-                <div class="form-group"><label>Work Order Number</label><input type="text" id="wizWorkOrder" class="form-control" value="C260819-STRUTEX"></div>
-                <div class="form-group"><label>Assigned Engineer / Technician</label><input type="text" id="wizEngineer" class="form-control" value="Emmanuel Simano"></div>
-                <div style="display: flex; gap: 10px;">
-                    <div class="form-group" style="flex:1;"><label>Start Date</label><input type="date" id="wizStartDate" class="form-control"></div>
-                    <div class="form-group" style="flex:1;"><label>Estimated End Date</label><input type="date" id="wizEndDate" class="form-control"></div>
-                </div>
-                <div class="form-group"><label>Required Materials & Tools</label><input type="text" id="wizMaterials" class="form-control" value="Standard PPE, Hand tools, DODO servicing kit"></div>
+                <h4 style="color:#0284c7; margin-top:0;">Step 1: Admin & Scope Verification</h4>
+                <div class="form-group"><label>Work Order No. (Auto-Mapped/Generated)</label><input type="text" id="wizWorkOrder" class="form-control"></div>
+                <div class="form-group"><label>Assigned Technician</label><input type="text" id="wizTech" class="form-control" value="Emmanuel Simano"></div>
+                <div class="form-group"><label>Scope of Work Description</label><textarea id="wizScope" class="form-control" rows="3"></textarea></div>
+                <div class="form-group"><label>Safety Precautions to Execute</label><input type="text" id="wizSafetyText" class="form-control" placeholder="e.g., Barricades, isolation, PPEs"></div>
+                
                 <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
                     <button class="btn btn-secondary" onclick="closeModal('jobCardWizardModal')">Cancel</button>
-                    <button class="btn" onclick="nextWizardStep(2)">Next: Itemized Scope (15+ items)</button>
+                    <button class="btn" onclick="nextWizardStep(2)">Next: Visual Proof</button>
                 </div>
             </div>
 
             <!-- Step 2 -->
             <div class="wizard-step" id="wizStep2">
-                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 2: Itemized Scope of Work</h4>
-                <div id="scopeItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
-                <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 10px;" onclick="addScopeItemRow('')">+ Add Scope Item</button>
+                <h4 style="color:#0284c7; margin-top:0;">Step 2: Geotagged Media Evidence</h4>
+                <p style="font-size:0.8rem; color:#64748b; margin-top:-5px;">Photos are automatically watermarked with timestamps and GPS coordinates.</p>
+                
+                <div class="media-dropzone">
+                    <div class="loading-overlay" id="loadBefore">Watermarking Images...</div>
+                    <p style="margin:0 0 10px 0; font-size:0.85rem; font-weight:bold;">📸 Upload "Before" Photos (Min. 5)</p>
+                    <input type="file" multiple accept="image/*" id="upBefore" onchange="handleImageUpload(this, 'prevBefore', 'before', 'loadBefore')">
+                    <div class="preview-grid" id="prevBefore"></div>
+                    <small id="errBefore" style="color:red; display:none; margin-top:5px;">Requires at least 5 photos.</small>
+                </div>
+
+                <div class="media-dropzone" style="border-color:#f59e0b;">
+                    <div class="loading-overlay" id="loadSafety">Watermarking Images...</div>
+                    <p style="margin:0 0 10px 0; font-size:0.85rem; font-weight:bold;">🦺 Upload "Safety Precaution" Photo (Min. 1)</p>
+                    <input type="file" multiple accept="image/*" id="upSafety" onchange="handleImageUpload(this, 'prevSafety', 'safety', 'loadSafety')">
+                    <div class="preview-grid" id="prevSafety"></div>
+                    <small id="errSafety" style="color:red; display:none; margin-top:5px;">Requires visual proof of safety mitigations.</small>
+                </div>
+
                 <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
                     <button class="btn btn-secondary" onclick="nextWizardStep(1)">Previous</button>
-                    <button class="btn" onclick="nextWizardStep(3)">Next: Multi-Day Logs</button>
-                </div>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="wizard-step" id="wizStep3">
-                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 3: Multi-Day Daily Work Logs</h4>
-                <div id="dailyLogsContainer" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
-                <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 10px;" onclick="addDailyLogRow()">+ Add Log Day</button>
-                <div class="form-group" style="margin-top: 15px;"><label>Overall Safety Precautions & Hazards Noted</label><textarea id="wizSafety" class="form-control" rows="2">Hazard: Open Area Works. Mitigation: Barricaded zone, warning tape, PPEs deployed.</textarea></div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="nextWizardStep(2)">Previous</button>
-                    <button class="btn btn-success" onclick="reviewJobCard()">Review Job Card Preview</button>
+                    <button class="btn btn-success" onclick="validateWizard()">Generate Job Card</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. Final Rendered Job Card Print Preview Modal -->
+    <!-- Complete Modal -->
+    <div id="completeModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 style="margin-top:0;">Close Work Order</h3>
+            <p style="font-size: 0.85rem; color: #64748b;">Upload final outcome photos to mark this site as Completed.</p>
+            
+            <div class="media-dropzone" style="border-color:#15803d;">
+                <div class="loading-overlay" id="loadAfter">Watermarking Images...</div>
+                <p style="margin:0 0 10px 0; font-size:0.85rem; font-weight:bold;">✅ Upload "After" Photos</p>
+                <input type="file" multiple accept="image/*" id="upAfter" onchange="handleImageUpload(this, 'prevAfter', 'after', 'loadAfter')">
+                <div class="preview-grid" id="prevAfter"></div>
+                <small id="errAfter" style="color:red; display:none; margin-top:5px;">At least 1 photo required.</small>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-secondary" onclick="closeModal('completeModal')">Cancel</button>
+                <button class="btn btn-success" onclick="submitCompletion()">Submit & Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Modal (With Download ZIP) -->
+    <div id="galleryModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom:15px;">
+                <h3 id="galTitle" style="margin:0;">Site Visuals</h3>
+                <button class="btn btn-info" onclick="downloadAllMediaAsZip()">📥 Download All (ZIP)</button>
+            </div>
+            
+            <h4 style="margin:10px 0 5px 0; font-size:0.9rem;">📸 Before Works</h4>
+            <div class="preview-grid" id="galBefore" style="margin-bottom: 15px;"></div>
+
+            <h4 style="margin:10px 0 5px 0; font-size:0.9rem;">🦺 Safety Precaution Proof</h4>
+            <div class="preview-grid" id="galSafety" style="margin-bottom: 15px;"></div>
+
+            <h4 style="margin:10px 0 5px 0; font-size:0.9rem;">✅ After Works (Completed)</h4>
+            <div class="preview-grid" id="galAfter" style="margin-bottom: 15px;"></div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('galleryModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Card Print Preview (No Photos) -->
     <div id="jobCardModal" class="modal">
-        <div class="modal-content" style="max-width: 850px;">
-            <div class="jobcard-container" id="printableJobCard">
-                
-                <!-- Header (Spans full width in print) -->
-                <div class="jc-header">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <strong style="font-size: 1.15rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
-                            <span style="font-size: 0.8rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
-                        </div>
-                        <span style="font-size: 0.75rem; background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="jobcard-container">
+                <div style="display:flex; justify-content:space-between; border-bottom: 2px solid var(--primary); padding-bottom:10px; margin-bottom:15px;">
+                    <div>
+                        <strong style="font-size: 1.2rem; display: block;">STRUTEX BUILDERS LIMITED</strong>
+                        <span style="font-size: 0.8rem;">P.O. Box 33472 - 00100, Nairobi | Official Job Card</span>
                     </div>
-                </div>
-
-                <!-- Box 1: Work Order Details (Column 1 in Print) -->
-                <div class="jc-box">
-                    <strong>Work Order & Project Info</strong>
-                    <div class="jc-data-row">
-                        <div><strong>Order No:</strong> <span id="jcWorkOrder"></span></div>
-                        <div><strong>Date Issued:</strong> <span id="jcDate"></span></div>
-                    </div>
-                    <div class="jc-data-row" style="margin-top: 4px;">
-                        <div><strong>Client/Project:</strong> Rubis Energy Kenya</div>
-                        <div><strong>Station:</strong> <span id="jcStationName"></span></div>
-                    </div>
-                    <div class="jc-data-row" style="margin-top: 4px;">
-                        <div><strong>Assigned Tech:</strong> <span id="jcEngineer"></span></div>
-                    </div>
-                </div>
-
-                <!-- Box 2: Schedule & Materials (Column 2 in Print) -->
-                <div class="jc-box">
-                    <strong>Schedule & Materials</strong>
-                    <div class="jc-data-row">
-                        <div><strong>Start Date:</strong> <span id="jcStartDateDisp"></span></div>
-                        <div><strong>Est. End Date:</strong> <span id="jcEndDateDisp"></span></div>
-                    </div>
-                    <div style="margin-top: 6px;">
-                        <strong>Required Materials & Tools:</strong>
-                        <div id="jcMaterialsDisp" style="margin-top: 2px; font-size: 0.8rem; color: #334155;"></div>
-                    </div>
-                </div>
-
-                <!-- Box 3: Itemized Scope (Spans full width) -->
-                <div class="jc-box span-2">
-                    <strong>Itemized Scope of Work / Tasks</strong>
-                    <div id="jcScopeContainer" style="margin-top: 6px;"></div>
                 </div>
                 
-                <!-- Box 4: Multi-Day Work Progress Logs (Spans full width) -->
-                <div class="jc-box span-2">
-                    <strong>Multi-Day Work Progress Logs</strong>
-                    <div id="jcLogsContainer" style="margin-top: 6px;"></div>
-                </div>
-
-                <!-- Box 5: Safety Precautions (Spans full width) -->
-                <div class="jc-box span-2">
-                    <strong>Safety Precautions & Mitigation</strong>
-                    <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.8rem; color: #334155;"></div>
-                </div>
-
-                <!-- Box 6: Signatures & Stamp Block (Spans full width, specifically formatted for physical signing) -->
-                <div class="jc-box span-2">
-                    <strong>Signatures & Official Stamp</strong>
-                    <div class="signature-grid">
-                        <div class="sig-box">
-                            <span style="font-size: 0.8rem; font-weight: bold; color: #334155;">Technician / Engineer Sign:</span>
-                            <div style="border-top: 1px dashed #94a3b8; padding-top: 4px; font-size: 0.75rem; color: #64748b;">Date:</div>
-                        </div>
-                        <div class="sig-box">
-                            <span style="font-size: 0.8rem; font-weight: bold; color: #334155;">Client / Supervisor Sign:</span>
-                            <div style="border-top: 1px dashed #94a3b8; padding-top: 4px; font-size: 0.75rem; color: #64748b;">Date:</div>
-                        </div>
-                        <div class="stamp-box">
-                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Official Stamp Here</span>
-                        </div>
+                <div class="jc-box"><strong>Work Order No:</strong> <span id="jcWO"></span></div>
+                <div class="jc-box"><strong>Station Name:</strong> <span id="jcStation"></span></div>
+                <div class="jc-box"><strong>Assigned Technician:</strong> <span id="jcTech"></span></div>
+                <div class="jc-box"><strong>Scope of Work:</strong> <p id="jcScope" style="margin:5px 0 0 0;"></p></div>
+                <div class="jc-box"><strong>Safety Precaution:</strong> <p id="jcSafety" style="margin:5px 0 0 0;"></p></div>
+                
+                <div class="jc-box" style="margin-top:20px;">
+                    <strong>Authorization</strong>
+                    <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+                        <div style="border-top: 1px dashed #000; width: 45%; padding-top: 5px; font-size:0.8rem; text-align: center;">Technician Sign & Date</div>
+                        <div style="border-top: 1px dashed #000; width: 45%; padding-top: 5px; font-size:0.8rem; text-align: center;">Supervisor Sign & Date</div>
                     </div>
                 </div>
-
             </div>
-
-            <!-- Action Footer -->
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 12px;" class="no-print">
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start;">
-                    <button class="btn btn-danger" onclick="deleteJobCard()" style="font-size: 0.75rem;">🗑️ Delete / Reset Card</button>
-                    <button class="btn btn-secondary" onclick="editExistingJobCard()" style="font-size: 0.75rem;">✏️ Edit Job Card</button>
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="closeModal('jobCardModal')" style="font-size: 0.75rem;">Close Preview</button>
-                    <button class="btn btn-secondary" onclick="window.print()" style="font-size: 0.75rem;">🖨️ Save as PDF / Print</button>
-                    <button class="btn btn-success" onclick="completeAndSaveJobCard()" style="font-size: 0.75rem;">Complete & Save Data</button>
-                </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px;" class="no-print">
+                <button class="btn btn-secondary" onclick="closeModal('jobCardModal')">Back</button>
+                <button class="btn btn-secondary" onclick="window.print()">🖨️ Print to PDF</button>
+                <button class="btn btn-success" id="btnFinalize" onclick="saveJobCardAndDeploy()">Finalize & Deploy to Matrix</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal scripts are exactly identical to previous block - ensuring flawless logic operation -->
     <script>
-        // --- SUPABASE CONFIGURATION ---
-        const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6InZub24iLCJpYXQiOjE3ODtokODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
-        
-        let dbClient = null;
-        if (window.supabase) { dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+        // --- 1. DEXIE OFFLINE DB SETUP ---
+        const db = new Dexie("StrutexMasterDB");
+        db.version(1).stores({
+            stations: 'name, tier, scope, status, jobCardData, photos',
+            drafts: 'stationName, payload'
+        });
 
-        let activeRow = null;
-        let cachedJobCardData = {};
+        let activeStation = null;
+        let photoCache = { before: [], safety: [], after: [] };
 
-        // Default dataset placeholder logic...
-        const defaultStations = [
-            {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", mapQuery: "Rubis Mesora Kenya", info: "NAIROBI / Timothy", scope: "Review civil deficiencies", status: "Pending", comments: "", jobCardSaved: false, jobCardPayload: null}
-        ]; // Shortened visually here for simplicity, script retains all logic.
+        // Preload Dummy Data mapped from your Rubis matrix logic
+        const initialStations = [
+            { name: "Rubis Haile Sillasie", tier: "Tier 1: High Risk", scope: "Canopy structural check", status: "Pending", jobCardData: null, photos: { before: [], safety: [], after: [] } },
+            { name: "Rubis Ngewa", tier: "Tier 2: Medium Risk", scope: "Trenching and drainage works", status: "Pending", jobCardData: null, photos: { before: [], safety: [], after: [] } },
+            { name: "Rubis Koinange", tier: "Tier 1: High Risk", scope: "Suspended electrical cage installation", status: "Active", jobCardData: { workOrder: "WO-RKO-102", tech: "Emmanuel", scope: "Suspended electrical...", safety: "Barricaded" }, photos: { before: ['data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='], safety: ['data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='], after: [] } }
+        ];
 
-        window.onload = async function() {
-            const localData = localStorage.getItem('strutex_stations_local');
-            if (localData) { renderTable(JSON.parse(localData)); } 
-            else { renderTable(defaultStations); }
+        window.onload = async () => {
+            let count = await db.stations.count();
+            if (count === 0) await db.stations.bulkPut(initialStations);
+            refreshMatrix();
         };
 
-        function renderTable(stations) {
+        // --- 2. RENDER MATRIX & ANALYTICS ---
+        async function refreshMatrix() {
+            const stations = await db.stations.toArray();
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
-            stations.forEach((s, index) => {
-                const tr = document.createElement("tr");
-                let tierClass = s.tier && s.tier.includes("Tier 1") ? "badge-tier1" : s.tier && s.tier.includes("Tier 2") ? "badge-tier2" : "badge-tier3";
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.mapQuery || s.name)}`;
-                
-                let jcButtonHtml = `<span style="font-size:0.75rem; color:#94a3b8;">No Card</span>`;
-                if (s.jobCardSaved && s.jobCardPayload) {
-                    jcButtonHtml = `<div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;"><button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>👁️ View</button></div>`;
-                }
-                tr.innerHTML = `
-                    <td>${s.rank || (index + 1)}</td>
-                    <td><span class="${tierClass}">${s.tier || 'Unassigned'}</span></td>
-                    <td><strong>${s.name}</strong></td>
-                    <td><a href="${mapsUrl}" target="_blank" class="map-link">📍 Map</a></td>
-                    <td>${s.info || 'NA'}</td>
-                    <td><div class="scope-display" style="font-size: 0.75rem;">${s.scope}</div></td>
-                    <td><select class="status-select"><option>Pending</option></select></td>
-                    <td><div class="comment-display" style="font-size: 0.75rem;">${s.comments}</div></td>
-                    <td class="jc-cell" style="text-align: center;">${jcButtonHtml}</td>
-                    <td class="no-print" style="text-align: center;"><button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploy</button></td>
-                `;
-                tbody.appendChild(tr);
-                tr._jobCardPayload = s.jobCardPayload || null;
-                tr._jobCardSaved = s.jobCardSaved || false;
+            let stats = { act: 0, pen: 0, com: 0 };
+
+            stations.forEach((s, idx) => {
+                if (s.status === "Active") stats.act++;
+                else if (s.status === "Pending") stats.pen++;
+                else stats.com++;
+
+                let badge = s.status === "Active" ? `<button class="status-badge st-active" onclick="openCompletion('${s.name}')" title="Click to upload After photos">Active ➡️</button>` : 
+                            s.status === "Completed" ? `<span class="status-badge st-completed">Completed</span>` : 
+                            `<span class="status-badge st-pending">Pending</span>`;
+
+                let jcBtn = s.jobCardData ? `<button class="btn btn-secondary" style="font-size:0.7rem; padding:4px;" onclick="viewJC('${s.name}')">📄 View</button>` : `-`;
+                let galBtn = (s.photos.before.length > 0) ? `<button class="btn btn-info" style="font-size:0.7rem; padding:4px;" onclick="openGallery('${s.name}')">📸 Media</button>` : `-`;
+                let actBtn = s.status === "Pending" ? `<button class="btn" style="font-size:0.7rem; padding:4px 8px;" onclick="startWizard('${s.name}')">Deploy</button>` : `-`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${s.tier}</strong></td>
+                        <td><strong>${s.name}</strong></td>
+                        <td style="font-size:0.8rem;">${s.scope}</td>
+                        <td style="text-align:center;">${badge}</td>
+                        <td style="text-align:center;">${jcBtn}</td>
+                        <td style="text-align:center;">${galBtn}</td>
+                        <td class="no-print" style="text-align:center;">${actBtn}</td>
+                    </tr>`;
+            });
+
+            document.getElementById('statActive').innerText = stats.act;
+            document.getElementById('statPending').innerText = stats.pen;
+            document.getElementById('statCompleted').innerText = stats.com;
+        }
+
+        function filterMatrix() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const tier = document.getElementById('tierFilter').value;
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const matchesSearch = text.includes(term);
+                const matchesTier = tier === "All" || text.includes(tier.toLowerCase());
+                row.style.display = (matchesSearch && matchesTier) ? '' : 'none';
             });
         }
 
-        function openChecklist(btn) {
-            activeRow = btn.closest('tr');
-            document.getElementById("modalStationTitle").innerText = "Pre-Deployment: " + activeRow.cells[2].innerText;
-            document.getElementById("checklistModal").style.display = "flex";
-            document.getElementById("confirmDeployBtn").disabled = false; // Mocked active for flow
-            document.getElementById("confirmDeployBtn").style.opacity = "1";
-        }
-
-        function openJobCardWizard(existingPayload = null) {
-            closeModal('checklistModal');
-            document.getElementById('wizStartDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('wizEndDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('scopeItemsContainer').innerHTML = "";
-            document.getElementById('dailyLogsContainer').innerHTML = "";
-            addScopeItemRow(activeRow.querySelector('.scope-display').innerText);
-            addDailyLogRow(document.getElementById('wizStartDate').value, "08:00", "17:00", "Initial setup");
+        // --- 3. WIZARD & DRAFT LOGIC ---
+        async function startWizard(name) {
+            activeStation = await db.stations.get(name);
+            
+            // Map WO Logic (Excel mapping sim)
+            const excelMap = { "Rubis Haile Sillasie": "WO-RHS-101", "Rubis Ngewa": "WO-NGE-102" };
+            document.getElementById('wizWorkOrder').value = excelMap[name] || `WO-${name.substring(0,3).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+            document.getElementById('wizScope').value = activeStation.scope;
+            document.getElementById('wizSafetyText').value = "";
+            
+            photoCache = { before: [], safety: [], after: [] };
+            document.getElementById('prevBefore').innerHTML = "";
+            document.getElementById('prevSafety').innerHTML = "";
+            
             nextWizardStep(1);
             document.getElementById('jobCardWizardModal').style.display = 'flex';
         }
 
-        function addScopeItemRow(text = "") {
-            const container = document.getElementById('scopeItemsContainer');
-            const div = document.createElement('div');
-            div.className = 'dynamic-row';
-            div.innerHTML = `<input type="text" class="form-control scope-item-input" value="${text}"><button type="button" class="btn btn-secondary" style="padding: 6px 10px; font-size:0.75rem;" onclick="this.parentElement.remove()">✕</button>`;
-            container.appendChild(div);
-        }
-
-        function addDailyLogRow(date = null, timeIn = "08:00", timeOut = "17:00", progress = "") {
-            const container = document.getElementById('dailyLogsContainer');
-            if (!date) date = new Date().toISOString().split('T')[0];
-            const div = document.createElement('div');
-            div.innerHTML = `<div style="display:flex; gap:8px;"><input type="date" class="form-control log-date" value="${date}"><input type="time" class="form-control log-timein" value="${timeIn}"><input type="time" class="form-control log-timeout" value="${timeOut}"></div><div style="display:flex; gap:6px; margin-top:4px;"><input type="text" class="form-control log-progress" value="${progress}"><button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">✕</button></div><hr>`;
-            container.appendChild(div);
-        }
-
-        function nextWizardStep(stepNum) {
+        function nextWizardStep(step) {
             document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
-            document.getElementById('wizStep' + stepNum).classList.add('active');
+            document.getElementById('wizStep' + step).classList.add('active');
         }
 
-        function reviewJobCard() {
-            closeModal('jobCardWizardModal');
-            const scopeItems = Array.from(document.querySelectorAll('.scope-item-input')).map(inp => inp.value).filter(v => v);
-            const dailyLogs = Array.from(document.querySelectorAll('#dailyLogsContainer > div')).map(row => ({
-                date: row.querySelector('.log-date').value, timeIn: row.querySelector('.log-timein').value,
-                timeOut: row.querySelector('.log-timeout').value, progress: row.querySelector('.log-progress').value
-            }));
+        // --- 4. IMAGE WATERMARKING (Canvas API + GPS) ---
+        async function getCoordinates() {
+            return new Promise(resolve => {
+                if (!navigator.geolocation) return resolve("");
+                navigator.geolocation.getCurrentPosition(
+                    pos => resolve(`| GPS: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`),
+                    err => resolve(""), // Fallback if denied
+                    { timeout: 3000 }
+                );
+            });
+        }
 
-            cachedJobCardData = {
-                workOrder: document.getElementById('wizWorkOrder').value, stationName: activeRow.cells[2].innerText,
-                dateIssued: new Date().toISOString().split('T')[0], engineer: document.getElementById('wizEngineer').value,
-                startDate: document.getElementById('wizStartDate').value, endDate: document.getElementById('wizEndDate').value,
-                materials: document.getElementById('wizMaterials').value, safety: document.getElementById('wizSafety').value,
-                scopeItems: scopeItems, dailyLogs: dailyLogs
+        async function handleImageUpload(inputElem, previewId, cacheKey, loaderId) {
+            const files = Array.from(inputElem.files);
+            if (!files.length) return;
+            
+            const loader = document.getElementById(loaderId);
+            loader.style.display = 'flex';
+            
+            const gpsString = await getCoordinates();
+            const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' });
+            const watermarkText = `Strutex | ${timestamp} EAT ${gpsString}`;
+
+            const container = document.getElementById(previewId);
+            container.innerHTML = "";
+            photoCache[cacheKey] = [];
+
+            for (let file of files) {
+                const imgBase64 = await applyWatermark(file, watermarkText);
+                photoCache[cacheKey].push(imgBase64);
+                container.innerHTML += `<img src="${imgBase64}" onclick="window.open(this.src)">`;
+            }
+            loader.style.display = 'none';
+        }
+
+        function applyWatermark(file, text) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width; canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Draw Original
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Setup Watermark Style
+                        const fontSize = Math.max(14, img.width * 0.03); // Responsive font
+                        ctx.font = `bold ${fontSize}px sans-serif`;
+                        
+                        // Background Bar for text readability
+                        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                        ctx.fillRect(0, img.height - (fontSize * 2), img.width, fontSize * 2);
+                        
+                        // Text
+                        ctx.fillStyle = "white";
+                        ctx.fillText(text, 10, img.height - (fontSize * 0.5));
+
+                        // Compress slightly to save IndexedDB space (Quality 0.7)
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // --- 5. VALIDATION & JOB CARD GENERATION ---
+        function validateWizard() {
+            let valid = true;
+            if (photoCache.before.length < 5) { document.getElementById('errBefore').style.display = 'block'; valid = false; } 
+            else document.getElementById('errBefore').style.display = 'none';
+
+            if (photoCache.safety.length < 1) { document.getElementById('errSafety').style.display = 'block'; valid = false; } 
+            else document.getElementById('errSafety').style.display = 'none';
+
+            if (valid) {
+                document.getElementById('jcWO').innerText = document.getElementById('wizWorkOrder').value;
+                document.getElementById('jcStation').innerText = activeStation.name;
+                document.getElementById('jcTech').innerText = document.getElementById('wizTech').value;
+                document.getElementById('jcScope').innerText = document.getElementById('wizScope').value;
+                document.getElementById('jcSafety').innerText = document.getElementById('wizSafetyText').value;
+                
+                document.getElementById('btnFinalize').style.display = 'block';
+                closeModal('jobCardWizardModal');
+                document.getElementById('jobCardModal').style.display = 'flex';
+            }
+        }
+
+        async function saveJobCardAndDeploy() {
+            activeStation.jobCardData = {
+                workOrder: document.getElementById('wizWorkOrder').value,
+                tech: document.getElementById('wizTech').value,
+                scope: document.getElementById('wizScope').value,
+                safety: document.getElementById('wizSafetyText').value
             };
-            populateJobCardModal(cachedJobCardData);
+            activeStation.photos.before = photoCache.before;
+            activeStation.photos.safety = photoCache.safety;
+            activeStation.status = "Active";
+
+            await db.stations.put(activeStation);
+            closeModal('jobCardModal');
+            refreshMatrix();
+        }
+
+        // --- 6. COMPLETION LOGIC ---
+        async function openCompletion(name) {
+            activeStation = await db.stations.get(name);
+            document.getElementById('prevAfter').innerHTML = "";
+            photoCache.after = [];
+            document.getElementById('completeModal').style.display = 'flex';
+        }
+
+        async function submitCompletion() {
+            if (photoCache.after.length < 1) { document.getElementById('errAfter').style.display = 'block'; return; }
+            activeStation.photos.after = photoCache.after;
+            activeStation.status = "Completed";
+            await db.stations.put(activeStation);
+            closeModal('completeModal');
+            refreshMatrix();
+        }
+
+        // --- 7. VIEWERS & ZIP EXPORT ---
+        async function viewJC(name) {
+            activeStation = await db.stations.get(name);
+            document.getElementById('jcWO').innerText = activeStation.jobCardData.workOrder;
+            document.getElementById('jcStation').innerText = activeStation.name;
+            document.getElementById('jcTech').innerText = activeStation.jobCardData.tech;
+            document.getElementById('jcScope').innerText = activeStation.jobCardData.scope;
+            document.getElementById('jcSafety').innerText = activeStation.jobCardData.safety;
+            document.getElementById('btnFinalize').style.display = 'none'; // Hide finalize on view mode
             document.getElementById('jobCardModal').style.display = 'flex';
         }
 
-        function populateJobCardModal(data) {
-            document.getElementById('jcWorkOrder').innerText = data.workOrder;
-            document.getElementById('jcStationName').innerText = data.stationName;
-            document.getElementById('jcDate').innerText = data.dateIssued;
-            document.getElementById('jcEngineer').innerText = data.engineer;
-            document.getElementById('jcStartDateDisp').innerText = data.startDate;
-            document.getElementById('jcEndDateDisp').innerText = data.endDate;
-            document.getElementById('jcMaterialsDisp').innerText = data.materials;
-            document.getElementById('jcSafetyDisp').innerText = data.safety;
-
-            const scopeContainer = document.getElementById('jcScopeContainer');
-            scopeContainer.innerHTML = data.scopeItems.length ? `<ul style="margin:0; padding-left:18px; column-count:2; font-size:0.85rem;">` + data.scopeItems.map((task, idx) => `<li><strong>Task ${idx + 1}:</strong> ${task}</li>`).join('') + `</ul>` : 'None';
-
-            const logsContainer = document.getElementById('jcLogsContainer');
-            logsContainer.innerHTML = data.dailyLogs.length ? `<table class="jc-table-clean"><thead><tr><th style="width:100px;">Date</th><th style="width:110px;">Hours</th><th>Progress</th></tr></thead><tbody>` + data.dailyLogs.map(log => `<tr><td>${log.date}</td><td>${log.timeIn}-${log.timeOut}</td><td>${log.progress}</td></tr>`).join('') + `</tbody></table>` : 'None';
+        async function openGallery(name) {
+            activeStation = await db.stations.get(name);
+            document.getElementById('galTitle').innerText = `Visuals: ${name}`;
+            
+            const render = (arr, id) => {
+                document.getElementById(id).innerHTML = arr.length ? arr.map(src => `<img src="${src}" onclick="window.open(this.src)">`).join('') : '<span style="font-size:0.8rem; color:#94a3b8;">None</span>';
+            };
+            
+            render(activeStation.photos.before, 'galBefore');
+            render(activeStation.photos.safety, 'galSafety');
+            render(activeStation.photos.after, 'galAfter');
+            document.getElementById('galleryModal').style.display = 'flex';
         }
 
-        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
-        
-        function completeAndSaveJobCard() {
-            activeRow._jobCardSaved = true;
-            activeRow._jobCardPayload = cachedJobCardData;
-            activeRow.querySelector('.jc-cell').innerHTML = `<button class="btn btn-secondary" onclick='viewSavedJobCard(${JSON.stringify(cachedJobCardData)})'>👁️ View</button>`;
-            closeModal('jobCardModal');
-            alert("Job Card Saved");
+        // Zip Archive Generator
+        async function downloadAllMediaAsZip() {
+            if (!activeStation) return;
+            const zip = new JSZip();
+            const stationFolder = zip.folder(activeStation.name.replace(/\s+/g, '_') + "_Media");
+            
+            const addImagesToZip = (base64Array, folderName) => {
+                const subFolder = stationFolder.folder(folderName);
+                base64Array.forEach((b64, idx) => {
+                    // Strip the data URL prefix
+                    const base64Data = b64.replace(/^data:image\/(png|jpeg);base64,/, "");
+                    subFolder.file(`${folderName}_${idx + 1}.jpeg`, base64Data, {base64: true});
+                });
+            };
+
+            addImagesToZip(activeStation.photos.before, "Before_Works");
+            addImagesToZip(activeStation.photos.safety, "Safety_Precautions");
+            addImagesToZip(activeStation.photos.after, "Completed_Works");
+
+            const content = await zip.generateAsync({type: "blob"});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = `Strutex_${activeStation.name.replace(/\s+/g, '_')}_Photos.zip`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-        function viewSavedJobCard(data) { populateJobCardModal(data); document.getElementById('jobCardModal').style.display = 'flex'; }
+
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
 </body>
 </html>
