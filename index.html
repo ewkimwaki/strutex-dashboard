@@ -238,44 +238,48 @@
             font-size: 0.8rem;
         }
 
-        /* --- PERFECTED STRICT PORTRAIT MOBILE-FIRST JOB CARD STYLING --- */
+        /* --- PERFECTED STRICT PORTRAIT A4 MOBILE-FIRST JOB CARD STYLING --- */
         .jobcard-container {
             background: white;
             border: 2px solid #1e293b;
             border-radius: 8px;
-            padding: 20px;
+            padding: 16px;
             box-sizing: border-box;
             width: 100%;
-            font-size: 0.82rem;
+            max-width: 210mm; /* Strict A4 Portrait width constraint */
+            margin: 0 auto;
+            font-size: 0.78rem;
             color: #1e293b;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            overflow-x: hidden;
         }
 
         .jc-header {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             border-bottom: 2px solid #1e293b;
-            padding-bottom: 12px;
+            padding-bottom: 10px;
         }
 
         .jc-box {
             border: 1px solid #cbd5e1;
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             background: #f8fafc;
             box-sizing: border-box;
             width: 100%;
             word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .jc-box strong {
             display: block;
             color: #0f172a;
             margin-bottom: 4px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border-bottom: 1px solid #e2e8f0;
@@ -286,7 +290,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
         @media(min-width: 480px) {
@@ -298,16 +302,18 @@
 
         .jc-table-clean {
             width: 100%;
+            table-layout: fixed; /* Enforces strict column width containment */
             border-collapse: collapse;
             margin-top: 6px;
         }
 
         .jc-table-clean th, .jc-table-clean td {
             border: 1px solid #cbd5e1;
-            padding: 6px 8px;
-            font-size: 0.78rem;
+            padding: 5px 6px;
+            font-size: 0.72rem;
             text-align: left;
             word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .jc-table-clean th {
@@ -460,10 +466,10 @@
                 </div>
             </div>
 
-            <!-- Wizard Step 3: Multi-Day Daily Logs (Supports 24+ days) -->
+            <!-- Wizard Step 3: Multi-Day Daily Logs (Supports 24+ days with auto-date increment) -->
             <div class="wizard-step" id="wizStep3">
                 <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 3: Multi-Day Daily Work Logs (1 - 24+ Days)</h4>
-                <p style="font-size: 0.75rem; color: #64748b;">Add a log entry for every day spent on site.</p>
+                <p style="font-size: 0.75rem; color: #64748b;">Dates automatically increment to the next day when adding new logs.</p>
                 
                 <div id="dailyLogsContainer" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;">
                     <!-- Populated dynamically -->
@@ -485,16 +491,16 @@
 
     <!-- 3. Final Rendered Portrait Job Card Print Preview Modal -->
     <div id="jobCardModal" class="modal">
-        <div class="modal-content" style="max-width: 680px;">
+        <div class="modal-content" style="max-width: 720px;">
             <div class="jobcard-container" id="printableJobCard">
                 <!-- Header -->
                 <div class="jc-header">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
-                            <strong style="font-size: 1rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
-                            <span style="font-size: 0.72rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
+                            <strong style="font-size: 0.95rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
+                            <span style="font-size: 0.68rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
                         </div>
-                        <span style="font-size: 0.7rem; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
+                        <span style="font-size: 0.68rem; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
                     </div>
                 </div>
 
@@ -531,17 +537,17 @@
                     </div>
                     <div style="margin-top: 6px;">
                         <strong>Required Materials & Tools:</strong>
-                        <div id="jcMaterialsDisp" style="margin-top: 2px; font-size: 0.8rem; color: #334155;"></div>
+                        <div id="jcMaterialsDisp" style="margin-top: 2px; font-size: 0.75rem; color: #334155;"></div>
                     </div>
                 </div>
 
                 <!-- Safety Precautions Box -->
                 <div class="jc-box">
                     <strong>Safety Precautions & Mitigation</strong>
-                    <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.78rem; color: #334155;"></div>
+                    <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.75rem; color: #334155;"></div>
                 </div>
 
-                <!-- Multi-Day Work Logs Box (Supports 24+ days) -->
+                <!-- Multi-Day Work Logs Box (Supports 24+ days with fixed portrait containment) -->
                 <div class="jc-box">
                     <strong>Multi-Day Work Progress Logs</strong>
                     <div id="jcLogsContainer" style="margin-top: 6px;">
@@ -552,29 +558,30 @@
                 <!-- Signatures Stacked Box -->
                 <div class="jc-box">
                     <strong>Signatures & Approvals</strong>
-                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
-                        <div style="border: 1px dashed #cbd5e1; padding: 8px; border-radius: 4px;">
-                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Supervisor's Signature:</span>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                        <div style="border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
+                            <span style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 20px;">Supervisor's Signature:</span>
                         </div>
-                        <div style="border: 1px dashed #cbd5e1; padding: 8px; border-radius: 4px;">
-                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Employee's Signature:</span>
+                        <div style="border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
+                            <span style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 20px;">Employee's Signature:</span>
                         </div>
-                        <div style="border: 1px dashed #cbd5e1; padding: 12px; border-radius: 4px; text-align: center;">
-                            <span style="font-size: 0.75rem; color: #94a3b8;">[ Client Station Manager Stamp & Signature Here ]</span>
+                        <div style="border: 1px dashed #cbd5e1; padding: 8px; border-radius: 4px; text-align: center;">
+                            <span style="font-size: 0.7rem; color: #94a3b8;">[ Client Station Manager Stamp & Signature Here ]</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;" class="no-print">
-                <div>
+            <!-- Styled Non-Overlapping Action Footer for Review Modal -->
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 12px;" class="no-print">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start;">
                     <button class="btn btn-danger" onclick="deleteJobCard()" style="font-size: 0.75rem;">🗑️ Delete / Reset Card</button>
-                    <button class="btn btn-secondary" onclick="editExistingJobCard()" style="font-size: 0.75rem;">✏️ Edit Job Card</button>
+                    <button class="btn btn-secondary" onclick="editExistingJobCard()" style="font-size: 0.75rem;">✏️ Edit Job Card Wizard</button>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" onclick="closeModal('jobCardModal')">Close</button>
-                    <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / PDF</button>
-                    <button class="btn btn-success" onclick="completeAndSaveJobCard()">Complete & Save</button>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="closeModal('jobCardModal')" style="font-size: 0.75rem;">Close Preview</button>
+                    <button class="btn btn-secondary" onclick="window.print()" style="font-size: 0.75rem;">🖨️ Print / PDF A4</button>
+                    <button class="btn btn-success" onclick="completeAndSaveJobCard()" style="font-size: 0.75rem;">Complete & Save Job Card</button>
                 </div>
             </div>
         </div>
@@ -618,7 +625,7 @@
     <script>
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODtokODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
         
         let dbClient = null;
         if (window.supabase) {
@@ -800,16 +807,16 @@
                 document.getElementById('wizMaterials').value = existingPayload ? existingPayload.materials : "Standard PPE, Hand tools, DODO servicing kit";
                 document.getElementById('wizSafety').value = existingPayload ? existingPayload.safety : "Hazard: Open Area Works. Mitigation: Barricaded zone, warning tape, PPEs deployed.";
 
-                // Populate Itemized Scope (supports 15+ items)
+                // Populate Itemized Scope
                 const scopeContainer = document.getElementById('scopeItemsContainer');
                 scopeContainer.innerHTML = "";
                 const initialScopes = existingPayload && existingPayload.scopeItems ? existingPayload.scopeItems : [activeRow.querySelector('.scope-display').innerText];
                 initialScopes.forEach(itemText => addScopeItemRow(itemText));
 
-                // Populate Multi-Day Logs (supports 24+ days)
+                // Populate Multi-Day Logs
                 const logsContainer = document.getElementById('dailyLogsContainer');
                 logsContainer.innerHTML = "";
-                const initialLogs = existingPayload && existingPayload.dailyLogs ? existingPayload.dailyLogs : [{date: new Date().toISOString().split('T')[0], timeIn: "08:00", timeOut: "17:00", progress: "Initial site inspection and setup."}];
+                const initialLogs = existingPayload && existingPayload.dailyLogs ? existingPayload.dailyLogs : [{date: document.getElementById('wizStartDate').value, timeIn: "08:00", timeOut: "17:00", progress: "Initial site inspection and setup."}];
                 initialLogs.forEach(log => addDailyLogRow(log.date, log.timeIn, log.timeOut, log.progress));
 
                 nextWizardStep(1);
@@ -819,7 +826,6 @@
 
         function editExistingJobCard(payload) {
             closeModal('jobCardModal');
-            // find active row matching station name if triggered from modal
             const rows = document.querySelectorAll("#tableBody tr");
             rows.forEach(tr => {
                 if(tr.cells[2].innerText === cachedJobCardData.stationName) {
@@ -840,15 +846,33 @@
             container.appendChild(div);
         }
 
-        function addDailyLogRow(date = new Date().toISOString().split('T')[0], timeIn = "08:00", timeOut = "17:00", progress = "") {
+        // --- SMART AUTO-INCREMENT DATE FOR DAILY LOGS ---
+        function addDailyLogRow(date = null, timeIn = "08:00", timeOut = "17:00", progress = "") {
             const container = document.getElementById('dailyLogsContainer');
+
+            if (!date) {
+                const existingDates = container.querySelectorAll('.log-date');
+                if (existingDates.length > 0) {
+                    const lastDateVal = existingDates[existingDates.length - 1].value;
+                    if (lastDateVal) {
+                        const nextD = new Date(lastDateVal);
+                        nextD.setDate(nextD.getDate() + 1);
+                        date = nextD.toISOString().split('T')[0];
+                    } else {
+                        date = new Date().toISOString().split('T')[0];
+                    }
+                } else {
+                    date = document.getElementById('wizStartDate').value || new Date().toISOString().split('T')[0];
+                }
+            }
+
             const div = document.createElement('div');
             div.style.cssText = "background: #f1f5f9; padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #cbd5e1;";
             div.innerHTML = `
                 <div style="display: flex; gap: 8px; margin-bottom: 6px;">
                     <div style="flex:1;"><label style="font-size:0.7rem; margin:0;">Date</label><input type="date" class="form-control log-date" value="${date}"></div>
-                    <div style="width: 100px;"><label style="font-size:0.7rem; margin:0;">Time In</label><input type="time" class="form-control log-timein" value="${timeIn}"></div>
-                    <div style="width: 100px;"><label style="font-size:0.7rem; margin:0;">Time Out</label><input type="time" class="form-control log-timeout" value="${timeOut}"></div>
+                    <div style="width: 90px;"><label style="font-size:0.7rem; margin:0;">Time In</label><input type="time" class="form-control log-timein" value="${timeIn}"></div>
+                    <div style="width: 90px;"><label style="font-size:0.7rem; margin:0;">Time Out</label><input type="time" class="form-control log-timeout" value="${timeOut}"></div>
                 </div>
                 <div style="display: flex; gap: 6px; align-items: flex-end;">
                     <div style="flex:1;"><label style="font-size:0.7rem; margin:0;">Daily Work Done / Progress</label><input type="text" class="form-control log-progress" placeholder="Describe work completed on this day..." value="${progress}"></div>
@@ -866,13 +890,11 @@
         function reviewJobCard() {
             closeModal('jobCardWizardModal');
             if (activeRow) {
-                // Gather scope items
                 const scopeItems = [];
                 document.querySelectorAll('.scope-item-input').forEach(inp => {
                     if(inp.value.trim() !== '') scopeItems.push(inp.value.trim());
                 });
 
-                // Gather multi-day logs
                 const dailyLogs = [];
                 document.querySelectorAll('#dailyLogsContainer > div').forEach(row => {
                     dailyLogs.push({
@@ -916,7 +938,7 @@
             scopeContainer.innerHTML = "";
             if (data.scopeItems && data.scopeItems.length > 0) {
                 const ul = document.createElement('ul');
-                ul.style.cssText = "margin: 0; padding-left: 18px; font-size: 0.8rem; color: #334155;";
+                ul.style.cssText = "margin: 0; padding-left: 18px; font-size: 0.75rem; color: #334155;";
                 data.scopeItems.forEach((task, idx) => {
                     const li = document.createElement('li');
                     li.style.marginBottom = "3px";
@@ -925,10 +947,10 @@
                 });
                 scopeContainer.appendChild(ul);
             } else {
-                scopeContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No scope tasks itemized.</span>`;
+                scopeContainer.innerHTML = `<span style="font-size:0.75rem; color:#64748b;">No scope tasks itemized.</span>`;
             }
 
-            // Render Multi-Day Logs Table
+            // Render Multi-Day Logs Table with Strict Portrait Column Width Containment
             const logsContainer = document.getElementById('jcLogsContainer');
             logsContainer.innerHTML = "";
             if (data.dailyLogs && data.dailyLogs.length > 0) {
@@ -937,7 +959,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 75px;">Date</th>
-                                <th style="width: 85px;">Hours</th>
+                                <th style="width: 80px;">Hours</th>
                                 <th>Work Progress / Description</th>
                             </tr>
                         </thead>
@@ -947,7 +969,7 @@
                     tableHtml += `
                         <tr>
                             <td>${log.date}</td>
-                            <td>${log.timeIn} - ${log.timeOut}</td>
+                            <td>${log.timeIn}-${log.timeOut}</td>
                             <td>${log.progress}</td>
                         </tr>
                     `;
@@ -955,7 +977,7 @@
                 tableHtml += `</tbody></table>`;
                 logsContainer.innerHTML = tableHtml;
             } else {
-                logsContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No daily logs recorded.</span>`;
+                logsContainer.innerHTML = `<span style="font-size:0.75rem; color:#64748b;">No daily logs recorded.</span>`;
             }
         }
 
