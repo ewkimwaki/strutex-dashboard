@@ -906,14 +906,27 @@
             }
         }
         // ==========================================
-    // AUTO-SYNC TO SUPABASE (Every 5 Minutes)
+    // ROBUST AUTO-SYNC (Every 1 Minute)
     // ==========================================
+    let lastSyncTime = Date.now();
+
     setInterval(() => {
-        if (typeof syncToCloud === 'function') {
-            console.log('⏱️ Running scheduled 5-minute background cloud sync...');
-            syncToCloud();
+        const now = Date.now();
+        const elapsedMinutes = (now - lastSyncTime) / 60000;
+
+        // Triggers if 1 minute has passed, overcoming browser throttling
+        if (elapsedMinutes >= 1) {
+            console.log('⏱️ 1 minute elapsed. Triggering background cloud sync...');
+            if (typeof syncToCloud === 'function') {
+                try {
+                    syncToCloud();
+                    lastSyncTime = Date.now(); // Reset timer on success
+                } catch (err) {
+                    console.error('Auto-sync execution error:', err);
+                }
+            }
         }
-    }, 300000); // 300,000 ms = 5 minutes
+    }, 15000); // Checks every 15 seconds to ensure it triggers precisely on the minute
     </script>
 </body>
 </html>
