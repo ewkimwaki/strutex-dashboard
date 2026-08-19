@@ -905,6 +905,15 @@
                 alert("Job Card cleared.");
             }
         }
+        // ==========================================
+    // AUTO-SYNC TO SUPABASE (Every 5 Minutes)
+    // ==========================================
+    setInterval(() => {
+        if (typeof syncToCloud === 'function') {
+            console.log('⏱️ Running scheduled 5-minute background cloud sync...');
+            syncToCloud();
+        }
+    }, 300000); // 300,000 ms = 5 minutes
     </script>
 </body>
 </html>
