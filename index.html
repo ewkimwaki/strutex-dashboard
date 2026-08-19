@@ -280,7 +280,7 @@
     </style>
 <style>
         /* ==========================================
-           MOBILE RESPONSIVE & OVERLAP FIX
+           MOBILE RESPONSIVE & FULL WRAP FIX (NO CUT-OFF)
            ========================================== */
         
         .table-responsive, body {
@@ -290,24 +290,24 @@
 
         table {
             width: 100%;
-            max-width: 100%;
             border-collapse: collapse;
         }
 
         table th, table td {
             padding: 10px 12px;
             white-space: nowrap;
-            height: auto !important;
-            line-height: 1.4 !important; /* Fixes text overlapping by adding breathing room between lines */
+            line-height: 1.4 !important;
         }
 
-        /* Fix station name column: wraps text, expands rows, and sets a max-width so it doesn't take over the screen */
-        table td:nth-child(2), table th:nth-child(2) { 
+        /* Station Name Column: Wraps fully, expands naturally, and removes any clipping */
+        table td:nth-child(2), table th:nth-child(2),
+        .station-name-cell, .station-col { 
             white-space: normal !important;
             word-break: break-word !important;
             overflow-wrap: break-word !important;
             min-width: 160px;
-            max-width: 220px; 
+            max-width: none !important; /* Removes the restriction that was cutting text off */
+            overflow: visible !important;
         }
     </style>
 </head>
