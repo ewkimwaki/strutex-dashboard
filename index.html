@@ -115,14 +115,14 @@
             padding: 20px;
             border-radius: 8px;
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             max-height: 90vh;
             overflow-y: auto;
             box-sizing: border-box;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        /* Passport Style Wizard Form */
+        /* Wizard Form */
         .wizard-step { display: none; }
         .wizard-step.active { display: block; }
         
@@ -147,7 +147,6 @@
             box-sizing: border-box;
         }
 
-        /* Dynamic Itemized Rows & Daily Logs in Wizard */
         .dynamic-row {
             display: flex;
             gap: 6px;
@@ -155,11 +154,8 @@
             align-items: center;
         }
 
-        .dynamic-row input {
-            flex: 1;
-        }
+        .dynamic-row input { flex: 1; }
 
-        /* Rich text toolbar & editor */
         .editor-toolbar {
             display: flex;
             gap: 5px;
@@ -190,7 +186,6 @@
             outline: none;
         }
 
-        /* Table & Mobile Card Responsiveness */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -238,7 +233,7 @@
             font-size: 0.8rem;
         }
 
-        /* --- PORTRAIT A4 JOB CARD CONTAINER (SCREEN VIEW) --- */
+        /* --- SCREEN VIEW: PORTRAIT COMFORTABLE CONTAINER --- */
         .jobcard-container {
             background: white;
             border: 2px solid #1e293b;
@@ -253,7 +248,6 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            overflow-x: hidden;
         }
 
         .jc-header {
@@ -327,10 +321,10 @@
             align-self: center;
         }
 
-        /* --- PROFESSIONAL LEGIBLE PRINT & PDF EXPORT RULES --- */
+        /* --- LANDSCAPE PRINT & PDF EXPORT RULES --- */
         @page {
-            size: A4 portrait;
-            margin: 12mm;
+            size: A4 landscape;
+            margin: 10mm;
         }
 
         @media print {
@@ -366,45 +360,54 @@
                 margin: 0 !important;
                 background: white !important;
             }
-            /* INCREASED PRINT FONT SIZES FOR OLDER TECHNICIAN LEGIBILITY */
+            /* LANDSCAPE GRID LAYOUT FOR MAXIMUM LEGIBILITY & NO CRAMMING */
             .jobcard-container {
                 border: 1.5px solid #000000 !important;
                 max-width: 100% !important;
                 width: 100% !important;
-                padding: 12px !important;
+                padding: 14px !important;
                 margin: 0 !important;
                 box-shadow: none !important;
-                font-size: 11pt !important; /* Highly legible body font for printing */
-                line-height: 1.4 !important;
+                font-size: 11pt !important; /* Bold, highly readable print font */
+                line-height: 1.45 !important;
                 color: #000000 !important;
-                page-break-after: auto;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important; /* 2-column landscape spread */
+                gap: 12px !important;
+            }
+            .jc-header {
+                grid-column: span 2 !important;
+                border-bottom: 2px solid #000000 !important;
             }
             .jc-header strong {
-                font-size: 14pt !important;
+                font-size: 15pt !important;
                 color: #000000 !important;
             }
             .jc-header span {
-                color: #333333 !important;
-                font-size: 9pt !important;
+                color: #222222 !important;
+                font-size: 10pt !important;
+            }
+            /* Full-span sections for scope, logs, and signatures */
+            .jc-box.span-2 {
+                grid-column: span 2 !important;
             }
             .jc-box {
                 break-inside: avoid;
                 page-break-inside: avoid;
-                margin-bottom: 12px;
                 background: #ffffff !important;
                 border: 1px solid #333333 !important;
                 padding: 10px 12px !important;
             }
             .jc-box strong {
-                font-size: 10pt !important;
+                font-size: 10.5pt !important;
                 color: #000000 !important;
-                border-bottom: 1px solid #999999 !important;
+                border-bottom: 1px solid #888888 !important;
                 padding-bottom: 4px;
                 margin-bottom: 6px;
             }
             .jc-table-clean th, .jc-table-clean td {
-                font-size: 10pt !important; /* Larger, crystal-clear table font */
-                padding: 7px 9px !important;
+                font-size: 10.5pt !important;
+                padding: 8px 10px !important;
                 border: 1px solid #444444 !important;
                 color: #000000 !important;
             }
@@ -538,7 +541,7 @@
                 </div>
             </div>
 
-            <!-- Wizard Step 2: Itemized Scope of Work (Supports 15+ items) -->
+            <!-- Wizard Step 2: Itemized Scope of Work -->
             <div class="wizard-step" id="wizStep2">
                 <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 2: Itemized Scope of Work (Tasks Checklist)</h4>
                 <p style="font-size: 0.75rem; color: #64748b;">Add as many individual tasks as required for complex sites (e.g., up to 15+ checklist items).</p>
@@ -554,7 +557,7 @@
                 </div>
             </div>
 
-            <!-- Wizard Step 3: Multi-Day Daily Logs (Supports 24+ days with auto-date increment) -->
+            <!-- Wizard Step 3: Multi-Day Daily Logs -->
             <div class="wizard-step" id="wizStep3">
                 <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 3: Multi-Day Daily Work Logs (1 - 24+ Days)</h4>
                 <p style="font-size: 0.75rem; color: #64748b;">Dates automatically increment to the next day when adding new logs.</p>
@@ -571,28 +574,28 @@
 
                 <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
                     <button class="btn btn-secondary" onclick="nextWizardStep(2)">Previous</button>
-                    <button class="btn btn-success" onclick="reviewJobCard()">Review Portrait Job Card</button>
+                    <button class="btn btn-success" onclick="reviewJobCard()">Review Job Card Preview</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. Final Rendered Portrait Job Card Print Preview Modal -->
+    <!-- 3. Final Rendered Job Card Print Preview Modal -->
     <div id="jobCardModal" class="modal">
-        <div class="modal-content" style="max-width: 720px;">
+        <div class="modal-content" style="max-width: 820px;">
             <div class="jobcard-container" id="printableJobCard">
-                <!-- Header -->
+                <!-- Header (Spans full width in print) -->
                 <div class="jc-header">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
-                            <strong style="font-size: 1.1rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
-                            <span style="font-size: 0.78rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
+                            <strong style="font-size: 1.15rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
+                            <span style="font-size: 0.8rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
                         </div>
                         <span style="font-size: 0.75rem; background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
                     </div>
                 </div>
 
-                <!-- Work Order Details Box -->
+                <!-- Box 1: Work Order Details -->
                 <div class="jc-box">
                     <strong>Work Order & Project Info</strong>
                     <div class="jc-data-row">
@@ -608,15 +611,7 @@
                     </div>
                 </div>
 
-                <!-- Itemized Scope Box (15+ items support) -->
-                <div class="jc-box">
-                    <strong>Itemized Scope of Work / Tasks</strong>
-                    <div id="jcScopeContainer" style="margin-top: 6px;">
-                        <!-- Itemized checklist rendered here -->
-                    </div>
-                </div>
-
-                <!-- Schedule & Materials Box -->
+                <!-- Box 2: Schedule & Materials -->
                 <div class="jc-box">
                     <strong>Schedule & Materials</strong>
                     <div class="jc-data-row">
@@ -629,38 +624,43 @@
                     </div>
                 </div>
 
-                <!-- Safety Precautions Box -->
+                <!-- Box 3: Itemized Scope (Spans full width) -->
+                <div class="jc-box span-2">
+                    <strong>Itemized Scope of Work / Tasks</strong>
+                    <div id="jcScopeContainer" style="margin-top: 6px;">
+                        <!-- Itemized checklist rendered here -->
+                    </div>
+                </div>
+
+                <!-- Box 4: Safety Precautions -->
                 <div class="jc-box">
                     <strong>Safety Precautions & Mitigation</strong>
                     <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.8rem; color: #334155;"></div>
                 </div>
 
-                <!-- Multi-Day Work Logs Box (Supports 24+ days with fixed portrait containment) -->
+                <!-- Box 5: Signatures Stacked -->
                 <div class="jc-box">
+                    <strong>Signatures & Approvals</strong>
+                    <div style="display: flex; gap: 8px; margin-top: 6px;">
+                        <div style="flex:1; border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
+                            <span style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 20px;">Supervisor's Sign:</span>
+                        </div>
+                        <div style="flex:1; border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
+                            <span style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 20px;">Employee's Sign:</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 6: Multi-Day Work Progress Logs (Spans full width) -->
+                <div class="jc-box span-2">
                     <strong>Multi-Day Work Progress Logs</strong>
                     <div id="jcLogsContainer" style="margin-top: 6px;">
                         <!-- Multi-day table rendered here -->
                     </div>
                 </div>
-
-                <!-- Signatures Stacked Box -->
-                <div class="jc-box">
-                    <strong>Signatures & Approvals</strong>
-                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-                        <div style="border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
-                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Supervisor's Signature:</span>
-                        </div>
-                        <div style="border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
-                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Employee's Signature:</span>
-                        </div>
-                        <div style="border: 1px dashed #cbd5e1; padding: 10px; border-radius: 4px; text-align: center;">
-                            <span style="font-size: 0.75rem; color: #64748b;">[ Client Station Manager Stamp & Signature Here ]</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Styled Non-Overlapping Action Footer for Review Modal -->
+            <!-- Action Footer -->
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 12px;" class="no-print">
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start;">
                     <button class="btn btn-danger" onclick="deleteJobCard()" style="font-size: 0.75rem;">🗑️ Delete / Reset Card</button>
@@ -668,7 +668,7 @@
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
                     <button class="btn btn-secondary" onclick="closeModal('jobCardModal')" style="font-size: 0.75rem;">Close Preview</button>
-                    <button class="btn btn-secondary" onclick="window.print()" style="font-size: 0.75rem;">🖨️ Print / PDF A4</button>
+                    <button class="btn btn-secondary" onclick="window.print()" style="font-size: 0.75rem;">🖨️ Print / PDF Landscape A4</button>
                     <button class="btn btn-success" onclick="completeAndSaveJobCard()" style="font-size: 0.75rem;">Complete & Save Job Card</button>
                 </div>
             </div>
@@ -789,7 +789,6 @@
                 }
             }
 
-            // --- 10-MINUTE AUTO-SAVE INTERVAL ---
             setInterval(() => {
                 saveLocally();
                 const indicator = document.getElementById("autosaveIndicator");
@@ -865,7 +864,6 @@
             }
         }
 
-        // --- CHECKLIST & DYNAMIC WIZARD WORKFLOW ---
         function openChecklist(btn) {
             activeRow = btn.closest('tr');
             const stationName = activeRow.cells[2].innerText;
@@ -895,13 +893,11 @@
                 document.getElementById('wizMaterials').value = existingPayload ? existingPayload.materials : "Standard PPE, Hand tools, DODO servicing kit";
                 document.getElementById('wizSafety').value = existingPayload ? existingPayload.safety : "Hazard: Open Area Works. Mitigation: Barricaded zone, warning tape, PPEs deployed.";
 
-                // Populate Itemized Scope
                 const scopeContainer = document.getElementById('scopeItemsContainer');
                 scopeContainer.innerHTML = "";
                 const initialScopes = existingPayload && existingPayload.scopeItems ? existingPayload.scopeItems : [activeRow.querySelector('.scope-display').innerText];
                 initialScopes.forEach(itemText => addScopeItemRow(itemText));
 
-                // Populate Multi-Day Logs
                 const logsContainer = document.getElementById('dailyLogsContainer');
                 logsContainer.innerHTML = "";
                 const initialLogs = existingPayload && existingPayload.dailyLogs ? existingPayload.dailyLogs : [{date: document.getElementById('wizStartDate').value, timeIn: "08:00", timeOut: "17:00", progress: "Initial site inspection and setup."}];
@@ -934,7 +930,6 @@
             container.appendChild(div);
         }
 
-        // --- SMART AUTO-INCREMENT DATE FOR DAILY LOGS ---
         function addDailyLogRow(date = null, timeIn = "08:00", timeOut = "17:00", progress = "") {
             const container = document.getElementById('dailyLogsContainer');
 
@@ -1021,12 +1016,11 @@
             document.getElementById('jcMaterialsDisp').innerText = data.materials;
             document.getElementById('jcSafetyDisp').innerText = data.safety;
 
-            // Render Itemized Scope List
             const scopeContainer = document.getElementById('jcScopeContainer');
             scopeContainer.innerHTML = "";
             if (data.scopeItems && data.scopeItems.length > 0) {
                 const ul = document.createElement('ul');
-                ul.style.cssText = "margin: 0; padding-left: 18px; font-size: 0.82rem; color: #334155;";
+                ul.style.cssText = "margin: 0; padding-left: 18px; font-size: 0.85rem; color: #334155; column-count: 2; column-gap: 20px;";
                 data.scopeItems.forEach((task, idx) => {
                     const li = document.createElement('li');
                     li.style.marginBottom = "4px";
@@ -1038,7 +1032,6 @@
                 scopeContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No scope tasks itemized.</span>`;
             }
 
-            // Render Multi-Day Logs Table
             const logsContainer = document.getElementById('jcLogsContainer');
             logsContainer.innerHTML = "";
             if (data.dailyLogs && data.dailyLogs.length > 0) {
@@ -1046,8 +1039,8 @@
                     <table class="jc-table-clean">
                         <thead>
                             <tr>
-                                <th style="width: 80px;">Date</th>
-                                <th style="width: 90px;">Hours</th>
+                                <th style="width: 100px;">Date</th>
+                                <th style="width: 110px;">Hours</th>
                                 <th>Work Progress / Description</th>
                             </tr>
                         </thead>
@@ -1103,7 +1096,7 @@
                 updateStatusColor(selectElem);
 
                 saveLocally();
-                alert("Portrait Job Card successfully saved with multi-day logs and itemized scope!");
+                alert("Landscape Job Card successfully saved with multi-day logs and itemized scope!");
             }
             closeModal('jobCardModal');
         }
@@ -1121,7 +1114,6 @@
             }
         }
 
-        // --- ADMIN SCOPE EDITOR ---
         function openScopeEditor(btn) {
             activeScopeCell = btn.closest('tr').querySelector('.scope-display');
             document.getElementById('scopeEditor').innerHTML = activeScopeCell.innerHTML;
@@ -1140,7 +1132,6 @@
             document.execCommand(cmd, false, null);
         }
 
-        // --- TECHNICIAN COMMENT EDITOR ---
         function openCommentEditor(btn) {
             activeCommentCell = btn.closest('tr').querySelector('.comment-display');
             document.getElementById('commentEditor').innerHTML = activeCommentCell.innerHTML === 'No notes' ? '' : activeCommentCell.innerHTML;
@@ -1199,7 +1190,6 @@
             updateStatusColor(tr.querySelector('.status-select'));
         }
 
-        // --- LOCAL & CLOUD STORAGE ---
         function gatherTableData() {
             const rows = document.querySelectorAll("#tableBody tr");
             const data = [];
@@ -1244,7 +1234,7 @@
 
                 const { error } = await dbClient.from('strutex_stations').upsert(payload, { onConflict: 'station_name' });
                 if (error) alert("Error syncing to Supabase: " + error.message);
-                else alert("Successfully synced all updates, multi-day logs, and job cards to Supabase cloud!");
+                else alert("Successfully synced all updates and landscape job cards to Supabase cloud!");
             } catch (err) {
                 console.error(err);
                 alert("Cloud sync failed.");
