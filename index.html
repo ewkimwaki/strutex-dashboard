@@ -278,12 +278,11 @@
             .stamp-box { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 2px dashed #666666 !important; }
         }
     </style>
- <style>
+<style>
         /* ==========================================
-           MOBILE-FRIENDLY RESPONSIVE TABLE FIX
+           MOBILE RESPONSIVE & OVERLAP FIX
            ========================================== */
         
-        /* Wrap your main table or its parent container in this class if it isn't already */
         .table-responsive, body {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -295,25 +294,20 @@
             border-collapse: collapse;
         }
 
-        /* Prevent columns from shrinking too much on mobile */
         table th, table td {
-            padding: 8px 12px;
-            white-space: nowrap; /* Keep standard columns clean and single-line */
+            padding: 10px 12px;
+            white-space: nowrap;
+            height: auto !important;
+            line-height: 1.4 !important; /* Fixes text overlapping by adding breathing room between lines */
         }
 
-        /* Specifically target the Station Name column to allow wrapping so it never overlaps */
-        /* (Assuming your station name is in the first or second column, or has a specific text class) */
+        /* Fix station name column: wraps text, expands rows, and sets a max-width so it doesn't take over the screen */
         table td:nth-child(2), table th:nth-child(2) { 
             white-space: normal !important;
             word-break: break-word !important;
-            min-width: 140px; /* Gives the station name enough breathing room on mobile */
-        }
-
-        /* If your station name column uses a specific class instead, use this: */
-        .station-name-cell, .station-col {
-            white-space: normal !important;
-            word-break: break-word !important;
-            min-width: 140px;
+            overflow-wrap: break-word !important;
+            min-width: 160px;
+            max-width: 220px; 
         }
     </style>
 </head>
