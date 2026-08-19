@@ -279,37 +279,45 @@
         }
     </style>
 <style>
-        /* ==========================================
-           MOBILE RESPONSIVE & FULL WRAP FIX (NO CUT-OFF)
-           ========================================== */
-        
-        .table-responsive, body {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+    /* ==========================================
+       MOBILE RESPONSIVE & COMPLETE TEXT WRAP FIX
+       ========================================== */
+    
+    /* Ensure the card or table container is the one that scrolls horizontally */
+    .table-responsive {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border: 0; /* Keep look clean in card views */
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px; /* KEY: Force the table to have a decent desktop width, making the card scroll */
+    }
 
-        table th, table td {
-            padding: 10px 12px;
-            white-space: nowrap;
-            line-height: 1.4 !important;
-        }
+    table th, table td {
+        padding: 10px 12px;
+        white-space: nowrap; /* Keep other columns compact and single-line */
+        line-height: 1.4 !important;
+        height: auto !important;
+        vertical-align: middle;
+    }
 
-        /* Station Name Column: Wraps fully, expands naturally, and removes any clipping */
-        table td:nth-child(2), table th:nth-child(2),
-        .station-name-cell, .station-col { 
-            white-space: normal !important;
-            word-break: break-word !important;
-            overflow-wrap: break-word !important;
-            min-width: 160px;
-            max-width: none !important; /* Removes the restriction that was cutting text off */
-            overflow: visible !important;
-        }
-    </style>
+    /* Target the Station Name Column by reliable class (assuming .station-name-cell is used) */
+    .station-name-cell, .station-col, table td:nth-child(2), table th:nth-child(2) { 
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        min-width: 180px; /* Force at least this much width for station names */
+        max-width: none !important; /* Ensure the cell can expand vertically */
+        overflow: visible !important;
+        line-height: 1.6 !important; /* Extra line spacing for readability */
+    }
+</style>
 </head>
 </head>
 <body>
