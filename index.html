@@ -905,15 +905,26 @@
                 alert("Job Card cleared.");
             }
         }
-      // ==========================================
-    // AUTO-SYNC (Triggers your Cloud Button every 1 minute)
     // ==========================================
-    console.log("🟢 Auto-sync clicker loaded successfully!");
+    // SMART AUTO-SYNC (Triggers every 1 min, ONLY when idle)
+    // ==========================================
+    console.log("🟢 Smart auto-sync loaded successfully!");
 
     setInterval(() => {
-        console.log('⏱️ 1 minute elapsed. Triggering automatic cloud sync...');
-        
-        // Find your Save/Sync to Cloud button automatically based on its text
+        // 1. Check if a modal (like the Job Card modal) is currently open
+        const jobCardModal = document.getElementById('jobCardModal');
+        const isModalOpen = jobCardModal && getComputedStyle(jobCardModal).display !== 'none';
+
+        // 2. Check if the user is currently typing in an input field or textarea
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag);
+
+        if (isModalOpen || isTyping) {
+            console.log('⏳ Technician is currently active or filling a job card. Skipping auto-sync...');
+            return; // Skip this cycle so we don't interrupt them
+        }
+
+        // If idle, find and trigger the cloud sync button safely
         const buttons = Array.from(document.querySelectorAll('button'));
         const cloudBtn = buttons.find(el => 
             el.textContent.includes('Sync') || 
@@ -923,11 +934,11 @@
         
         if (cloudBtn) {
             cloudBtn.click();
-            console.log('✅ Auto-clicked the cloud sync button successfully!');
+            console.log('✅ Smart auto-sync executed: Database updated in the background.');
         } else {
-            console.warn('⚠️ Warning: Could not find the cloud sync button on the page.');
+            console.warn('⚠️ Warning: Could not find the cloud sync button.');
         }
-    }, 60000); // 60,000 ms = exactly 1 minute
+    }, 60000); // Checks every 1 minute
     </script>
 </body>
 </html>
