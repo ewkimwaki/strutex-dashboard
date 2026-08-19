@@ -238,7 +238,7 @@
             font-size: 0.8rem;
         }
 
-        /* --- PERFECTED STRICT PORTRAIT A4 MOBILE-FIRST JOB CARD STYLING --- */
+        /* --- PORTRAIT A4 JOB CARD CONTAINER (SCREEN VIEW) --- */
         .jobcard-container {
             background: white;
             border: 2px solid #1e293b;
@@ -246,13 +246,13 @@
             padding: 16px;
             box-sizing: border-box;
             width: 100%;
-            max-width: 210mm; /* Strict A4 Portrait width constraint */
+            max-width: 210mm;
             margin: 0 auto;
-            font-size: 0.78rem;
+            font-size: 0.85rem;
             color: #1e293b;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             overflow-x: hidden;
         }
 
@@ -266,7 +266,7 @@
 
         .jc-box {
             border: 1px solid #cbd5e1;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             background: #f8fafc;
             box-sizing: border-box;
@@ -278,12 +278,12 @@
         .jc-box strong {
             display: block;
             color: #0f172a;
-            margin-bottom: 4px;
-            font-size: 0.75rem;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 3px;
+            padding-bottom: 4px;
         }
 
         .jc-data-row {
@@ -302,15 +302,15 @@
 
         .jc-table-clean {
             width: 100%;
-            table-layout: fixed; /* Enforces strict column width containment */
+            table-layout: fixed;
             border-collapse: collapse;
             margin-top: 6px;
         }
 
         .jc-table-clean th, .jc-table-clean td {
             border: 1px solid #cbd5e1;
-            padding: 5px 6px;
-            font-size: 0.72rem;
+            padding: 6px 8px;
+            font-size: 0.8rem;
             text-align: left;
             word-break: break-word;
             overflow-wrap: break-word;
@@ -327,10 +327,10 @@
             align-self: center;
         }
 
-        /* --- ROBUST MULTI-PAGE A4 PRINT & PDF EXPORT RULES --- */
+        /* --- PROFESSIONAL LEGIBLE PRINT & PDF EXPORT RULES --- */
         @page {
             size: A4 portrait;
-            margin: 10mm;
+            margin: 12mm;
         }
 
         @media print {
@@ -366,20 +366,52 @@
                 margin: 0 !important;
                 background: white !important;
             }
+            /* INCREASED PRINT FONT SIZES FOR OLDER TECHNICIAN LEGIBILITY */
             .jobcard-container {
-                border: 1px solid #1e293b !important;
+                border: 1.5px solid #000000 !important;
                 max-width: 100% !important;
                 width: 100% !important;
-                padding: 10px !important;
+                padding: 12px !important;
                 margin: 0 !important;
                 box-shadow: none !important;
+                font-size: 11pt !important; /* Highly legible body font for printing */
+                line-height: 1.4 !important;
+                color: #000000 !important;
                 page-break-after: auto;
+            }
+            .jc-header strong {
+                font-size: 14pt !important;
+                color: #000000 !important;
+            }
+            .jc-header span {
+                color: #333333 !important;
+                font-size: 9pt !important;
             }
             .jc-box {
                 break-inside: avoid;
                 page-break-inside: avoid;
-                margin-bottom: 8px;
+                margin-bottom: 12px;
                 background: #ffffff !important;
+                border: 1px solid #333333 !important;
+                padding: 10px 12px !important;
+            }
+            .jc-box strong {
+                font-size: 10pt !important;
+                color: #000000 !important;
+                border-bottom: 1px solid #999999 !important;
+                padding-bottom: 4px;
+                margin-bottom: 6px;
+            }
+            .jc-table-clean th, .jc-table-clean td {
+                font-size: 10pt !important; /* Larger, crystal-clear table font */
+                padding: 7px 9px !important;
+                border: 1px solid #444444 !important;
+                color: #000000 !important;
+            }
+            .jc-table-clean th {
+                background-color: #e5e7eb !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             tr {
                 break-inside: avoid;
@@ -553,10 +585,10 @@
                 <div class="jc-header">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
-                            <strong style="font-size: 0.95rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
-                            <span style="font-size: 0.68rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
+                            <strong style="font-size: 1.1rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
+                            <span style="font-size: 0.78rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
                         </div>
-                        <span style="font-size: 0.68rem; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
+                        <span style="font-size: 0.75rem; background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
                     </div>
                 </div>
 
@@ -593,14 +625,14 @@
                     </div>
                     <div style="margin-top: 6px;">
                         <strong>Required Materials & Tools:</strong>
-                        <div id="jcMaterialsDisp" style="margin-top: 2px; font-size: 0.75rem; color: #334155;"></div>
+                        <div id="jcMaterialsDisp" style="margin-top: 2px; font-size: 0.8rem; color: #334155;"></div>
                     </div>
                 </div>
 
                 <!-- Safety Precautions Box -->
                 <div class="jc-box">
                     <strong>Safety Precautions & Mitigation</strong>
-                    <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.75rem; color: #334155;"></div>
+                    <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.8rem; color: #334155;"></div>
                 </div>
 
                 <!-- Multi-Day Work Logs Box (Supports 24+ days with fixed portrait containment) -->
@@ -616,13 +648,13 @@
                     <strong>Signatures & Approvals</strong>
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
                         <div style="border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
-                            <span style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 20px;">Supervisor's Signature:</span>
+                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Supervisor's Signature:</span>
                         </div>
                         <div style="border: 1px dashed #cbd5e1; padding: 6px; border-radius: 4px;">
-                            <span style="font-size: 0.7rem; color: #64748b; display: block; margin-bottom: 20px;">Employee's Signature:</span>
+                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Employee's Signature:</span>
                         </div>
-                        <div style="border: 1px dashed #cbd5e1; padding: 8px; border-radius: 4px; text-align: center;">
-                            <span style="font-size: 0.7rem; color: #94a3b8;">[ Client Station Manager Stamp & Signature Here ]</span>
+                        <div style="border: 1px dashed #cbd5e1; padding: 10px; border-radius: 4px; text-align: center;">
+                            <span style="font-size: 0.75rem; color: #64748b;">[ Client Station Manager Stamp & Signature Here ]</span>
                         </div>
                     </div>
                 </div>
@@ -681,7 +713,7 @@
     <script>
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODtokODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6InZub24iLCJpYXQiOjE3ODtokODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
         
         let dbClient = null;
         if (window.supabase) {
@@ -994,19 +1026,19 @@
             scopeContainer.innerHTML = "";
             if (data.scopeItems && data.scopeItems.length > 0) {
                 const ul = document.createElement('ul');
-                ul.style.cssText = "margin: 0; padding-left: 18px; font-size: 0.75rem; color: #334155;";
+                ul.style.cssText = "margin: 0; padding-left: 18px; font-size: 0.82rem; color: #334155;";
                 data.scopeItems.forEach((task, idx) => {
                     const li = document.createElement('li');
-                    li.style.marginBottom = "3px";
+                    li.style.marginBottom = "4px";
                     li.innerHTML = `<strong>Task ${idx + 1}:</strong> ${task}`;
                     ul.appendChild(li);
                 });
                 scopeContainer.appendChild(ul);
             } else {
-                scopeContainer.innerHTML = `<span style="font-size:0.75rem; color:#64748b;">No scope tasks itemized.</span>`;
+                scopeContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No scope tasks itemized.</span>`;
             }
 
-            // Render Multi-Day Logs Table with Strict Portrait Column Width Containment
+            // Render Multi-Day Logs Table
             const logsContainer = document.getElementById('jcLogsContainer');
             logsContainer.innerHTML = "";
             if (data.dailyLogs && data.dailyLogs.length > 0) {
@@ -1014,8 +1046,8 @@
                     <table class="jc-table-clean">
                         <thead>
                             <tr>
-                                <th style="width: 75px;">Date</th>
-                                <th style="width: 80px;">Hours</th>
+                                <th style="width: 80px;">Date</th>
+                                <th style="width: 90px;">Hours</th>
                                 <th>Work Progress / Description</th>
                             </tr>
                         </thead>
@@ -1033,7 +1065,7 @@
                 tableHtml += `</tbody></table>`;
                 logsContainer.innerHTML = tableHtml;
             } else {
-                logsContainer.innerHTML = `<span style="font-size:0.75rem; color:#64748b;">No daily logs recorded.</span>`;
+                logsContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No daily logs recorded.</span>`;
             }
         }
 
