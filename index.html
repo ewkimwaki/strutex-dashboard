@@ -905,33 +905,29 @@
                 alert("Job Card cleared.");
             }
         }
-       // ==========================================
-        // ROBUST AUTO-SYNC (Every 1 Minute)
-        // ==========================================
-        console.log("🟢 Auto-sync script loaded successfully!");
-        let lastSyncTime = Date.now();
+      // ==========================================
+    // AUTO-SYNC (Triggers your Cloud Button every 1 minute)
+    // ==========================================
+    console.log("🟢 Auto-sync clicker loaded successfully!");
 
-        setInterval(() => {
-            const now = Date.now();
-            const elapsedMinutes = (now - lastSyncTime) / 60000;
-
-            if (elapsedMinutes >= 1) {
-                console.log('⏱️ 1 minute elapsed. Triggering background cloud sync...');
-                console.log('🔍 Checking syncToCloud function availability:', typeof syncToCloud);
-                
-                if (typeof syncToCloud === 'function') {
-                    try {
-                        syncToCloud();
-                        lastSyncTime = Date.now(); // Reset timer on success
-                        console.log('✅ Background auto-sync executed successfully.');
-                    } catch (err) {
-                        console.error('❌ Auto-sync execution error:', err);
-                    }
-                } else {
-                    console.warn('⚠️ Warning: syncToCloud is not found in the global scope!');
-                }
-            }
-        }, 15000); // Checks every 15 seconds
+    setInterval(() => {
+        console.log('⏱️ 1 minute elapsed. Triggering automatic cloud sync...');
+        
+        // Find your Save/Sync to Cloud button automatically based on its text
+        const buttons = Array.from(document.querySelectorAll('button'));
+        const cloudBtn = buttons.find(el => 
+            el.textContent.includes('Sync') || 
+            el.textContent.includes('Cloud') || 
+            el.textContent.includes('Save')
+        );
+        
+        if (cloudBtn) {
+            cloudBtn.click();
+            console.log('✅ Auto-clicked the cloud sync button successfully!');
+        } else {
+            console.warn('⚠️ Warning: Could not find the cloud sync button on the page.');
+        }
+    }, 60000); // 60,000 ms = exactly 1 minute
     </script>
 </body>
 </html>
