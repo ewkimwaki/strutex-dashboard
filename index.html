@@ -327,11 +327,67 @@
             align-self: center;
         }
 
+        /* --- ROBUST MULTI-PAGE A4 PRINT & PDF EXPORT RULES --- */
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+        }
+
         @media print {
-            body * { visibility: hidden; }
-            #jobCardModal, #jobCardModal * { visibility: visible; }
-            #jobCardModal { position: absolute; left: 0; top: 0; width: 100%; background: white; z-index: 9999; padding: 0; }
-            .no-print { display: none !important; }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            body * {
+                visibility: hidden !important;
+            }
+            #jobCardModal, #jobCardModal * {
+                visibility: visible !important;
+            }
+            #jobCardModal {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background: white !important;
+                z-index: 9999 !important;
+                padding: 0 !important;
+                display: block !important;
+                overflow: visible !important;
+            }
+            .modal-content {
+                box-shadow: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: white !important;
+            }
+            .jobcard-container {
+                border: 1px solid #1e293b !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 10px !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: auto;
+            }
+            .jc-box {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 8px;
+                background: #ffffff !important;
+            }
+            tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .no-print {
+                display: none !important;
+            }
         }
     </style>
 </head>
