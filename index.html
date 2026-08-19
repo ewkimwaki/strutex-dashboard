@@ -55,7 +55,7 @@
         header h1 { margin: 0; font-size: 1.25rem; }
         header p { margin: 3px 0 0 0; font-size: 0.8rem; color: #94a3b8; }
 
-        .btn-group { display: flex; flex-wrap: gap; gap: 8px; align-items: center; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
         .btn {
             background-color: var(--accent-color);
@@ -129,10 +129,6 @@
         table { width: 100%; border-collapse: collapse; margin-top: 5px; text-align: left; min-width: 1150px; }
         th, td { padding: 10px; border: 1px solid var(--border-color); font-size: 0.8rem; vertical-align: middle; }
         th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
-
-        .badge-tier1 { color: var(--tier1-color); font-weight: bold; }
-        .badge-tier2 { color: var(--tier2-color); font-weight: bold; }
-        .badge-tier3 { color: var(--tier3-color); font-weight: bold; }
 
         .map-link { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 6px; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.75rem; }
         .status-select { padding: 5px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
@@ -291,11 +287,11 @@
             <header>
                 <div>
                     <h1>Strutex Builders - Operations Dashboard</h1>
-                    <p>Petroleum Infrastructure & Field Deployment Ecosystem (Supabase Cloud Synced)</p>
+                    <p>Petroleum Infrastructure & Field Deployment Ecosystem</p>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
                     <div class="btn-group no-print">
-                        <span id="autosaveIndicator">Connecting to Cloud...</span>
+                        <span id="autosaveIndicator">Connecting to Supabase...</span>
                         <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
                         <button class="btn btn-secondary" onclick="saveLocally()">Save Local</button>
                         <button class="btn" onclick="saveToCloud()">☁️ Sync to Cloud</button>
@@ -306,7 +302,7 @@
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3 style="margin: 0; font-size: 1rem;">Master Priority & Tracking Matrix (Fully Editable)</h3>
-                    <span style="font-size: 0.75rem; color: #64748b;">Click any cell to edit • Changes sync across all devices</span>
+                    <span style="font-size: 0.75rem; color: #64748b;">Click any cell to edit • Supabase Cloud Active</span>
                 </div>
                 <div class="table-responsive">
                     <table id="deploymentTable">
@@ -519,7 +515,7 @@
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
                     <button class="btn btn-secondary" onclick="closeModal('jobCardModal')" style="font-size: 0.75rem;">Close Preview</button>
                     <button class="btn btn-secondary" onclick="window.print()" style="font-size: 0.75rem;">🖨️ Save as PDF / Print</button>
-                    <button class="btn btn-success" onclick="completeAndSaveJobCard()" style="font-size: 0.75rem;">Complete & Sync to Cloud</button>
+                    <button class="btn btn-success" onclick="completeAndSaveJobCard()" style="font-size: 0.75rem;">Complete & Save</button>
                 </div>
             </div>
         </div>
@@ -529,11 +525,17 @@
     <script>
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
+        
+        // 🔑 PASTE YOUR EXACT SUPABASE ANON KEY HERE:
+        const SUPABASE_ANON_KEY = 'PASTE_YOUR_ACTUAL_ANON_KEY_HERE';
         
         let dbClient = null;
-        if (window.supabase) {
-            dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        if (window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'PASTE_YOUR_ACTUAL_ANON_KEY_HERE') {
+            try {
+                dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (err) {
+                console.warn("Supabase initialization error:", err);
+            }
         }
 
         let activeRow = null;
@@ -553,7 +555,6 @@
             let stations = null;
             const indicator = document.getElementById("autosaveIndicator");
 
-            // 1. Try loading from Supabase Cloud
             if (dbClient) {
                 try {
                     indicator.innerText = "Syncing from Supabase...";
@@ -571,17 +572,22 @@
                             jobCardSaved: d.job_card_saved || false,
                             jobCardPayload: d.job_card_payload || null
                         }));
-                        indicator.innerText = "Cloud Connected (Synced)";
+                        indicator.innerText = "Supabase Connected";
                         indicator.style.color = "#15803d";
                     } else if (error) {
-                        console.warn("Supabase fetch warning:", error.message);
+                        console.error("Supabase fetch error:", error.message);
+                        indicator.innerText = "Supabase Auth/Table Error";
+                        indicator.style.color = "#b91c1c";
                     }
                 } catch (err) {
-                    console.log("Cloud fetch error, falling back to local storage:", err);
+                    console.error("Supabase connection exception:", err);
                 }
+            } else {
+                indicator.innerText = "Set Supabase Anon Key";
+                indicator.style.color = "#b91c1c";
             }
 
-            // 2. Fallback to LocalStorage if cloud returned nothing
+            // Fallback to local storage if cloud fetch returns nothing
             if (!stations || stations.length === 0) {
                 const localData = localStorage.getItem('strutex_stations_cloud_sync');
                 if (localData) {
@@ -589,7 +595,6 @@
                 }
             }
 
-            // 3. Final default fallback
             if (!stations || stations.length === 0) {
                 stations = defaultStations;
             }
@@ -602,7 +607,6 @@
             tbody.innerHTML = "";
             stations.forEach((s, index) => {
                 const tr = document.createElement("tr");
-                let tierClass = s.tier && s.tier.includes("Tier 1") ? "badge-tier1" : s.tier && s.tier.includes("Tier 2") ? "badge-tier2" : "badge-tier3";
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.mapQuery || s.name)}`;
                 
                 let jcButtonHtml = `<span style="font-size:0.75rem; color:#94a3b8;">No Card</span>`;
@@ -611,17 +615,17 @@
                 }
 
                 tr.innerHTML = `
-                    <td><input type="number" class="editable-cell" value="${s.rank || (index + 1)}" style="width:40px; text-align:center;" oninput="saveLocally(); saveToCloud();"></td>
+                    <td><input type="number" class="editable-cell" value="${s.rank || (index + 1)}" style="width:40px; text-align:center;" oninput="saveLocally();"></td>
                     <td>
-                        <select class="status-select" onchange="saveLocally(); saveToCloud();">
+                        <select class="status-select" onchange="saveLocally();">
                             <option ${s.tier === 'Tier 1: High Risk' ? 'selected' : ''}>Tier 1: High Risk</option>
                             <option ${s.tier === 'Tier 2: Medium Risk' ? 'selected' : ''}>Tier 2: Medium Risk</option>
                             <option ${s.tier === 'Tier 3: Low Risk' ? 'selected' : ''}>Tier 3: Low Risk</option>
                         </select>
                     </td>
-                    <td><input type="text" class="editable-cell" value="${s.name || ''}" oninput="saveLocally(); saveToCloud();" style="font-weight:bold;"></td>
+                    <td><input type="text" class="editable-cell" value="${s.name || ''}" oninput="saveLocally();" style="font-weight:bold;"></td>
                     <td><a href="${mapsUrl}" target="_blank" class="map-link">📍 Map</a></td>
-                    <td><input type="text" class="editable-cell" value="${s.info || ''}" oninput="saveLocally(); saveToCloud();"></td>
+                    <td><input type="text" class="editable-cell" value="${s.info || ''}" oninput="saveLocally();"></td>
                     <td>
                         <div style="display:flex; flex-direction:column; gap:4px;">
                             <div class="preview-snippet scope-preview">${s.scope || 'No scope defined...'}</div>
@@ -629,7 +633,7 @@
                         </div>
                     </td>
                     <td>
-                        <select class="status-select" onchange="saveLocally(); saveToCloud();">
+                        <select class="status-select" onchange="saveLocally();">
                             <option ${s.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option ${s.status === 'Ongoing' ? 'selected' : ''}>Ongoing</option>
                             <option ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
@@ -683,7 +687,6 @@
             return stations;
         }
 
-        // --- RICH TEXT MODAL LOGIC ---
         function openRichTextEditor(btn, type) {
             activeRow = btn.closest('tr');
             activeRichTargetCell = type === 'scope' ? activeRow.querySelector('.scope-preview') : activeRow.querySelector('.notes-preview');
@@ -705,7 +708,6 @@
             }
             closeModal('richTextModal');
             saveLocally();
-            saveToCloud();
         }
 
         function addNewRow() {
@@ -724,7 +726,6 @@
             });
             renderTable(stations);
             saveLocally();
-            saveToCloud();
         }
 
         function deleteStation(index) {
@@ -733,7 +734,6 @@
                 stations.splice(index, 1);
                 renderTable(stations);
                 saveLocally();
-                saveToCloud();
             }
         }
 
@@ -747,8 +747,7 @@
             const indicator = document.getElementById("autosaveIndicator");
             
             if (!dbClient) {
-                indicator.innerText = "Supabase client not loaded";
-                indicator.style.color = "#b91c1c";
+                alert("Supabase API key is missing. Please paste your valid Anon key into SUPABASE_ANON_KEY.");
                 return;
             }
 
@@ -773,12 +772,14 @@
                     if (error) throw error;
                 }
 
-                indicator.innerText = "Cloud Synced (" + new Date().toLocaleTimeString() + ")";
+                indicator.innerText = "Supabase Synced (" + new Date().toLocaleTimeString() + ")";
                 indicator.style.color = "#15803d";
+                alert("Successfully synced to Supabase Cloud!");
             } catch (err) {
                 console.error("Cloud sync failed:", err);
-                indicator.innerText = "Cloud sync error: " + err.message;
+                indicator.innerText = "Supabase sync error";
                 indicator.style.color = "#b91c1c";
+                alert("Cloud sync failed: " + err.message + "\n\nTip: Ensure 'name' is marked as UNIQUE in your Supabase table.");
             }
         }
 
@@ -883,8 +884,7 @@
             
             closeModal('jobCardModal');
             saveLocally();
-            saveToCloud();
-            alert("Job Card Completed & Synced to Supabase Cloud!");
+            alert("Job Card Completed & Saved Locally!");
         }
 
         function viewSavedJobCard(data) { 
@@ -902,8 +902,7 @@
                 }
                 closeModal('jobCardModal');
                 saveLocally();
-                saveToCloud();
-                alert("Job Card cleared and synced.");
+                alert("Job Card cleared.");
             }
         }
     </script>
