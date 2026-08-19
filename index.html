@@ -114,7 +114,7 @@
             padding: 20px;
             border-radius: 8px;
             width: 100%;
-            max-width: 820px;
+            max-width: 700px;
             max-height: 90vh;
             overflow-y: auto;
             box-sizing: border-box;
@@ -225,76 +225,75 @@
             font-size: 0.8rem;
         }
 
-        /* --- PERFECTED RESPONSIVE JOB CARD STYLING --- */
+        /* --- PERFECTED STRICT PORTRAIT MOBILE-FIRST JOB CARD STYLING --- */
         .jobcard-container {
             background: white;
             border: 2px solid #1e293b;
             border-radius: 8px;
-            padding: 18px;
+            padding: 20px;
             box-sizing: border-box;
             width: 100%;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .jc-header {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             border-bottom: 2px solid #1e293b;
             padding-bottom: 12px;
-            margin-bottom: 12px;
-        }
-
-        @media(min-width: 640px) {
-            .jc-header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-
-        .jc-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        @media(min-width: 640px) {
-            .jc-grid-2 {
-                grid-template-columns: 1fr 1fr;
-            }
         }
 
         .jc-box {
             border: 1px solid #cbd5e1;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             background: #f8fafc;
             box-sizing: border-box;
+            width: 100%;
+            word-break: break-word;
         }
 
         .jc-box strong {
             display: block;
             color: #0f172a;
-            margin-bottom: 3px;
-            font-size: 0.75rem;
+            margin-bottom: 4px;
+            font-size: 0.78rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 3px;
+        }
+
+        .jc-data-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        @media(min-width: 480px) {
+            .jc-data-row {
+                flex-direction: row;
+                justify-content: space-between;
+            }
         }
 
         .jc-table-clean {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
         }
 
         .jc-table-clean th, .jc-table-clean td {
             border: 1px solid #cbd5e1;
             padding: 8px;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             text-align: left;
+            word-break: break-word;
         }
 
         .jc-table-clean th {
@@ -398,7 +397,7 @@
     <div id="jobCardWizardModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-top:0; font-size: 1.1rem; color: #1e293b;">Strutex Job Card Application Wizard</h3>
-            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Fill in all required fields below. Once reviewed, it will generate your official printable job card and save automatically.</p>
+            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Fill in all required fields below. Once reviewed, it will generate your official portrait job card.</p>
 
             <!-- Wizard Step 1: General Info & Dates -->
             <div class="wizard-step active" id="wizStep1">
@@ -409,7 +408,7 @@
                 </div>
                 <div class="form-group">
                     <label>Assigned Engineer / Technician</label>
-                    <input type="text" id="wizEngineer" class="form-control" value="Emmanuel Kimwaki">
+                    <input type="text" id="wizEngineer" class="form-control" value="Emmanuel Simano">
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <div class="form-group" style="flex:1;">
@@ -458,103 +457,97 @@
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
                     <button class="btn btn-secondary" onclick="nextWizardStep(1)">Back</button>
-                    <button class="btn btn-success" onclick="reviewJobCard()">Review Job Card Preview</button>
+                    <button class="btn btn-success" onclick="reviewJobCard()">Review Portrait Job Card</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. Final Rendered Job Card Print Preview Modal (Beautifully Responsive Layout) -->
+    <!-- 3. Final Rendered Portrait Job Card Print Preview Modal -->
     <div id="jobCardModal" class="modal">
-        <div class="modal-content" style="max-width: 860px;">
+        <div class="modal-content" style="max-width: 650px;">
             <div class="jobcard-container" id="printableJobCard">
                 <!-- Header -->
                 <div class="jc-header">
-                    <div>
-                        <strong style="font-size: 1.05rem; color: #1e293b; display: block; margin-bottom: 2px;">STRUTEX BUILDERS LIMITED</strong>
-                        <span style="font-size: 0.75rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya | sstrunterpris@gmail.com</span>
-                    </div>
-                    <div style="text-align: right;">
-                        <span style="font-size: 0.75rem; background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <strong style="font-size: 1rem; color: #1e293b; display: block;">STRUTEX BUILDERS LIMITED</strong>
+                            <span style="font-size: 0.72rem; color: #64748b;">P.O. Box 33472 -00100, Nairobi, Kenya</span>
+                        </div>
+                        <span style="font-size: 0.7rem; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #fcd34d;">OFFICIAL JOB CARD</span>
                     </div>
                 </div>
 
-                <!-- Info Grid Section -->
-                <div class="jc-grid-2">
-                    <div class="jc-box">
-                        <strong>Work Order Details</strong>
-                        <div style="margin-top: 4px;"><strong>Order No:</strong> <span id="jcWorkOrder"></span></div>
-                        <div style="margin-top: 2px;"><strong>Client/Project:</strong> Rubis Energy Kenya :: <span id="jcStationName"></span></div>
+                <!-- Work Order Details Box -->
+                <div class="jc-box">
+                    <strong>Work Order & Project Info</strong>
+                    <div class="jc-data-row">
+                        <div><strong>Order No:</strong> <span id="jcWorkOrder"></span></div>
+                        <div><strong>Date Issued:</strong> <span id="jcDate"></span></div>
                     </div>
-                    <div class="jc-box">
-                        <strong>Assignment Info</strong>
-                        <div style="margin-top: 4px;"><strong>Date Issued:</strong> <span id="jcDate"></span></div>
-                        <div style="margin-top: 2px;"><strong>Assigned Tech:</strong> <span id="jcEngineer"></span></div>
+                    <div class="jc-data-row" style="margin-top: 4px;">
+                        <div><strong>Client/Project:</strong> Rubis Energy Kenya</div>
+                        <div><strong>Station:</strong> <span id="jcStationName"></span></div>
+                    </div>
+                    <div class="jc-data-row" style="margin-top: 4px;">
+                        <div><strong>Assigned Tech:</strong> <span id="jcEngineer"></span></div>
                     </div>
                 </div>
 
                 <!-- Scope Box -->
-                <div class="jc-box" style="margin-bottom: 10px;">
-                    <strong>Job Description & Scope</strong>
+                <div class="jc-box">
+                    <strong>Job Description & Scope of Work</strong>
                     <div id="jcScope" style="margin-top: 4px; font-size: 0.8rem; color: #334155;"></div>
                 </div>
 
-                <!-- Schedule & Materials -->
-                <div class="jc-grid-2">
-                    <div class="jc-box">
-                        <strong>Schedule Timeline</strong>
-                        <div style="margin-top: 4px;"><strong>Start Date:</strong> <span id="jcStartDateDisp"></span></div>
-                        <div style="margin-top: 2px;"><strong>Est. End Date:</strong> <span id="jcEndDateDisp"></span></div>
+                <!-- Schedule & Materials Box -->
+                <div class="jc-box">
+                    <strong>Schedule & Materials</strong>
+                    <div class="jc-data-row">
+                        <div><strong>Start Date:</strong> <span id="jcStartDateDisp"></span></div>
+                        <div><strong>Est. End Date:</strong> <span id="jcEndDateDisp"></span></div>
                     </div>
-                    <div class="jc-box">
-                        <strong>Materials & Tools Required</strong>
-                        <div id="jcMaterialsDisp" style="margin-top: 4px; font-size: 0.8rem; color: #334155;"></div>
+                    <div style="margin-top: 6px;">
+                        <strong>Required Materials & Tools:</strong>
+                        <div id="jcMaterialsDisp" style="margin-top: 2px; font-size: 0.8rem; color: #334155;"></div>
                     </div>
                 </div>
 
-                <!-- Safety Precautions -->
-                <div class="jc-box" style="margin-bottom: 10px;">
+                <!-- Safety Precautions Box -->
+                <div class="jc-box">
                     <strong>Safety Precautions & Mitigation</strong>
                     <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.78rem; color: #334155;"></div>
                 </div>
 
-                <!-- Work Log Table -->
-                <table class="jc-table-clean">
-                    <thead>
-                        <tr>
-                            <th>DATE</th>
-                            <th>TIME IN</th>
-                            <th>TIME OUT</th>
-                            <th>PROGRESS / WORK DONE ON SITE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="jcLogDateDisp" style="width: 22%;"></td>
-                            <td id="jcTimeInDisp" style="width: 15%;"></td>
-                            <td id="jcTimeOutDisp" style="width: 15%;"></td>
-                            <td id="jcProgressDisp" style="width: 48%;"></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <!-- Work Log Box -->
+                <div class="jc-box">
+                    <strong>Daily Work Log</strong>
+                    <div style="margin-top: 6px; font-size: 0.78rem;">
+                        <div><strong>Log Date:</strong> <span id="jcLogDateDisp"></span></div>
+                        <div style="display: flex; gap: 15px; margin-top: 3px;">
+                            <div><strong>Time In:</strong> <span id="jcTimeInDisp"></span></div>
+                            <div><strong>Time Out:</strong> <span id="jcTimeOutDisp"></span></div>
+                        </div>
+                        <div style="margin-top: 6px;"><strong>Progress / Work Done:</strong></div>
+                        <div id="jcProgressDisp" style="margin-top: 2px; padding: 6px; background: white; border: 1px solid #e2e8f0; border-radius: 4px;"></div>
+                    </div>
+                </div>
 
-                <!-- Signatures Section -->
-                <table class="jc-table-clean" style="margin-bottom: 0;">
-                    <thead>
-                        <tr>
-                            <th style="width: 33%;">Supervisor's Signature</th>
-                            <th style="width: 33%;">Employee's Signature</th>
-                            <th style="width: 34%;">Client's Stamp & Signature (Completion)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="height: 60px;">
-                            <td></td>
-                            <td></td>
-                            <td style="text-align: center; color: #94a3b8; font-size: 0.7rem; vertical-align: middle;">[ Station Manager Stamp Here ]</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <!-- Signatures Stacked Box -->
+                <div class="jc-box">
+                    <strong>Signatures & Approvals</strong>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                        <div style="border: 1px dashed #cbd5e1; padding: 8px; border-radius: 4px;">
+                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Supervisor's Signature:</span>
+                        </div>
+                        <div style="border: 1px dashed #cbd5e1; padding: 8px; border-radius: 4px;">
+                            <span style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 25px;">Employee's Signature:</span>
+                        </div>
+                        <div style="border: 1px dashed #cbd5e1; padding: 12px; border-radius: 4px; text-align: center;">
+                            <span style="font-size: 0.75rem; color: #94a3b8;">[ Client Station Manager Stamp & Signature Here ]</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;" class="no-print">
@@ -847,7 +840,7 @@
                 updateStatusColor(selectElem);
 
                 saveLocally();
-                alert("Job card successfully finalized and automatically saved to cloud/local ecosystem!");
+                alert("Portrait Job Card successfully finalized and saved to cloud/local ecosystem!");
             }
             closeModal('jobCardModal');
         }
