@@ -84,6 +84,7 @@
         .btn:hover { opacity: 0.9; }
         .btn-secondary { background-color: #475569; color: white; }
         .btn-success { background-color: #15803d; color: white; }
+        .btn-danger { background-color: #b91c1c; color: white; }
 
         .card {
             background: var(--card-bg);
@@ -144,6 +145,18 @@
             border-radius: 4px;
             font-size: 0.85rem;
             box-sizing: border-box;
+        }
+
+        /* Dynamic Itemized Rows & Daily Logs in Wizard */
+        .dynamic-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .dynamic-row input {
+            flex: 1;
         }
 
         /* Rich text toolbar & editor */
@@ -286,12 +299,13 @@
         .jc-table-clean {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 6px;
         }
 
         .jc-table-clean th, .jc-table-clean td {
             border: 1px solid #cbd5e1;
-            padding: 8px;
-            font-size: 0.8rem;
+            padding: 6px 8px;
+            font-size: 0.78rem;
             text-align: left;
             word-break: break-word;
         }
@@ -350,7 +364,7 @@
                             <th>Scope of Work (Admin Edit)</th>
                             <th style="width: 90px;">Status</th>
                             <th style="width: 110px;">Technician Notes</th>
-                            <th style="width: 110px;">Job Card Preview</th>
+                            <th style="width: 130px;">Job Card Actions</th>
                             <th style="width: 80px;" class="no-print">Action</th>
                         </tr>
                     </thead>
@@ -393,13 +407,13 @@
         </div>
     </div>
 
-    <!-- 2. Passport-Style Job Card Wizard Modal -->
+    <!-- 2. Passport-Style Multi-Step Job Card Wizard Modal -->
     <div id="jobCardWizardModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-top:0; font-size: 1.1rem; color: #1e293b;">Strutex Job Card Application Wizard</h3>
-            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Fill in all required fields below. Once reviewed, it will generate your official portrait job card.</p>
+        <div class="modal-content" style="max-width: 750px;">
+            <h3 style="margin-top:0; font-size: 1.1rem; color: #1e293b;">Strutex Job Card Interactive Wizard</h3>
+            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Complete all sections below. Supports multi-day schedules (up to 24+ days) and itemized scope checklists (15+ items).</p>
 
-            <!-- Wizard Step 1: General Info & Dates -->
+            <!-- Wizard Step 1: General Info & Schedule -->
             <div class="wizard-step active" id="wizStep1">
                 <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 1: Work Order & Schedule</h4>
                 <div class="form-group">
@@ -421,42 +435,48 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Materials & Tools Required</label>
+                    <label>Required Materials & Tools</label>
                     <input type="text" id="wizMaterials" class="form-control" value="Standard PPE, Hand tools, DODO servicing kit">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
                     <button class="btn btn-secondary" onclick="closeModal('jobCardWizardModal')">Cancel</button>
-                    <button class="btn" onclick="nextWizardStep(2)">Next: Work Log & Progress</button>
+                    <button class="btn" onclick="nextWizardStep(2)">Next: Itemized Scope (15+ items)</button>
                 </div>
             </div>
 
-            <!-- Wizard Step 2: Work Log & Safety -->
+            <!-- Wizard Step 2: Itemized Scope of Work (Supports 15+ items) -->
             <div class="wizard-step" id="wizStep2">
-                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 2: Daily Log & Safety Precautions</h4>
-                <div style="display: flex; gap: 10px;">
-                    <div class="form-group" style="flex:1;">
-                        <label>Log Date</label>
-                        <input type="date" id="wizLogDate" class="form-control">
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Time In</label>
-                        <input type="time" id="wizTimeIn" class="form-control" value="08:00">
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Time Out</label>
-                        <input type="time" id="wizTimeOut" class="form-control" value="17:00">
-                    </div>
+                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 2: Itemized Scope of Work (Tasks Checklist)</h4>
+                <p style="font-size: 0.75rem; color: #64748b;">Add as many individual tasks as required for complex sites (e.g., up to 15+ checklist items).</p>
+                
+                <div id="scopeItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;">
+                    <!-- Populated dynamically -->
                 </div>
-                <div class="form-group">
-                    <label>Progress / Work Done on Site</label>
-                    <textarea id="wizProgress" class="form-control" rows="3" placeholder="Describe work completed..."></textarea>
+                <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 10px;" onclick="addScopeItemRow('')">+ Add Scope Item</button>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="nextWizardStep(1)">Previous</button>
+                    <button class="btn" onclick="nextWizardStep(3)">Next: Multi-Day Logs</button>
                 </div>
-                <div class="form-group">
-                    <label>Safety Precautions & Hazards Noted</label>
+            </div>
+
+            <!-- Wizard Step 3: Multi-Day Daily Logs (Supports 24+ days) -->
+            <div class="wizard-step" id="wizStep3">
+                <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 3: Multi-Day Daily Work Logs (1 - 24+ Days)</h4>
+                <p style="font-size: 0.75rem; color: #64748b;">Add a log entry for every day spent on site.</p>
+                
+                <div id="dailyLogsContainer" style="max-height: 280px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;">
+                    <!-- Populated dynamically -->
+                </div>
+                <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 5px 10px;" onclick="addDailyLogRow()">+ Add Log Day</button>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Overall Safety Precautions & Hazards Noted</label>
                     <textarea id="wizSafety" class="form-control" rows="2">Hazard: Open Area Works. Mitigation: Barricaded zone, warning tape, PPEs deployed.</textarea>
                 </div>
+
                 <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="nextWizardStep(1)">Back</button>
+                    <button class="btn btn-secondary" onclick="nextWizardStep(2)">Previous</button>
                     <button class="btn btn-success" onclick="reviewJobCard()">Review Portrait Job Card</button>
                 </div>
             </div>
@@ -465,7 +485,7 @@
 
     <!-- 3. Final Rendered Portrait Job Card Print Preview Modal -->
     <div id="jobCardModal" class="modal">
-        <div class="modal-content" style="max-width: 650px;">
+        <div class="modal-content" style="max-width: 680px;">
             <div class="jobcard-container" id="printableJobCard">
                 <!-- Header -->
                 <div class="jc-header">
@@ -494,10 +514,12 @@
                     </div>
                 </div>
 
-                <!-- Scope Box -->
+                <!-- Itemized Scope Box (15+ items support) -->
                 <div class="jc-box">
-                    <strong>Job Description & Scope of Work</strong>
-                    <div id="jcScope" style="margin-top: 4px; font-size: 0.8rem; color: #334155;"></div>
+                    <strong>Itemized Scope of Work / Tasks</strong>
+                    <div id="jcScopeContainer" style="margin-top: 6px;">
+                        <!-- Itemized checklist rendered here -->
+                    </div>
                 </div>
 
                 <!-- Schedule & Materials Box -->
@@ -519,17 +541,11 @@
                     <div id="jcSafetyDisp" style="margin-top: 4px; font-size: 0.78rem; color: #334155;"></div>
                 </div>
 
-                <!-- Work Log Box -->
+                <!-- Multi-Day Work Logs Box (Supports 24+ days) -->
                 <div class="jc-box">
-                    <strong>Daily Work Log</strong>
-                    <div style="margin-top: 6px; font-size: 0.78rem;">
-                        <div><strong>Log Date:</strong> <span id="jcLogDateDisp"></span></div>
-                        <div style="display: flex; gap: 15px; margin-top: 3px;">
-                            <div><strong>Time In:</strong> <span id="jcTimeInDisp"></span></div>
-                            <div><strong>Time Out:</strong> <span id="jcTimeOutDisp"></span></div>
-                        </div>
-                        <div style="margin-top: 6px;"><strong>Progress / Work Done:</strong></div>
-                        <div id="jcProgressDisp" style="margin-top: 2px; padding: 6px; background: white; border: 1px solid #e2e8f0; border-radius: 4px;"></div>
+                    <strong>Multi-Day Work Progress Logs</strong>
+                    <div id="jcLogsContainer" style="margin-top: 6px;">
+                        <!-- Multi-day table rendered here -->
                     </div>
                 </div>
 
@@ -550,10 +566,16 @@
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;" class="no-print">
-                <button class="btn btn-secondary" onclick="closeModal('jobCardModal')">Close</button>
-                <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
-                <button class="btn btn-success" onclick="completeAndSaveJobCard()">Complete & Save to Cloud</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;" class="no-print">
+                <div>
+                    <button class="btn btn-danger" onclick="deleteJobCard()" style="font-size: 0.75rem;">🗑️ Delete / Reset Card</button>
+                    <button class="btn btn-secondary" onclick="editExistingJobCard()" style="font-size: 0.75rem;">✏️ Edit Job Card</button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="closeModal('jobCardModal')">Close</button>
+                    <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / PDF</button>
+                    <button class="btn btn-success" onclick="completeAndSaveJobCard()">Complete & Save</button>
+                </div>
             </div>
         </div>
     </div>
@@ -679,7 +701,7 @@
                 indicator.style.color = "#4ade80";
                 indicator.innerText = "Auto-saved at " + new Date().toLocaleTimeString();
                 setTimeout(() => { indicator.style.color = "#cbd5e1"; }, 3000);
-            }, 600000); // 10 minutes
+            }, 600000);
         };
 
         function renderTable(stations) {
@@ -695,10 +717,13 @@
 
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.mapQuery || s.name)}`;
                 
-                // Job card preview column state
                 let jcButtonHtml = `<span style="font-size:0.75rem; color:#94a3b8;">No Card Yet</span>`;
                 if (s.jobCardSaved && s.jobCardPayload) {
-                    jcButtonHtml = `<button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>👁️ View Job Card</button>`;
+                    jcButtonHtml = `
+                        <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>👁️ View</button>
+                            <button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='editSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>✏️ Edit</button>
+                        </div>`;
                 }
 
                 tr.innerHTML = `
@@ -745,7 +770,7 @@
             }
         }
 
-        // --- CHECKLIST & WIZARD WORKFLOW ---
+        // --- CHECKLIST & DYNAMIC WIZARD WORKFLOW ---
         function openChecklist(btn) {
             activeRow = btn.closest('tr');
             const stationName = activeRow.cells[2].innerText;
@@ -765,16 +790,72 @@
             }
         });
 
-        function openJobCardWizard() {
+        function openJobCardWizard(existingPayload = null) {
             closeModal('checklistModal');
             if (activeRow) {
-                document.getElementById('wizStartDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('wizEndDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('wizLogDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('wizProgress').value = activeRow.querySelector('.scope-display').innerText;
+                document.getElementById('wizStartDate').value = existingPayload ? existingPayload.startDate : new Date().toISOString().split('T')[0];
+                document.getElementById('wizEndDate').value = existingPayload ? existingPayload.endDate : new Date().toISOString().split('T')[0];
+                document.getElementById('wizWorkOrder').value = existingPayload ? existingPayload.workOrder : "C260819-STRUTEX";
+                document.getElementById('wizEngineer').value = existingPayload ? existingPayload.engineer : "Emmanuel Simano";
+                document.getElementById('wizMaterials').value = existingPayload ? existingPayload.materials : "Standard PPE, Hand tools, DODO servicing kit";
+                document.getElementById('wizSafety').value = existingPayload ? existingPayload.safety : "Hazard: Open Area Works. Mitigation: Barricaded zone, warning tape, PPEs deployed.";
+
+                // Populate Itemized Scope (supports 15+ items)
+                const scopeContainer = document.getElementById('scopeItemsContainer');
+                scopeContainer.innerHTML = "";
+                const initialScopes = existingPayload && existingPayload.scopeItems ? existingPayload.scopeItems : [activeRow.querySelector('.scope-display').innerText];
+                initialScopes.forEach(itemText => addScopeItemRow(itemText));
+
+                // Populate Multi-Day Logs (supports 24+ days)
+                const logsContainer = document.getElementById('dailyLogsContainer');
+                logsContainer.innerHTML = "";
+                const initialLogs = existingPayload && existingPayload.dailyLogs ? existingPayload.dailyLogs : [{date: new Date().toISOString().split('T')[0], timeIn: "08:00", timeOut: "17:00", progress: "Initial site inspection and setup."}];
+                initialLogs.forEach(log => addDailyLogRow(log.date, log.timeIn, log.timeOut, log.progress));
+
                 nextWizardStep(1);
                 document.getElementById('jobCardWizardModal').style.display = 'flex';
             }
+        }
+
+        function editExistingJobCard(payload) {
+            closeModal('jobCardModal');
+            // find active row matching station name if triggered from modal
+            const rows = document.querySelectorAll("#tableBody tr");
+            rows.forEach(tr => {
+                if(tr.cells[2].innerText === cachedJobCardData.stationName) {
+                    activeRow = tr;
+                }
+            });
+            openJobCardWizard(cachedJobCardData);
+        }
+
+        function addScopeItemRow(text = "") {
+            const container = document.getElementById('scopeItemsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-row';
+            div.innerHTML = `
+                <input type="text" class="form-control scope-item-input" placeholder="e.g., Check canopy structural integrity & bolts" value="${text}">
+                <button type="button" class="btn btn-secondary" style="padding: 6px 10px; font-size:0.75rem;" onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addDailyLogRow(date = new Date().toISOString().split('T')[0], timeIn = "08:00", timeOut = "17:00", progress = "") {
+            const container = document.getElementById('dailyLogsContainer');
+            const div = document.createElement('div');
+            div.style.cssText = "background: #f1f5f9; padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #cbd5e1;";
+            div.innerHTML = `
+                <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                    <div style="flex:1;"><label style="font-size:0.7rem; margin:0;">Date</label><input type="date" class="form-control log-date" value="${date}"></div>
+                    <div style="width: 100px;"><label style="font-size:0.7rem; margin:0;">Time In</label><input type="time" class="form-control log-timein" value="${timeIn}"></div>
+                    <div style="width: 100px;"><label style="font-size:0.7rem; margin:0;">Time Out</label><input type="time" class="form-control log-timeout" value="${timeOut}"></div>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: flex-end;">
+                    <div style="flex:1;"><label style="font-size:0.7rem; margin:0;">Daily Work Done / Progress</label><input type="text" class="form-control log-progress" placeholder="Describe work completed on this day..." value="${progress}"></div>
+                    <button type="button" class="btn btn-danger" style="padding: 7px 10px; font-size:0.75rem;" onclick="this.closest('div').parentElement.remove()">✕</button>
+                </div>
+            `;
+            container.appendChild(div);
         }
 
         function nextWizardStep(stepNum) {
@@ -785,20 +866,34 @@
         function reviewJobCard() {
             closeModal('jobCardWizardModal');
             if (activeRow) {
+                // Gather scope items
+                const scopeItems = [];
+                document.querySelectorAll('.scope-item-input').forEach(inp => {
+                    if(inp.value.trim() !== '') scopeItems.push(inp.value.trim());
+                });
+
+                // Gather multi-day logs
+                const dailyLogs = [];
+                document.querySelectorAll('#dailyLogsContainer > div').forEach(row => {
+                    dailyLogs.push({
+                        date: row.querySelector('.log-date').value,
+                        timeIn: row.querySelector('.log-timein').value,
+                        timeOut: row.querySelector('.log-timeout').value,
+                        progress: row.querySelector('.log-progress').value
+                    });
+                });
+
                 cachedJobCardData = {
                     workOrder: document.getElementById('wizWorkOrder').value,
                     stationName: activeRow.cells[2].innerText,
                     dateIssued: new Date().toISOString().split('T')[0],
                     engineer: document.getElementById('wizEngineer').value,
-                    scope: activeRow.querySelector('.scope-display').innerHTML,
                     startDate: document.getElementById('wizStartDate').value,
                     endDate: document.getElementById('wizEndDate').value,
                     materials: document.getElementById('wizMaterials').value,
                     safety: document.getElementById('wizSafety').value,
-                    logDate: document.getElementById('wizLogDate').value,
-                    timeIn: document.getElementById('wizTimeIn').value,
-                    timeOut: document.getElementById('wizTimeOut').value,
-                    progress: document.getElementById('wizProgress').value
+                    scopeItems: scopeItems,
+                    dailyLogs: dailyLogs
                 };
 
                 populateJobCardModal(cachedJobCardData);
@@ -811,20 +906,74 @@
             document.getElementById('jcStationName').innerText = data.stationName;
             document.getElementById('jcDate').innerText = data.dateIssued;
             document.getElementById('jcEngineer').innerText = data.engineer;
-            document.getElementById('jcScope').innerHTML = data.scope;
             document.getElementById('jcStartDateDisp').innerText = data.startDate;
             document.getElementById('jcEndDateDisp').innerText = data.endDate;
             document.getElementById('jcMaterialsDisp').innerText = data.materials;
             document.getElementById('jcSafetyDisp').innerText = data.safety;
-            document.getElementById('jcLogDateDisp').innerText = data.logDate;
-            document.getElementById('jcTimeInDisp').innerText = data.timeIn;
-            document.getElementById('jcTimeOutDisp').innerText = data.timeOut;
-            document.getElementById('jcProgressDisp').innerText = data.progress;
+
+            // Render Itemized Scope List
+            const scopeContainer = document.getElementById('jcScopeContainer');
+            scopeContainer.innerHTML = "";
+            if (data.scopeItems && data.scopeItems.length > 0) {
+                const ul = document.createElement('ul');
+                ul.style.cssText = "margin: 0; padding-left: 18px; font-size: 0.8rem; color: #334155;";
+                data.scopeItems.forEach((task, idx) => {
+                    const li = document.createElement('li');
+                    li.style.marginBottom = "3px";
+                    li.innerHTML = `<strong>Task ${idx + 1}:</strong> ${task}`;
+                    ul.appendChild(li);
+                });
+                scopeContainer.appendChild(ul);
+            } else {
+                scopeContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No scope tasks itemized.</span>`;
+            }
+
+            // Render Multi-Day Logs Table
+            const logsContainer = document.getElementById('jcLogsContainer');
+            logsContainer.innerHTML = "";
+            if (data.dailyLogs && data.dailyLogs.length > 0) {
+                let tableHtml = `
+                    <table class="jc-table-clean">
+                        <thead>
+                            <tr>
+                                <th style="width: 75px;">Date</th>
+                                <th style="width: 85px;">Hours</th>
+                                <th>Work Progress / Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                data.dailyLogs.forEach(log => {
+                    tableHtml += `
+                        <tr>
+                            <td>${log.date}</td>
+                            <td>${log.timeIn} - ${log.timeOut}</td>
+                            <td>${log.progress}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += `</tbody></table>`;
+                logsContainer.innerHTML = tableHtml;
+            } else {
+                logsContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No daily logs recorded.</span>`;
+            }
         }
 
         function viewSavedJobCard(payload) {
+            cachedJobCardData = payload;
             populateJobCardModal(payload);
             document.getElementById('jobCardModal').style.display = 'flex';
+        }
+
+        function editSavedJobCard(payload) {
+            cachedJobCardData = payload;
+            const rows = document.querySelectorAll("#tableBody tr");
+            rows.forEach(tr => {
+                if(tr.cells[2].innerText === payload.stationName) {
+                    activeRow = tr;
+                }
+            });
+            openJobCardWizard(payload);
         }
 
         function completeAndSaveJobCard() {
@@ -833,16 +982,33 @@
                 activeRow._jobCardPayload = cachedJobCardData;
                 
                 const jcCell = activeRow.querySelector('.jc-cell');
-                jcCell.innerHTML = `<button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(cachedJobCardData)})'>👁️ View Job Card</button>`;
+                jcCell.innerHTML = `
+                    <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(cachedJobCardData)})'>👁️ View</button>
+                        <button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='editSavedJobCard(${JSON.stringify(cachedJobCardData)})'>✏️ Edit</button>
+                    </div>`;
 
                 const selectElem = activeRow.querySelector('.status-select');
                 selectElem.value = "In Progress";
                 updateStatusColor(selectElem);
 
                 saveLocally();
-                alert("Portrait Job Card successfully finalized and saved to cloud/local ecosystem!");
+                alert("Portrait Job Card successfully saved with multi-day logs and itemized scope!");
             }
             closeModal('jobCardModal');
+        }
+
+        function deleteJobCard() {
+            if (confirm("Are you sure you want to delete and reset this job card?")) {
+                if (activeRow) {
+                    activeRow._jobCardSaved = false;
+                    activeRow._jobCardPayload = null;
+                    activeRow.querySelector('.jc-cell').innerHTML = `<span style="font-size:0.75rem; color:#94a3b8;">No Card Yet</span>`;
+                    saveLocally();
+                    alert("Job card deleted / reset successfully.");
+                }
+                closeModal('jobCardModal');
+            }
         }
 
         // --- ADMIN SCOPE EDITOR ---
@@ -968,7 +1134,7 @@
 
                 const { error } = await dbClient.from('strutex_stations').upsert(payload, { onConflict: 'station_name' });
                 if (error) alert("Error syncing to Supabase: " + error.message);
-                else alert("Successfully synced all updates, notes, and saved job cards to Supabase cloud!");
+                else alert("Successfully synced all updates, multi-day logs, and job cards to Supabase cloud!");
             } catch (err) {
                 console.error(err);
                 alert("Cloud sync failed.");
