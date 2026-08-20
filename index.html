@@ -280,42 +280,41 @@
     </style>
 <style>
     /* ==========================================
-       MOBILE RESPONSIVE & COMPLETE TEXT WRAP FIX
+       MOBILE RESPONSIVE & STATION NAME FIX
        ========================================== */
     
-    /* Ensure the card or table container is the one that scrolls horizontally */
     .table-responsive {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        border: 0; /* Keep look clean in card views */
+        border: 0;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 800px; /* KEY: Force the table to have a decent desktop width, making the card scroll */
+        min-width: 900px; /* Forces horizontal scroll on phones so nothing squishes */
     }
 
     table th, table td {
         padding: 10px 12px;
-        white-space: nowrap; /* Keep other columns compact and single-line */
-        line-height: 1.4 !important;
-        height: auto !important;
+        white-space: nowrap; 
         vertical-align: middle;
     }
 
-    /* Target the Station Name Column by reliable class (assuming .station-name-cell is used) */
-    .station-name-cell, .station-col, table td:nth-child(2), table th:nth-child(2) { 
-        white-space: normal !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        min-width: 180px; /* Force at least this much width for station names */
-        max-width: none !important; /* Ensure the cell can expand vertically */
-        overflow: visible !important;
-        line-height: 1.6 !important; /* Extra line spacing for readability */
+    /* 1. Target the CORRECT column (3rd Column: Station Name) */
+    table td:nth-child(3), table th:nth-child(3) { 
+        min-width: 240px !important; /* Give the column plenty of width */
+    }
+
+    /* 2. Target the actual text input box inside the Station Name column */
+    table td:nth-child(3) input {
+        width: 100% !important;
+        min-width: 220px !important; /* Prevents the box from shrinking and cutting off names */
+        font-size: 0.9rem !important; /* Slightly larger for better mobile readability */
+        padding: 8px !important;
     }
 </style>
 </head>
