@@ -622,10 +622,10 @@
         <div class="modal-content" style="max-width: 900px;">
             <div class="boq-container" id="printableBoQ">
                 
-                <!-- SaharaDesk Inspired Header Section -->
+                <!-- Header Section -->
                 <div class="boq-header">
                     <div style="flex: 1;">
-                        <h2 style="margin: 0; color: #1e293b; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px;">SAHARA<br>DESK</h2>
+                        <h2 style="margin: 0; color: #1e293b; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px;">STRUTEX<br>DASHBOARD</h2>
                         <p style="margin: 8px 0 2px 0; font-size: 0.9rem; font-weight: bold; color: #0f172a;">RUBIS Energy Kenya Plc KENYA</p>
                         <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">Avenue 5 Building, Rose Avenue, Kilimani<br>Nairobi</p>
                         
@@ -720,7 +720,7 @@
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
         
         // 🔑 PASTE YOUR EXACT SUPABASE ANON KEY HERE:
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6InB1YmxpYyIsImlhdCI6MTc4NzA4Mzc3NywiZXhwIjoyMTAyNjU5Nzc3f0.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
         
         let dbClient = null;
         if (window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'PASTE_YOUR_ACTUAL_ANON_KEY_HERE') {
@@ -1221,7 +1221,7 @@
             document.getElementById('jobCardModal').style.display = 'flex'; 
         }
 
-        // --- NEW: SaharaDesk BoQ Engine Generator ---
+        // --- NEW: BoQ Engine Generator ---
         function viewBoQ(data) {
             document.getElementById('boqWorkOrder').innerText = data.workOrder || 'N/A';
             document.getElementById('boqLocation').innerText = data.stationName || 'N/A';
@@ -1274,7 +1274,6 @@
             const vat = subTotal * 0.16;
             const gross = subTotal + vat;
 
-            // Sahara format mapping
             const subStr = subTotal.toLocaleString('en-KE', {minimumFractionDigits: 0}) + ' KES';
             const vatStr = vat.toLocaleString('en-KE', {minimumFractionDigits: 0}) + ' KES';
             const grossStr = gross.toLocaleString('en-KE', {minimumFractionDigits: 0});
@@ -1411,7 +1410,6 @@
             scopeContainer.innerHTML = "";
             if (data.scopeItems && data.scopeItems.length > 0) {
                 data.scopeItems.forEach(item => {
-                    // Injecting quantity fields safely when returning from legacy or new saved instances
                     if (typeof item === 'string') {
                         addScopeItemRow(item);
                     } else {
