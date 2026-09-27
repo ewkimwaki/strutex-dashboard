@@ -492,7 +492,7 @@
                 </div>
             </div>
 
-            <!-- Step 2 -->
+            <!-- Step 2 (Updated with Quantities & BoQ Setup) -->
             <div class="wizard-step" id="wizStep2">
                 <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 2: Itemized Scope of Work</h4>
                 
@@ -622,7 +622,7 @@
         <div class="modal-content" style="max-width: 900px;">
             <div class="boq-container" id="printableBoQ">
                 
-                <!-- Header Section -->
+                <!-- SaharaDesk Inspired Header Section -->
                 <div class="boq-header">
                     <div style="flex: 1;">
                         <h2 style="margin: 0; color: #1e293b; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px;">STRUTEX<br>DASHBOARD</h2>
@@ -719,8 +719,8 @@
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
         
-        // 🔑 SUPABASE ANON KEY (Restored to exact original state with role: 'anon')
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODtokODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
+        // 🔑 PASTE YOUR EXACT SUPABASE ANON KEY HERE:
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkcWV3ZmFrZGpibGhocGttbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwODM3NzcsImV4cCI6MjEwMjY1OTc3N30.iyhL8F_GZhjvyBxIEPpFyY6Hur5X1RGDqJEelmAfSH4';
         
         let dbClient = null;
         if (window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'PASTE_YOUR_ACTUAL_ANON_KEY_HERE') {
@@ -751,7 +751,7 @@
             const matches = scheduleCCatalog.filter(item => 
                 item.code.toLowerCase().includes(cleanQuery) || 
                 item.desc.toLowerCase().includes(cleanQuery)
-            ).slice(0, 8);
+            ).slice(0, 8); // Limit to top 8 dynamic matches for high visual speed
 
             if (matches.length === 0) {
                 resultsList.innerHTML = `<li style="color:#94a3b8; cursor:default;">No Schedule C items match "${query}"</li>`;
@@ -775,9 +775,13 @@
         }
 
         function selectScheduleCItem(code, desc, uom, rate) {
+            // PROMPT 1 Requirement: Output just Rubis Code and description on Job Card, remove Rate from the string
             const taskFormatted = `[${code}] ${desc}`; 
+            
+            // Pass rate and meta data natively to setup BoQ Quantities internally
             addScopeItemRow(taskFormatted, code, desc, uom, rate);
             
+            // Clear and hide search dropdown cleanly
             document.getElementById('scheduleSearchInput').value = '';
             const resultsList = document.getElementById('scheduleSearchResults');
             resultsList.style.display = 'none';
@@ -854,6 +858,7 @@
                 let actionButtonsHtml = '';
 
                 if (s.jobCardSaved && s.jobCardPayload) {
+                    // Pre-encode string for safe injection
                     const payloadSafe = JSON.stringify(s.jobCardPayload).replace(/'/g, "&#39;");
                     jcButtonHtml = `
                         <div style="display: flex; gap: 4px; width: 100%; margin-bottom: 4px;">
@@ -1073,11 +1078,13 @@
             document.getElementById('jobCardWizardModal').style.display = 'flex';
         }
 
+        // Modified logic to attach Qty field and safely bind metadata for BoQ (Prompt 2)
         function addScopeItemRow(text = "", code = "", desc = "", uom = "", rate = "") {
             const container = document.getElementById('scopeItemsContainer');
             const div = document.createElement('div');
             div.className = 'dynamic-row scope-item-wrapper';
             
+            // Clean out text to fetch raw numbers (KES 600.00 => 600)
             let rateNum = 0;
             if (rate) {
                 rateNum = parseFloat(rate.toString().replace(/[^0-9.]/g, '')) || 0;
@@ -1108,10 +1115,12 @@
         function reviewJobCard() {
             closeModal('jobCardWizardModal');
             
+            // Map the rows dynamically capturing Text (For standard Job Card) and Rates/Qty (For backend BoQ)
             const scopeItems = Array.from(document.querySelectorAll('.scope-item-wrapper')).map(row => {
                 const inpText = row.querySelector('.scope-item-input').value;
                 const qtyInp = row.querySelector('.scope-qty-input');
                 
+                // Backup extraction if custom typed by user
                 let extractedCode = qtyInp ? qtyInp.getAttribute('data-code') : '';
                 let extractedDesc = qtyInp ? qtyInp.getAttribute('data-desc') : '';
                 
@@ -1124,7 +1133,7 @@
                 }
 
                 return {
-                    text: inpText,
+                    text: inpText, // Will securely display precisely what User expects on regular Job Card
                     qty: qtyInp ? parseFloat(qtyInp.value) || 1 : 1,
                     rate: qtyInp ? parseFloat(qtyInp.getAttribute('data-rate')) || 0 : 0,
                     code: extractedCode,
@@ -1166,8 +1175,10 @@
             document.getElementById('jcSafetyDisp').innerText = data.safety || '';
 
             const scopeContainer = document.getElementById('jcScopeContainer');
+            // Backwards compatibility for old saved Strings, and clean read of new structured array
             scopeContainer.innerHTML = data.scopeItems && data.scopeItems.length ? `<ul style="margin:0; padding-left:18px; column-count:2; font-size:0.85rem;">` + data.scopeItems.map((task, idx) => {
                 let textToDisplay = typeof task === 'string' ? task : task.text;
+                // Force clear any trailing legacy rates just to heavily obey Prompt 1 Rules in old setups
                 if (textToDisplay.includes('- Rate: KES')) textToDisplay = textToDisplay.split('- Rate: KES')[0].trim();
                 return `<li><strong>Task ${idx + 1}:</strong> ${textToDisplay}</li>`;
             }).join('') + `</ul>` : 'None';
@@ -1210,6 +1221,7 @@
             document.getElementById('jobCardModal').style.display = 'flex'; 
         }
 
+        // --- NEW: SaharaDesk BoQ Engine Generator ---
         function viewBoQ(data) {
             document.getElementById('boqWorkOrder').innerText = data.workOrder || 'N/A';
             document.getElementById('boqLocation').innerText = data.stationName || 'N/A';
@@ -1224,6 +1236,7 @@
                 data.scopeItems.forEach(item => {
                     let code = '', desc = '', qty = 1, rate = 0;
 
+                    // Fallback parse engine if executing an old saved job card without nested objects
                     if (typeof item === 'string') {
                         desc = item;
                         if (desc.includes('- Rate: KES')) {
@@ -1261,6 +1274,7 @@
             const vat = subTotal * 0.16;
             const gross = subTotal + vat;
 
+            // Sahara format mapping
             const subStr = subTotal.toLocaleString('en-KE', {minimumFractionDigits: 0}) + ' KES';
             const vatStr = vat.toLocaleString('en-KE', {minimumFractionDigits: 0}) + ' KES';
             const grossStr = gross.toLocaleString('en-KE', {minimumFractionDigits: 0});
@@ -1274,6 +1288,7 @@
             document.getElementById('boqModal').style.display = 'flex';
         }
 
+        // Print Modifiers explicitly separating JS Window APIs targets
         function printJobCard() {
             document.body.classList.add('print-jc');
             window.print();
@@ -1299,6 +1314,11 @@
             }
         }
 
+    // ==========================================
+    // SMART AUTO-SYNC (Triggers every 1 min, ONLY when idle)
+    // ==========================================
+    console.log("🟢 Smart auto-sync loaded successfully!");
+
     setInterval(() => {
         const jobCardModal = document.getElementById('jobCardModal');
         const boqModal = document.getElementById('boqModal');
@@ -1309,6 +1329,7 @@
         const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag);
 
         if (isModalOpen || isTyping) {
+            console.log('⏳ Technician is currently active. Skipping auto-sync...');
             return;
         }
 
@@ -1321,9 +1342,13 @@
         
         if (cloudBtn) {
             cloudBtn.click();
+            console.log('✅ Smart auto-sync executed: Database updated in the background.');
         }
     }, 60000);
    
+    // ==========================================
+    // DESKTOP-ONLY ADJUSTABLE COLUMN BOUNDARIES
+    // ==========================================
     document.addEventListener("DOMContentLoaded", () => {
         const isDesktop = window.matchMedia("(pointer: fine)").matches && window.innerWidth > 768;
         if (!isDesktop) return;
@@ -1386,6 +1411,7 @@
             scopeContainer.innerHTML = "";
             if (data.scopeItems && data.scopeItems.length > 0) {
                 data.scopeItems.forEach(item => {
+                    // Injecting quantity fields safely when returning from legacy or new saved instances
                     if (typeof item === 'string') {
                         addScopeItemRow(item);
                     } else {
