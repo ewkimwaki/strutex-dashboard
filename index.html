@@ -654,8 +654,13 @@
                 let actionButtonsHtml = '';
 
                 if (s.jobCardSaved && s.jobCardPayload) {
-                    // Station is deployed: Show View button and Reset option
-                    jcButtonHtml = `<button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; width: 100%;" onclick='viewSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>👁️ View Card</button>`;
+                    // Station is deployed: Show View button, Edit button, and Reset option
+                    jcButtonHtml = `
+                        <div style="display: flex; gap: 4px; width: 100%;">
+                            <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; flex: 1;" onclick='viewSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>👁️ View</button>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${JSON.stringify(s.jobCardPayload)},${index})'>✏️ Edit</button>
+                        </div>
+                    `;
                     actionButtonsHtml = `
                         <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #64748b;" onclick="resetStationCycle(${index})">🔄 Reset</button>
                         <button class="btn btn-danger" style="padding: 4px 6px; font-size: 0.7rem;" onclick="deleteStation(${index})" title="Delete row">✕</button>
@@ -947,7 +952,13 @@
                 statusSelect.value = "Completed";
             }
 
-            activeRow.querySelector('.jc-cell').innerHTML = `<div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;"><button class="btn btn-secondary" style="padding: 3px 6px; font-size:0.7rem;" onclick='viewSavedJobCard(${JSON.stringify(cachedJobCardData)})'>👁️ View</button></div>`;
+            const rowIndex = activeRow._stationIndex;
+            activeRow.querySelector('.jc-cell').innerHTML = `
+                <div style="display: flex; gap: 4px; width: 100%;">
+                    <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; flex: 1;" onclick='viewSavedJobCard(${JSON.stringify(cachedJobCardData)})'>👁️ View</button>
+                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${JSON.stringify(cachedJobCardData)}, ${rowIndex})'>✏️ Edit</button>
+                </div>
+            `;
             
             closeModal('jobCardModal');
             saveLocally();
@@ -1071,6 +1082,44 @@
             document.addEventListener('mouseup', stopDrag);
         });
     });
+        function editSavedJobCard(data, index) {
+            // Set activeRow so that saving updates the correct station
+            const tbody = document.getElementById("tableBody");
+            activeRow = tbody.rows[index];
+
+            // Close the preview modal if the user navigated from there
+            closeModal('jobCardModal');
+
+            // Pre-fill Step 1: Work Order & Schedule
+            document.getElementById('wizWorkOrder').value = data.workOrder || "";
+            document.getElementById('wizEngineer').value = data.engineer || "";
+            document.getElementById('wizStartDate').value = data.startDate || new Date().toISOString().split('T')[0];
+            document.getElementById('wizEndDate').value = data.endDate || new Date().toISOString().split('T')[0];
+            document.getElementById('wizMaterials').value = data.materials || "";
+            document.getElementById('wizSafety').value = data.safety || "";
+
+            // Pre-fill Step 2: Itemized Scope
+            const scopeContainer = document.getElementById('scopeItemsContainer');
+            scopeContainer.innerHTML = "";
+            if (data.scopeItems && data.scopeItems.length > 0) {
+                data.scopeItems.forEach(item => addScopeItemRow(item));
+            } else {
+                addScopeItemRow("");
+            }
+
+            // Pre-fill Step 3: Daily Work Logs
+            const logsContainer = document.getElementById('dailyLogsContainer');
+            logsContainer.innerHTML = "";
+            if (data.dailyLogs && data.dailyLogs.length > 0) {
+                data.dailyLogs.forEach(log => addDailyLogRow(log.date, log.timeIn, log.timeOut, log.progress));
+            } else {
+                addDailyLogRow(document.getElementById('wizStartDate').value, "08:00", "17:00", "");
+            }
+
+            // Route user directly into the wizard at Step 1
+            nextWizardStep(1);
+            document.getElementById('jobCardWizardModal').style.display = 'flex';
+        }
  </script>
 </body>
 </html>
