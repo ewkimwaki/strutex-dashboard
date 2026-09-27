@@ -252,10 +252,19 @@
             background: #f1f5f9;
         }
 
-        /* --- BILL OF QUANTITIES STYLING --- */
-        .boq-container { background: white; border-radius: 8px; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; color: #1e293b; width: 100%; max-width: 210mm; margin: 0 auto; border: 1px solid #cbd5e1; }
-        .boq-table th, .boq-table td { border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
-
+        /* --- SAHARA DESK EMULATION: BILL OF QUANTITIES STYLING --- */
+        .boq-container { background: white; border-radius: 8px; padding: 20px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; color: #1e293b; width: 100%; max-width: 210mm; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .boq-header { display: flex; flex-direction: column; gap: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+        .boq-header-right { text-align: left; }
+        @media(min-width: 600px) {
+            .boq-header { flex-direction: row; justify-content: space-between; align-items: flex-start; }
+            .boq-header-right { text-align: right; }
+            .boq-container { padding: 30px; }
+        }
+        .boq-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 20px; }
+        .boq-table th { padding: 12px 8px; text-align: left; font-size: 0.85rem; color: #475569; font-weight: 600; border-bottom: 2px solid #cbd5e1; }
+        .boq-table td { padding: 12px 8px; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; vertical-align: top; }
+        
         #autosaveIndicator { font-size: 0.75rem; color: #94a3b8; align-self: center; font-weight: 600; }
 
         /* --- SEAMLESS MULTI-MODAL PRINT & PDF EXPORT RULES --- */
@@ -314,6 +323,8 @@
             body.print-boq .boq-container {
                 width: 100% !important; max-width: 100% !important; padding: 10mm !important; border: none !important;
             }
+            body.print-boq .boq-table th, body.print-boq .boq-table td { font-size: 10pt !important; color: #000000 !important; }
+            body.print-boq .boq-table tr { break-inside: avoid; page-break-inside: avoid; }
         }
     </style>
 <style>
@@ -610,67 +621,94 @@
     <div id="boqModal" class="modal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="boq-container" id="printableBoQ">
-                <!-- BoQ Header Inspired by SaharaDesk Format -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e293b; padding-bottom: 15px; margin-bottom: 20px;">
-                    <div>
-                        <h2 style="margin: 0; color: #1e293b; font-size: 1.4rem;">STRUTEX BUILDERS LTD</h2>
+                
+                <!-- SaharaDesk Inspired Header Section -->
+                <div class="boq-header">
+                    <div style="flex: 1;">
+                        <h2 style="margin: 0; color: #1e293b; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px;">SAHARA<br>DESK</h2>
+                        <p style="margin: 8px 0 2px 0; font-size: 0.9rem; font-weight: bold; color: #0f172a;">RUBIS Energy Kenya Plc KENYA</p>
+                        <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">Avenue 5 Building, Rose Avenue, Kilimani<br>Nairobi</p>
+                        
+                        <div style="margin-top: 20px;">
+                            <p style="margin: 3px 0; font-size: 0.85rem; color: #334155;"><strong>Work Ref:</strong> <span id="boqWorkOrder"></span></p>
+                            <p style="margin: 3px 0; font-size: 0.85rem; color: #334155;"><strong>Location:</strong> <span id="boqLocation"></span></p>
+                            <p style="margin: 3px 0; font-size: 0.85rem; color: #334155;"><strong>Date Reported:</strong> <span id="boqDate"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="boq-header-right" style="flex: 1;">
+                        <h1 style="margin: 0; color: #0284c7; font-size: 2.2rem; font-weight: 300; letter-spacing: 2px;">QUOTE</h1>
+                        <h3 style="margin: 15px 0 4px 0; color: #1e293b; font-size: 1.15rem; font-weight: 700;">STRUTEX BUILDERS LTD</h3>
                         <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">+254 721 702 625</p>
                         <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">sstrutenterpris@gmail.com</p>
                         <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">Milestone Plaza, Nairobi, Kenya</p>
-                    </div>
-                    <div style="text-align: right;">
-                        <h1 style="margin: 0; color: #0284c7; font-size: 1.8rem; letter-spacing: 1px;">QUOTE / BoQ</h1>
-                        <p style="margin: 6px 0 2px 0; font-size: 0.85rem;"><strong>Work Ref:</strong> <span id="boqWorkOrder"></span></p>
-                        <p style="margin: 2px 0; font-size: 0.85rem;"><strong>Location:</strong> <span id="boqLocation"></span></p>
-                        <p style="margin: 2px 0; font-size: 0.85rem;"><strong>Date:</strong> <span id="boqDate"></span></p>
+                        
+                        <div style="margin-top: 15px; background-color: #f8fafc; padding: 12px 15px; display: inline-block; border: 1px solid #e2e8f0; border-radius: 4px;">
+                            <p style="margin: 0; font-size: 0.9rem; font-weight: 600; color: #475569;">
+                                Total <span id="boqHeaderTotal" style="font-size: 1.25rem; color: #0284c7; font-weight: bold; margin-left: 8px;">KES 0</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <p style="margin: 0; font-size: 0.9rem; color: #1e293b; font-weight: 600;">Bill Title: Routine Maintenance & Repair Tasking</p>
+                    <p style="margin: 4px 0; font-size: 0.9rem; color: #1e293b;"><strong>Bill Title:</strong> Routine Maintenance & Repair Tasking</p>
+                    <p style="margin: 4px 0; font-size: 0.9rem; color: #1e293b;"><strong>Fault Diagnosed:</strong> Site-wide technical deficiencies assessed.</p>
                 </div>
 
-                <table class="boq-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                    <thead>
-                        <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; border-top: 1px solid #cbd5e1;">
-                            <th style="padding: 10px; text-align: left; width: 15%; color: #334155;">Code</th>
-                            <th style="padding: 10px; text-align: left; width: 45%; color: #334155;">Task Description</th>
-                            <th style="padding: 10px; text-align: center; width: 10%; color: #334155;">Quantity</th>
-                            <th style="padding: 10px; text-align: right; width: 15%; color: #334155;">Unit Rate</th>
-                            <th style="padding: 10px; text-align: right; width: 15%; color: #334155;">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody id="boqTableBody">
-                        <!-- Populated dynamically via JS -->
-                    </tbody>
-                </table>
+                <!-- Fully Responsive, Non-Overlapping Table -->
+                <div style="overflow-x: auto;">
+                    <table class="boq-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 55%;">Item Description</th>
+                                <th style="width: 10%; text-align: center;">Quantity</th>
+                                <th style="width: 15%; text-align: right;">Amount</th>
+                                <th style="width: 20%; text-align: right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="boqTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
 
-                <div style="display: flex; justify-content: flex-end;">
-                    <table style="width: 320px; border-collapse: collapse;">
+                <!-- Structured Totals -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <table style="width: 320px; border-collapse: collapse; font-size: 0.9rem;">
                         <tr>
-                            <td style="padding: 8px; font-weight: 600; color: #475569; border-top: 1px solid #cbd5e1;">Sub Total:</td>
-                            <td style="padding: 8px; text-align: right; border-top: 1px solid #cbd5e1;" id="boqSubTotal"></td>
+                            <td style="padding: 6px 8px; font-weight: 600; color: #475569;">Sub Total:</td>
+                            <td style="padding: 6px 8px; text-align: right; color: #334155;" id="boqSubTotal"></td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; font-weight: 600; color: #475569;">VAT (16%):</td>
-                            <td style="padding: 8px; text-align: right;" id="boqVat"></td>
+                            <td style="padding: 6px 8px; font-weight: 600; color: #475569;">VAT (16%):</td>
+                            <td style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #cbd5e1; color: #334155;" id="boqVat"></td>
                         </tr>
-                        <tr style="background-color: #f1f5f9; border-top: 2px solid #1e293b; border-bottom: 2px solid #1e293b;">
-                            <td style="padding: 12px 8px; font-weight: bold; font-size: 1.1rem; color: #1e293b;">Gross Total:</td>
+                        <tr>
+                            <td style="padding: 12px 8px; font-weight: bold; font-size: 1.1rem; color: #1e293b;">TOTAL</td>
                             <td style="padding: 12px 8px; text-align: right; font-weight: bold; font-size: 1.1rem; color: #0284c7;" id="boqGrossTotal"></td>
                         </tr>
                     </table>
                 </div>
                 
-                <div style="margin-top: 50px; font-size: 0.75rem; color: #94a3b8; text-align: center;">
-                    System Generated Document by Strutex Builders Ltd | Values in KES | Valid for 30 Days
+                <!-- Footer Info -->
+                <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 0.85rem; color: #1e293b;">WORK OVERVIEW</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; color: #475569;">
+                        <div><strong>Work Category:</strong> CIVIL WORKS / MAINTENANCE</div>
+                        <div><strong>Engineer-In-Charge:</strong> <span id="boqFooterEngineer"></span></div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px; font-size: 0.7rem; color: #94a3b8; text-align: center;">
+                    System Generated Quote by Strutex Builders Ltd | Values strictly in KES | Valid for 30 Days
                 </div>
             </div>
 
             <!-- Action Footer for BoQ -->
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;" class="no-print">
                 <button class="btn btn-secondary" onclick="closeModal('boqModal')">Close View</button>
-                <button class="btn btn-success" onclick="printBoQ()">🖨️ Print / Save BoQ</button>
+                <button class="btn btn-success" onclick="printBoQ()">🖨️ Print / Save BoQ PDF</button>
             </div>
         </div>
     </div>
@@ -1183,11 +1221,12 @@
             document.getElementById('jobCardModal').style.display = 'flex'; 
         }
 
-        // --- NEW: BoQ Engine Generator (Prompt 2) ---
+        // --- NEW: SaharaDesk BoQ Engine Generator ---
         function viewBoQ(data) {
             document.getElementById('boqWorkOrder').innerText = data.workOrder || 'N/A';
             document.getElementById('boqLocation').innerText = data.stationName || 'N/A';
             document.getElementById('boqDate').innerText = data.dateIssued || new Date().toLocaleDateString();
+            document.getElementById('boqFooterEngineer').innerText = data.engineer || 'N/A';
 
             const tbody = document.getElementById('boqTableBody');
             tbody.innerHTML = '';
@@ -1217,24 +1256,34 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="padding: 10px; vertical-align: top; font-weight: 600;">${code}</td>
-                        <td style="padding: 10px; vertical-align: top;">${desc}</td>
-                        <td style="padding: 10px; text-align: center; vertical-align: top;">${qty}</td>
-                        <td style="padding: 10px; text-align: right; vertical-align: top;">${rate.toLocaleString('en-KE', {minimumFractionDigits: 2})}</td>
-                        <td style="padding: 10px; text-align: right; vertical-align: top; font-weight: 600;">${amount.toLocaleString('en-KE', {minimumFractionDigits: 2})}</td>
+                        <td style="padding: 15px 8px; vertical-align: top;">
+                            <strong style="color: #0369a1; display: inline-block; margin-right: 5px;">${code}</strong> 
+                            ${desc}
+                            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 6px; font-style: italic;">No Comment</div>
+                        </td>
+                        <td style="padding: 15px 8px; text-align: center; vertical-align: top; font-weight: 500;">${qty}</td>
+                        <td style="padding: 15px 8px; text-align: right; vertical-align: top;">${rate.toLocaleString('en-KE', {minimumFractionDigits: 0})} KES</td>
+                        <td style="padding: 15px 8px; text-align: right; vertical-align: top; font-weight: 600;">${amount.toLocaleString('en-KE', {minimumFractionDigits: 0})} KES</td>
                     `;
                     tbody.appendChild(tr);
                 });
             } else {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: #94a3b8;">No task metrics recorded for this assignment.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; color: #94a3b8;">No task metrics recorded for this assignment.</td></tr>`;
             }
 
             const vat = subTotal * 0.16;
             const gross = subTotal + vat;
 
-            document.getElementById('boqSubTotal').innerText = subTotal.toLocaleString('en-KE', {style: 'currency', currency: 'KES'});
-            document.getElementById('boqVat').innerText = vat.toLocaleString('en-KE', {style: 'currency', currency: 'KES'});
-            document.getElementById('boqGrossTotal').innerText = gross.toLocaleString('en-KE', {style: 'currency', currency: 'KES'});
+            // Sahara format mapping
+            const subStr = subTotal.toLocaleString('en-KE', {minimumFractionDigits: 0}) + ' KES';
+            const vatStr = vat.toLocaleString('en-KE', {minimumFractionDigits: 0}) + ' KES';
+            const grossStr = gross.toLocaleString('en-KE', {minimumFractionDigits: 0});
+            const grossFullStr = 'KES ' + grossStr;
+
+            document.getElementById('boqSubTotal').innerText = subStr;
+            document.getElementById('boqVat').innerText = vatStr;
+            document.getElementById('boqGrossTotal').innerText = grossFullStr;
+            document.getElementById('boqHeaderTotal').innerText = grossFullStr;
 
             document.getElementById('boqModal').style.display = 'flex';
         }
