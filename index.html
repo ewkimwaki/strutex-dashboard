@@ -252,85 +252,68 @@
             background: #f1f5f9;
         }
 
+        /* --- BILL OF QUANTITIES STYLING --- */
+        .boq-container { background: white; border-radius: 8px; padding: 25px; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; color: #1e293b; width: 100%; max-width: 210mm; margin: 0 auto; border: 1px solid #cbd5e1; }
+        .boq-table th, .boq-table td { border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
+
         #autosaveIndicator { font-size: 0.75rem; color: #94a3b8; align-self: center; font-weight: 600; }
 
-        /* --- SEAMLESS LANDSCAPE PRINT & PDF EXPORT RULES --- */
-        @page {
-            size: A4 landscape;
-            margin: 10mm;
-        }
+        /* --- SEAMLESS MULTI-MODAL PRINT & PDF EXPORT RULES --- */
+        @page { size: A4 portrait; margin: 10mm; }
 
         @media print {
             .app-wrapper { display: none !important; }
-            .modal:not(#jobCardModal) { display: none !important; }
             .no-print { display: none !important; }
-
             html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: white !important;
-                color: black !important;
-                height: auto !important;
-                overflow: visible !important;
+                margin: 0 !important; padding: 0 !important; background: white !important; color: black !important;
+                height: auto !important; overflow: visible !important;
             }
 
-            #jobCardModal {
-                position: relative !important;
-                display: block !important;
-                background: transparent !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                height: auto !important;
-            }
-            .modal-content {
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                max-height: none !important;
-                overflow: visible !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                background: white !important;
-            }
+            /* Hide all modals natively */
+            .modal { display: none !important; }
 
-            .jobcard-container {
-                border: 1.5px solid #000000 !important;
-                max-width: 100% !important;
-                width: 100% !important;
-                padding: 14px !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                font-size: 11pt !important;
-                line-height: 1.45 !important;
-                color: #000000 !important;
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 12px !important;
-                page-break-after: avoid !important;
+            /* --- JOB CARD PRINT ACTIVATION --- */
+            body.print-jc #jobCardModal {
+                display: block !important; position: relative !important; background: transparent !important;
+                padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important;
             }
-
-            .jc-header { grid-column: span 2 !important; border-bottom: 2px solid #000000 !important; }
-            .jc-header strong { font-size: 15pt !important; color: #000000 !important; }
-            
-            .jc-box {
-                break-inside: avoid;
-                page-break-inside: avoid;
-                background: #ffffff !important;
-                border: 1px solid #333333 !important;
-                padding: 10px 12px !important;
+            body.print-jc .modal-content {
+                box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important;
+                max-height: none !important; overflow: visible !important; width: 100% !important; max-width: 100% !important; background: white !important;
             }
-            .jc-box.span-2 { grid-column: span 2 !important; }
+            body.print-jc .jobcard-container {
+                border: 1.5px solid #000000 !important; max-width: 100% !important; width: 100% !important;
+                padding: 14px !important; margin: 0 !important; box-shadow: none !important; font-size: 11pt !important;
+                line-height: 1.45 !important; color: #000000 !important; display: grid !important; grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important; page-break-after: avoid !important;
+            }
+            body.print-jc .jc-header { grid-column: span 2 !important; border-bottom: 2px solid #000000 !important; }
+            body.print-jc .jc-header strong { font-size: 15pt !important; color: #000000 !important; }
+            body.print-jc .jc-box {
+                break-inside: avoid; page-break-inside: avoid; background: #ffffff !important;
+                border: 1px solid #333333 !important; padding: 10px 12px !important;
+            }
+            body.print-jc .jc-box.span-2 { grid-column: span 2 !important; }
+            body.print-jc .jc-box strong { font-size: 10.5pt !important; color: #000000 !important; border-bottom: 1px solid #888888 !important; }
+            body.print-jc .jc-table-clean th, body.print-jc .jc-table-clean td { font-size: 10pt !important; padding: 8px 10px !important; border: 1px solid #444444 !important; color: #000000 !important; }
+            body.print-jc .jc-table-clean th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body.print-jc tr { break-inside: avoid; page-break-inside: avoid; }
+            body.print-jc .signature-grid { display: flex !important; flex-direction: row !important; gap: 15px !important; }
+            body.print-jc .sig-box, body.print-jc .stamp-box { height: 95px !important; border-color: #000000 !important; }
+            body.print-jc .stamp-box { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 2px dashed #666666 !important; }
 
-            .jc-box strong { font-size: 10.5pt !important; color: #000000 !important; border-bottom: 1px solid #888888 !important; }
-            .jc-table-clean th, .jc-table-clean td { font-size: 10pt !important; padding: 8px 10px !important; border: 1px solid #444444 !important; color: #000000 !important; }
-            .jc-table-clean th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            tr { break-inside: avoid; page-break-inside: avoid; }
-
-            .signature-grid { display: flex !important; flex-direction: row !important; gap: 15px !important; }
-            .sig-box, .stamp-box { height: 95px !important; border-color: #000000 !important; }
-            .stamp-box { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 2px dashed #666666 !important; }
+            /* --- BOQ PRINT ACTIVATION --- */
+            body.print-boq #boqModal {
+                display: block !important; position: relative !important; background: white !important;
+                padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important;
+            }
+            body.print-boq .modal-content {
+                box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important;
+                max-height: none !important; overflow: visible !important; width: 100% !important; max-width: 100% !important;
+            }
+            body.print-boq .boq-container {
+                width: 100% !important; max-width: 100% !important; padding: 10mm !important; border: none !important;
+            }
         }
     </style>
 <style>
@@ -350,7 +333,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 900px; /* Forces horizontal scroll on phones so nothing squishes */
+        min-width: 900px;
     }
 
     table th, table td {
@@ -359,16 +342,14 @@
         vertical-align: middle;
     }
 
-    /* 1. Target the CORRECT column (3rd Column: Station Name) */
     table td:nth-child(3), table th:nth-child(3) { 
-        min-width: 240px !important; /* Give the column plenty of width */
+        min-width: 240px !important;
     }
 
-    /* 2. Target the actual text input box inside the Station Name column */
     table td:nth-child(3) input {
         width: 100% !important;
-        min-width: 220px !important; /* Prevents the box from shrinking and cutting off names */
-        font-size: 0.9rem !important; /* Slightly larger for better mobile readability */
+        min-width: 220px !important; 
+        font-size: 0.9rem !important; 
         padding: 8px !important;
     }
 </style>
@@ -480,7 +461,7 @@
 
     <!-- 2. Passport-Style Multi-Step Job Card Wizard Modal -->
     <div id="jobCardWizardModal" class="modal">
-        <div class="modal-content" style="max-width: 750px;">
+        <div class="modal-content" style="max-width: 800px;">
             <h3 style="margin-top:0; font-size: 1.1rem; color: #1e293b;">Strutex Job Card Interactive Wizard</h3>
             <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Complete all sections below. Supports multi-day schedules and itemized scopes.</p>
 
@@ -500,11 +481,10 @@
                 </div>
             </div>
 
-            <!-- Step 2 (Updated with Schedule C Search) -->
+            <!-- Step 2 (Updated with Quantities & BoQ Setup) -->
             <div class="wizard-step" id="wizStep2">
                 <h4 style="font-size: 0.9rem; color: #0284c7; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Step 2: Itemized Scope of Work</h4>
                 
-                <!-- Schedule C Dropdown & Crawler Search Panel -->
                 <div class="sched-picker-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <label style="font-weight: bold; font-size: 0.8rem; color: #0369a1;">🔍 Schedule C Catalog Task Search</label>
@@ -619,12 +599,82 @@
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
                     <button class="btn btn-secondary" onclick="closeModal('jobCardModal')" style="font-size: 0.75rem;">Close Preview</button>
-                    <button class="btn btn-secondary" onclick="window.print()" style="font-size: 0.75rem;">🖨️ Save as PDF / Print</button>
+                    <button class="btn btn-secondary" onclick="printJobCard()" style="font-size: 0.75rem;">🖨️ Save as PDF / Print</button>
                     <button class="btn btn-success" onclick="completeAndSaveJobCard()" style="font-size: 0.75rem;">Complete & Save</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 4. NEW: Bill of Quantities (BoQ) / Costing Modal -->
+    <div id="boqModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="boq-container" id="printableBoQ">
+                <!-- BoQ Header Inspired by SaharaDesk Format -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e293b; padding-bottom: 15px; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="margin: 0; color: #1e293b; font-size: 1.4rem;">STRUTEX BUILDERS LTD</h2>
+                        <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">+254 721 702 625</p>
+                        <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">sstrutenterpris@gmail.com</p>
+                        <p style="margin: 2px 0; font-size: 0.85rem; color: #475569;">Milestone Plaza, Nairobi, Kenya</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <h1 style="margin: 0; color: #0284c7; font-size: 1.8rem; letter-spacing: 1px;">QUOTE / BoQ</h1>
+                        <p style="margin: 6px 0 2px 0; font-size: 0.85rem;"><strong>Work Ref:</strong> <span id="boqWorkOrder"></span></p>
+                        <p style="margin: 2px 0; font-size: 0.85rem;"><strong>Location:</strong> <span id="boqLocation"></span></p>
+                        <p style="margin: 2px 0; font-size: 0.85rem;"><strong>Date:</strong> <span id="boqDate"></span></p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #1e293b; font-weight: 600;">Bill Title: Routine Maintenance & Repair Tasking</p>
+                </div>
+
+                <table class="boq-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; border-top: 1px solid #cbd5e1;">
+                            <th style="padding: 10px; text-align: left; width: 15%; color: #334155;">Code</th>
+                            <th style="padding: 10px; text-align: left; width: 45%; color: #334155;">Task Description</th>
+                            <th style="padding: 10px; text-align: center; width: 10%; color: #334155;">Quantity</th>
+                            <th style="padding: 10px; text-align: right; width: 15%; color: #334155;">Unit Rate</th>
+                            <th style="padding: 10px; text-align: right; width: 15%; color: #334155;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="boqTableBody">
+                        <!-- Populated dynamically via JS -->
+                    </tbody>
+                </table>
+
+                <div style="display: flex; justify-content: flex-end;">
+                    <table style="width: 320px; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px; font-weight: 600; color: #475569; border-top: 1px solid #cbd5e1;">Sub Total:</td>
+                            <td style="padding: 8px; text-align: right; border-top: 1px solid #cbd5e1;" id="boqSubTotal"></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; font-weight: 600; color: #475569;">VAT (16%):</td>
+                            <td style="padding: 8px; text-align: right;" id="boqVat"></td>
+                        </tr>
+                        <tr style="background-color: #f1f5f9; border-top: 2px solid #1e293b; border-bottom: 2px solid #1e293b;">
+                            <td style="padding: 12px 8px; font-weight: bold; font-size: 1.1rem; color: #1e293b;">Gross Total:</td>
+                            <td style="padding: 12px 8px; text-align: right; font-weight: bold; font-size: 1.1rem; color: #0284c7;" id="boqGrossTotal"></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div style="margin-top: 50px; font-size: 0.75rem; color: #94a3b8; text-align: center;">
+                    System Generated Document by Strutex Builders Ltd | Values in KES | Valid for 30 Days
+                </div>
+            </div>
+
+            <!-- Action Footer for BoQ -->
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;" class="no-print">
+                <button class="btn btn-secondary" onclick="closeModal('boqModal')">Close View</button>
+                <button class="btn btn-success" onclick="printBoQ()">🖨️ Print / Save BoQ</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Application Script Logic -->
     <script>
@@ -687,8 +737,11 @@
         }
 
         function selectScheduleCItem(code, desc, uom, rate) {
-            const taskFormatted = `[${code}] ${desc} ${uom ? '('+uom+')' : ''} ${rate ? '- Rate: '+rate : ''}`;
-            addScopeItemRow(taskFormatted);
+            // PROMPT 1 Requirement: Output just Rubis Code and description on Job Card, remove Rate from the string
+            const taskFormatted = `[${code}] ${desc}`; 
+            
+            // Pass rate and meta data natively to setup BoQ Quantities internally
+            addScopeItemRow(taskFormatted, code, desc, uom, rate);
             
             // Clear and hide search dropdown cleanly
             document.getElementById('scheduleSearchInput').value = '';
@@ -767,11 +820,14 @@
                 let actionButtonsHtml = '';
 
                 if (s.jobCardSaved && s.jobCardPayload) {
+                    // Pre-encode string for safe injection
+                    const payloadSafe = JSON.stringify(s.jobCardPayload).replace(/'/g, "&#39;");
                     jcButtonHtml = `
-                        <div style="display: flex; gap: 4px; width: 100%;">
-                            <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; flex: 1;" onclick='viewSavedJobCard(${JSON.stringify(s.jobCardPayload)})'>👁️ View</button>
-                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${JSON.stringify(s.jobCardPayload)},${index})'>✏️ Edit</button>
+                        <div style="display: flex; gap: 4px; width: 100%; margin-bottom: 4px;">
+                            <button class="btn btn-success" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick='viewSavedJobCard(${payloadSafe})'>👁️ Card</button>
+                            <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${payloadSafe},${index})'>✏️ Edit</button>
                         </div>
+                        <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; width: 100%; background-color: #0f766e; font-weight: bold;" onclick='viewBoQ(${payloadSafe})'>💰 View BoQ / Costs</button>
                     `;
                     actionButtonsHtml = `
                         <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #64748b;" onclick="resetStationCycle(${index})">🔄 Reset</button>
@@ -984,11 +1040,24 @@
             document.getElementById('jobCardWizardModal').style.display = 'flex';
         }
 
-        function addScopeItemRow(text = "") {
+        // Modified logic to attach Qty field and safely bind metadata for BoQ (Prompt 2)
+        function addScopeItemRow(text = "", code = "", desc = "", uom = "", rate = "") {
             const container = document.getElementById('scopeItemsContainer');
             const div = document.createElement('div');
-            div.className = 'dynamic-row';
-            div.innerHTML = `<input type="text" class="form-control scope-item-input" value="${text}"><button type="button" class="btn btn-secondary" style="padding: 6px 10px; font-size:0.75rem;" onclick="this.parentElement.remove()">✕</button>`;
+            div.className = 'dynamic-row scope-item-wrapper';
+            
+            // Clean out text to fetch raw numbers (KES 600.00 => 600)
+            let rateNum = 0;
+            if (rate) {
+                rateNum = parseFloat(rate.toString().replace(/[^0-9.]/g, '')) || 0;
+            }
+
+            div.innerHTML = `
+                <input type="text" class="form-control scope-item-input" value="${text}" placeholder="Task Description" style="flex: 1;">
+                <input type="number" class="form-control scope-qty-input" placeholder="Qty" value="1" min="0.01" step="any" style="width: 70px; flex: 0 0 70px;" data-rate="${rateNum}" data-code="${code}" data-desc="${desc}" title="Enter Item Quantity">
+                <span style="font-size: 0.75rem; font-weight: bold; color: #059669; flex: 0 0 80px; text-align: right;">${rateNum > 0 ? 'KES ' + rateNum : ''}</span>
+                <button type="button" class="btn btn-secondary" style="padding: 6px 10px; font-size:0.75rem; flex: 0 0 30px;" onclick="this.parentElement.remove()">✕</button>
+            `;
             container.appendChild(div);
         }
 
@@ -1007,7 +1076,33 @@
 
         function reviewJobCard() {
             closeModal('jobCardWizardModal');
-            const scopeItems = Array.from(document.querySelectorAll('.scope-item-input')).map(inp => inp.value).filter(v => v);
+            
+            // Map the rows dynamically capturing Text (For standard Job Card) and Rates/Qty (For backend BoQ)
+            const scopeItems = Array.from(document.querySelectorAll('.scope-item-wrapper')).map(row => {
+                const inpText = row.querySelector('.scope-item-input').value;
+                const qtyInp = row.querySelector('.scope-qty-input');
+                
+                // Backup extraction if custom typed by user
+                let extractedCode = qtyInp ? qtyInp.getAttribute('data-code') : '';
+                let extractedDesc = qtyInp ? qtyInp.getAttribute('data-desc') : '';
+                
+                if (!extractedCode && inpText.startsWith('[')) {
+                    const cb = inpText.indexOf(']');
+                    if (cb > -1) {
+                        extractedCode = inpText.substring(1, cb);
+                        extractedDesc = inpText.substring(cb + 1).trim();
+                    }
+                }
+
+                return {
+                    text: inpText, // Will securely display precisely what User expects on regular Job Card
+                    qty: qtyInp ? parseFloat(qtyInp.value) || 1 : 1,
+                    rate: qtyInp ? parseFloat(qtyInp.getAttribute('data-rate')) || 0 : 0,
+                    code: extractedCode,
+                    desc: extractedDesc || inpText
+                };
+            }).filter(v => v.text);
+
             const dailyLogs = Array.from(document.querySelectorAll('#dailyLogsContainer > div')).map(row => ({
                 date: row.querySelector('.log-date').value, timeIn: row.querySelector('.log-timein').value,
                 timeOut: row.querySelector('.log-timeout').value, progress: row.querySelector('.log-progress').value
@@ -1042,7 +1137,13 @@
             document.getElementById('jcSafetyDisp').innerText = data.safety || '';
 
             const scopeContainer = document.getElementById('jcScopeContainer');
-            scopeContainer.innerHTML = data.scopeItems && data.scopeItems.length ? `<ul style="margin:0; padding-left:18px; column-count:2; font-size:0.85rem;">` + data.scopeItems.map((task, idx) => `<li><strong>Task ${idx + 1}:</strong> ${task}</li>`).join('') + `</ul>` : 'None';
+            // Backwards compatibility for old saved Strings, and clean read of new structured array
+            scopeContainer.innerHTML = data.scopeItems && data.scopeItems.length ? `<ul style="margin:0; padding-left:18px; column-count:2; font-size:0.85rem;">` + data.scopeItems.map((task, idx) => {
+                let textToDisplay = typeof task === 'string' ? task : task.text;
+                // Force clear any trailing legacy rates just to heavily obey Prompt 1 Rules in old setups
+                if (textToDisplay.includes('- Rate: KES')) textToDisplay = textToDisplay.split('- Rate: KES')[0].trim();
+                return `<li><strong>Task ${idx + 1}:</strong> ${textToDisplay}</li>`;
+            }).join('') + `</ul>` : 'None';
 
             const logsContainer = document.getElementById('jcLogsContainer');
             logsContainer.innerHTML = data.dailyLogs && data.dailyLogs.length ? `<table class="jc-table-clean"><thead><tr><th style="width:100px;">Date</th><th style="width:110px;">Hours</th><th>Progress</th></tr></thead><tbody>` + data.dailyLogs.map(log => `<tr><td>${log.date}</td><td>${log.timeIn}-${log.timeOut}</td><td>${log.progress}</td></tr>`).join('') + `</tbody></table>` : 'None';
@@ -1061,16 +1162,19 @@
             }
 
             const rowIndex = activeRow._stationIndex;
+            const payloadSafe = JSON.stringify(cachedJobCardData).replace(/'/g, "&#39;");
+            
             activeRow.querySelector('.jc-cell').innerHTML = `
-                <div style="display: flex; gap: 4px; width: 100%;">
-                    <button class="btn btn-success" style="padding: 4px 8px; font-size: 0.75rem; flex: 1;" onclick='viewSavedJobCard(${JSON.stringify(cachedJobCardData)})'>👁️ View</button>
-                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${JSON.stringify(cachedJobCardData)}, ${rowIndex})'>✏️ Edit</button>
+                <div style="display: flex; gap: 4px; width: 100%; margin-bottom: 4px;">
+                    <button class="btn btn-success" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick='viewSavedJobCard(${payloadSafe})'>👁️ Card</button>
+                    <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${payloadSafe}, ${rowIndex})'>✏️ Edit</button>
                 </div>
+                <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; width: 100%; background-color: #0f766e; font-weight: bold;" onclick='viewBoQ(${payloadSafe})'>💰 View BoQ / Costs</button>
             `;
             
             closeModal('jobCardModal');
             saveLocally();
-            alert("Job Card Completed & Saved Locally!");
+            alert("Job Card & Sub-Bill of Quantities Completed & Saved Locally!");
         }
 
         function viewSavedJobCard(data) { 
@@ -1079,8 +1183,77 @@
             document.getElementById('jobCardModal').style.display = 'flex'; 
         }
 
+        // --- NEW: BoQ Engine Generator (Prompt 2) ---
+        function viewBoQ(data) {
+            document.getElementById('boqWorkOrder').innerText = data.workOrder || 'N/A';
+            document.getElementById('boqLocation').innerText = data.stationName || 'N/A';
+            document.getElementById('boqDate').innerText = data.dateIssued || new Date().toLocaleDateString();
+
+            const tbody = document.getElementById('boqTableBody');
+            tbody.innerHTML = '';
+            let subTotal = 0;
+
+            if (data.scopeItems && data.scopeItems.length > 0) {
+                data.scopeItems.forEach(item => {
+                    let code = '', desc = '', qty = 1, rate = 0;
+
+                    // Fallback parse engine if executing an old saved job card without nested objects
+                    if (typeof item === 'string') {
+                        desc = item;
+                        if (desc.includes('- Rate: KES')) {
+                            const parts = desc.split('- Rate: KES');
+                            desc = parts[0].trim();
+                            rate = parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0;
+                        }
+                    } else {
+                        code = item.code || '';
+                        desc = item.desc || item.text;
+                        qty = parseFloat(item.qty) || 1;
+                        rate = parseFloat(item.rate) || 0;
+                    }
+
+                    const amount = qty * rate;
+                    subTotal += amount;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="padding: 10px; vertical-align: top; font-weight: 600;">${code}</td>
+                        <td style="padding: 10px; vertical-align: top;">${desc}</td>
+                        <td style="padding: 10px; text-align: center; vertical-align: top;">${qty}</td>
+                        <td style="padding: 10px; text-align: right; vertical-align: top;">${rate.toLocaleString('en-KE', {minimumFractionDigits: 2})}</td>
+                        <td style="padding: 10px; text-align: right; vertical-align: top; font-weight: 600;">${amount.toLocaleString('en-KE', {minimumFractionDigits: 2})}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: #94a3b8;">No task metrics recorded for this assignment.</td></tr>`;
+            }
+
+            const vat = subTotal * 0.16;
+            const gross = subTotal + vat;
+
+            document.getElementById('boqSubTotal').innerText = subTotal.toLocaleString('en-KE', {style: 'currency', currency: 'KES'});
+            document.getElementById('boqVat').innerText = vat.toLocaleString('en-KE', {style: 'currency', currency: 'KES'});
+            document.getElementById('boqGrossTotal').innerText = gross.toLocaleString('en-KE', {style: 'currency', currency: 'KES'});
+
+            document.getElementById('boqModal').style.display = 'flex';
+        }
+
+        // Print Modifiers explicitly separating JS Window APIs targets
+        function printJobCard() {
+            document.body.classList.add('print-jc');
+            window.print();
+            document.body.classList.remove('print-jc');
+        }
+
+        function printBoQ() {
+            document.body.classList.add('print-boq');
+            window.print();
+            document.body.classList.remove('print-boq');
+        }
+
         function deleteJobCard() {
-            if (confirm("Are you sure you want to delete/reset the job card for this station?")) {
+            if (confirm("Are you sure you want to delete/reset the job card & BoQ for this station?")) {
                 if (activeRow) {
                     activeRow._jobCardSaved = false;
                     activeRow._jobCardPayload = null;
@@ -1099,13 +1272,15 @@
 
     setInterval(() => {
         const jobCardModal = document.getElementById('jobCardModal');
-        const isModalOpen = jobCardModal && getComputedStyle(jobCardModal).display !== 'none';
+        const boqModal = document.getElementById('boqModal');
+        const isModalOpen = (jobCardModal && getComputedStyle(jobCardModal).display !== 'none') || 
+                            (boqModal && getComputedStyle(boqModal).display !== 'none');
 
         const activeTag = document.activeElement ? document.activeElement.tagName : '';
         const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag);
 
         if (isModalOpen || isTyping) {
-            console.log('⏳ Technician is currently active or filling a job card. Skipping auto-sync...');
+            console.log('⏳ Technician is currently active. Skipping auto-sync...');
             return;
         }
 
@@ -1119,8 +1294,6 @@
         if (cloudBtn) {
             cloudBtn.click();
             console.log('✅ Smart auto-sync executed: Database updated in the background.');
-        } else {
-            console.warn('⚠️ Warning: Could not find the cloud sync button.');
         }
     }, 60000);
    
@@ -1129,15 +1302,9 @@
     // ==========================================
     document.addEventListener("DOMContentLoaded", () => {
         const isDesktop = window.matchMedia("(pointer: fine)").matches && window.innerWidth > 768;
+        if (!isDesktop) return;
 
-        if (!isDesktop) {
-            console.log("📱 Mobile device detected: Column resizing disabled for smoother swiping.");
-            return;
-        }
-
-        console.log("💻 Desktop detected: Enabling mouse-driven column resizing.");
         const headers = document.querySelectorAll('th');
-        
         headers.forEach(th => {
             th.style.position = 'relative'; 
             
@@ -1149,7 +1316,6 @@
             resizer.style.top = '0';
             resizer.style.cursor = 'col-resize';
             resizer.style.zIndex = '1';
-            
             resizer.style.borderRight = '2px solid rgba(148, 163, 184, 0.4)'; 
             
             th.appendChild(resizer);
@@ -1165,16 +1331,13 @@
             const doDrag = (e) => {
                 if (!startX) return;
                 const newWidth = startWidth + (e.pageX - startX);
-                
                 if (newWidth > 50) { 
                     th.style.minWidth = `${newWidth}px`;
                     th.style.width = `${newWidth}px`;
                 }
             };
 
-            const stopDrag = () => {
-                startX = null;
-            };
+            const stopDrag = () => { startX = null; };
 
             resizer.addEventListener('mousedown', startDrag);
             document.addEventListener('mousemove', doDrag);
@@ -1198,7 +1361,18 @@
             const scopeContainer = document.getElementById('scopeItemsContainer');
             scopeContainer.innerHTML = "";
             if (data.scopeItems && data.scopeItems.length > 0) {
-                data.scopeItems.forEach(item => addScopeItemRow(item));
+                data.scopeItems.forEach(item => {
+                    // Injecting quantity fields safely when returning from legacy or new saved instances
+                    if (typeof item === 'string') {
+                        addScopeItemRow(item);
+                    } else {
+                        addScopeItemRow(item.text, item.code, item.desc, "", item.rate);
+                        const wrapNode = scopeContainer.lastElementChild;
+                        if(wrapNode && wrapNode.querySelector('.scope-qty-input')) {
+                            wrapNode.querySelector('.scope-qty-input').value = item.qty;
+                        }
+                    }
+                });
             } else {
                 addScopeItemRow("");
             }
