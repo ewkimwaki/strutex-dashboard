@@ -301,6 +301,7 @@
             body.print-jc .jc-box {
                 background: #ffffff !important;
                 border: 1px solid #333333 !important; padding: 6px 8px !important; margin-bottom: 0 !important;
+                break-inside: avoid !important; page-break-inside: avoid !important;
             }
             body.print-jc .jc-box.span-2 { grid-column: span 2 !important; }
             body.print-jc .jc-box strong { font-size: 9pt !important; color: #000000 !important; border-bottom: 1px solid #888888 !important; margin-bottom: 4px !important; padding-bottom: 2px !important; }
@@ -1287,12 +1288,12 @@
             document.getElementById('jcSafetyDisp').innerText = data.safety || '';
 
             const scopeContainer = document.getElementById('jcScopeContainer');
-            scopeContainer.innerHTML = data.scopeItems && data.scopeItems.length ? `<ul style="margin:0; padding-left:18px; list-style-type: none; padding-left: 0;">` + data.scopeItems.map((task, idx) => {
+            scopeContainer.innerHTML = data.scopeItems && data.scopeItems.length ? `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px;">` + data.scopeItems.map((task, idx) => {
                 let textToDisplay = typeof task === 'string' ? task : task.text;
                 if (textToDisplay.includes('- Rate: KES')) textToDisplay = textToDisplay.split('- Rate: KES')[0].trim();
                 const qtyVal = (typeof task === 'object' && task.qty !== undefined) ? task.qty : 1;
-                return `<li style="margin-bottom: 6px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px;"><strong>Task ${idx + 1}:</strong> ${textToDisplay} <br><span style="color: #0284c7; font-weight: bold; font-size: 0.8rem;">Qty: ${qtyVal}</span></li>`;
-            }).join('') + `</ul>` : 'None';
+                return `<div style="border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 4px; background: #ffffff; font-size: 8.5pt; break-inside: avoid; page-break-inside: avoid;"><strong>Task ${idx + 1}:</strong> ${textToDisplay} <br><span style="color: #0284c7; font-weight: bold; font-size: 0.75rem;">Qty: ${qtyVal}</span></div>`;
+            }).join('') + `</div>` : 'None';
 
             const logsContainer = document.getElementById('jcLogsContainer');
             logsContainer.innerHTML = data.dailyLogs && data.dailyLogs.length ? `<table class="jc-table-clean"><thead><tr><th style="width:100px;">Date</th><th style="width:110px;">Hours</th><th>Progress</th></tr></thead><tbody>` + data.dailyLogs.map(log => `<tr><td>${log.date}</td><td>${log.timeIn}-${log.timeOut}</td><td>${log.progress}</td></tr>`).join('') + `</tbody></table>` : 'None';
