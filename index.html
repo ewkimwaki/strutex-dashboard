@@ -281,7 +281,7 @@
             /* Hide all modals natively */
             .modal { display: none !important; }
 
-           /* --- JOB CARD PRINT ACTIVATION (LANDSCAPE OPTIMIZED) --- */
+            /* --- JOB CARD PRINT ACTIVATION (LANDSCAPE OPTIMIZED & SPACE-MAXIMIZED) --- */
             body.print-jc #jobCardModal {
                 display: block !important; position: relative !important; background: transparent !important;
                 padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important;
@@ -292,23 +292,22 @@
             }
             body.print-jc .jobcard-container {
                 border: 1.5px solid #000000 !important; max-width: 100% !important; width: 100% !important;
-                padding: 16px !important; margin: 0 !important; box-shadow: none !important; font-size: 10.5pt !important;
-                line-height: 1.4 !important; color: #000000 !important; display: grid !important; grid-template-columns: 1fr 1fr !important;
-                gap: 12px !important; page-break-after: avoid !important;
+                padding: 8mm 10mm !important; margin: 0 !important; box-shadow: none !important; font-size: 9pt !important;
+                line-height: 1.25 !important; color: #000000 !important; display: grid !important; grid-template-columns: 1fr 1fr !important;
+                gap: 6mm 8mm !important; page-break-after: avoid !important;
             }
-            body.print-jc .jc-header { grid-column: span 2 !important; border-bottom: 2px solid #000000 !important; padding-bottom: 8px !important; }
-            body.print-jc .jc-header strong { font-size: 14pt !important; color: #000000 !important; }
+            body.print-jc .jc-header { grid-column: span 2 !important; border-bottom: 2px solid #000000 !important; padding-bottom: 4px !important; margin-bottom: 0 !important; }
+            body.print-jc .jc-header strong { font-size: 12pt !important; color: #000000 !important; }
             body.print-jc .jc-box {
-                break-inside: avoid; page-break-inside: avoid; background: #ffffff !important;
-                border: 1px solid #333333 !important; padding: 10px 12px !important;
+                background: #ffffff !important;
+                border: 1px solid #333333 !important; padding: 6px 8px !important; margin-bottom: 0 !important;
             }
             body.print-jc .jc-box.span-2 { grid-column: span 2 !important; }
-            body.print-jc .jc-box strong { font-size: 10pt !important; color: #000000 !important; border-bottom: 1px solid #888888 !important; }
-            body.print-jc .jc-table-clean th, body.print-jc .jc-table-clean td { font-size: 9.5pt !important; padding: 6px 8px !important; border: 1px solid #444444 !important; color: #000000 !important; }
+            body.print-jc .jc-box strong { font-size: 9pt !important; color: #000000 !important; border-bottom: 1px solid #888888 !important; margin-bottom: 4px !important; padding-bottom: 2px !important; }
+            body.print-jc .jc-table-clean th, body.print-jc .jc-table-clean td { font-size: 8.5pt !important; padding: 4px 6px !important; border: 1px solid #444444 !important; color: #000000 !important; }
             body.print-jc .jc-table-clean th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            body.print-jc tr { break-inside: avoid; page-break-inside: avoid; }
-            body.print-jc .signature-grid { display: flex !important; flex-direction: row !important; gap: 15px !important; }
-            body.print-jc .sig-box, body.print-jc .stamp-box { height: 85px !important; border-color: #000000 !important; }
+            body.print-jc .signature-grid { display: flex !important; flex-direction: row !important; gap: 10px !important; margin-top: 4px !important; }
+            body.print-jc .sig-box, body.print-jc .stamp-box { height: 65px !important; border-color: #000000 !important; padding: 6px !important; }
             body.print-jc .stamp-box { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 2px dashed #666666 !important; }
 
             /* --- BOQ PRINT ACTIVATION (LANDSCAPE OPTIMIZED) --- */
