@@ -1288,10 +1288,11 @@
             document.getElementById('jcSafetyDisp').innerText = data.safety || '';
 
             const scopeContainer = document.getElementById('jcScopeContainer');
-            scopeContainer.innerHTML = data.scopeItems && data.scopeItems.length ? `<ul style="margin:0; padding-left:18px; column-count:2; font-size:0.85rem;">` + data.scopeItems.map((task, idx) => {
+            scopeContainer.innerHTML = data.scopeItems && data.scopeItems.length ? `<ul style="margin:0; padding-left:18px; list-style-type: none; padding-left: 0;">` + data.scopeItems.map((task, idx) => {
                 let textToDisplay = typeof task === 'string' ? task : task.text;
                 if (textToDisplay.includes('- Rate: KES')) textToDisplay = textToDisplay.split('- Rate: KES')[0].trim();
-                return `<li><strong>Task ${idx + 1}:</strong> ${textToDisplay}</li>`;
+                const qtyVal = (typeof task === 'object' && task.qty !== undefined) ? task.qty : 1;
+                return `<li style="margin-bottom: 6px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px;"><strong>Task ${idx + 1}:</strong> ${textToDisplay} <br><span style="color: #0284c7; font-weight: bold; font-size: 0.8rem;">Qty: ${qtyVal}</span></li>`;
             }).join('') + `</ul>` : 'None';
 
             const logsContainer = document.getElementById('jcLogsContainer');
