@@ -333,6 +333,12 @@
         .pow-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #E2001A; padding-bottom: 15px; margin-bottom: 25px; }
         .pow-header h1 { margin: 0; color: #003366; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .pow-header p { margin: 4px 0 0; color: #4A4A4A; font-size: 12.5px; }
+
+        /* Inline Editable POW Cells */
+        .pow-edit-input { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: inherit; color: inherit; padding: 4px; box-sizing: border-box; }
+        .pow-edit-input:focus { border: 1px solid #0284c7; background: #f0f9ff; outline: none; border-radius: 4px; }
+        .pow-edit-select { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: inherit; color: inherit; padding: 2px; font-weight: bold; cursor: pointer; }
+        .pow-edit-select:focus { border: 1px solid #0284c7; background: #fff; outline: none; }
         
         .btn-export { background-color: #E2001A; color: white; border: none; padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; }
         .btn-export:hover { background-color: #C00015; }
@@ -371,6 +377,16 @@
                 padding: 0 !important;
                 margin: 0 !important;
             }
+
+            body.print-pow .pow-edit-input, 
+            body.print-pow .pow-edit-select { 
+                border: none !important; 
+                background: transparent !important; 
+                padding: 0 !important; 
+            }
+            body.print-pow .pow-edit-select { -webkit-appearance: none; appearance: none; }
+            body.print-pow input[type="date"]::-webkit-calendar-picker-indicator { display: none !important; }
+            
             body.print-pow .modal-content {
                 max-height: none !important;      /* OVERRIDES 90vh LIMIT */
                 height: auto !important;
@@ -1848,14 +1864,20 @@ function renderPowTable() {
 
                 tr.innerHTML = `
                     <td class="pow-drag-handle no-print">≡</td>
-                    <td style="font-weight:600; color:#003366;">${site.name}</td>
-                    <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:3px; font-weight:bold; font-size:10px;">${site.classType || 'Class A'}</span></td>
-                    <td>${formatPowDate(site.deadline)}</td>
-                    <td style="font-weight:bold;">${formatPowDate(site.target)}</td>
-                    <td style="color:#0369a1; font-weight:600;">${formatPowDate(site.nextPainting)}</td>
-                    <td style="color:#15803d; font-weight:600;">${formatPowDate(site.nextCleaning)}</td>
+                    <td><input type="text" class="pow-edit-input" style="font-weight:600; color:#003366;" value="${site.name}" onchange="updatePowField(${site.id}, 'name', this.value)"></td>
+                    <td>
+                        <select class="pow-edit-select" style="background:#e2e8f0; padding:2px 4px; border-radius:3px; font-size:10px;" onchange="updatePowField(${site.id}, 'classType', this.value)">
+                            <option value="Class A" ${site.classType==='Class A'?'selected':''}>Class A</option>
+                            <option value="Class B" ${site.classType==='Class B'?'selected':''}>Class B</option>
+                            <option value="Class C" ${site.classType==='Class C'?'selected':''}>Class C</option>
+                        </select>
+                    </td>
+                    <td><input type="date" class="pow-edit-input" value="${site.deadline || ''}" onchange="updatePowField(${site.id}, 'deadline', this.value)"></td>
+                    <td><input type="date" class="pow-edit-input" style="font-weight:bold;" value="${site.target || ''}" onchange="updatePowField(${site.id}, 'target', this.value)"></td>
+                    <td><input type="date" class="pow-edit-input" style="color:#0369a1; font-weight:600;" value="${site.nextPainting || ''}" onchange="updatePowField(${site.id}, 'nextPainting', this.value)"></td>
+                    <td><input type="date" class="pow-edit-input" style="color:#15803d; font-weight:600;" value="${site.nextCleaning || ''}" onchange="updatePowField(${site.id}, 'nextCleaning', this.value)"></td>
                     <td><span class="status-badge-pow ${statusClass}">${site.status}</span></td>
-                    <td style="font-style:italic; font-size:11px;">${site.remarks || ''}</td>
+                    <td><input type="text" class="pow-edit-input" style="font-style:italic; font-size:11px;" value="${site.remarks || ''}" onchange="updatePowField(${site.id}, 'remarks', this.value)" placeholder="Remarks..."></td>
                     <td class="no-print" style="display:flex; gap:4px;">
                         <button class="btn-action-pow" onclick="completePowStation(${site.id})" title="Mark complete & auto-update recurrent dates" style="background:#15803d; color:white; font-weight:bold;">Complete</button>
                         <button class="btn-action-pow" onclick="openPowPostponeModal(${site.id})">Postpone</button>
@@ -1870,29 +1892,54 @@ function renderPowTable() {
     generatePowSuggestions();
 }
 
+function updatePowField(id, field, value) {
+    const site = powStationsData.find(s => s.id === id);
+    if (site) {
+        site[field] = value;
+        
+        // Auto-adjust the cleaning interval background logic if Class changes
+        if (field === 'classType') {
+            if (value === 'Class A') site.cleaningInterval = 6;
+            else if (value === 'Class B') site.cleaningInterval = 9;
+            else if (value === 'Class C') site.cleaningInterval = 12;
+        }
+        savePowLocally();
+    }
+}        
+        
 function completePowStation(id) {
     const siteIndex = powStationsData.findIndex(s => s.id === id);
     if (siteIndex === -1) return;
-
     const site = powStationsData[siteIndex];
-    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Prompt user for actual completion date, defaulting to today
+    const defaultDate = new Date().toISOString().split('T')[0];
+    const completionDateStr = prompt(`Enter the ACTUAL completion date for ${site.name} (YYYY-MM-DD):`, defaultDate);
     
-    // Parse current or target dates
-    const paintingDate = new Date(site.nextPainting || site.target);
-    const cleaningDate = new Date(site.nextCleaning || site.target);
+    if (!completionDateStr) return; // User cancelled
+    
+    const completionDate = new Date(completionDateStr);
+    if (isNaN(completionDate.getTime())) {
+        alert("Invalid date format. Please use YYYY-MM-DD.");
+        return;
+    }
+    
+    // Calculate recurrent dates strictly from the actual completion date
+    const paintingDate = new Date(completionDate);
+    const cleaningDate = new Date(completionDate);
     
     // Painting recurrent cycle: +12 months (1 year)
     paintingDate.setFullYear(paintingDate.getFullYear() + 1);
     
-    // Cleaning recurrent cycle dependent on class / interval (Class A = 6 mo, Class B = 9 mo, Class C = 12 mo)
+    // Cleaning recurrent cycle dependent on class
     const intervalMo = site.cleaningInterval || (site.classType === 'Class B' ? 9 : (site.classType === 'Class C' ? 12 : 6));
     cleaningDate.setMonth(cleaningDate.getMonth() + intervalMo);
 
     site.status = "COMPLETED";
-    site.target = todayStr;
+    site.target = completionDateStr;
     site.nextPainting = paintingDate.toISOString().split('T')[0];
     site.nextCleaning = cleaningDate.toISOString().split('T')[0];
-    site.remarks = `Completed on ${todayStr}. Recurrent schedules auto-updated.`;
+    site.remarks = `Completed on ${completionDateStr}. Schedule auto-updated.`;
 
     renderPowTable();
     savePowLocally();
