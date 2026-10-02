@@ -806,18 +806,21 @@
                 </div>
 
                 <div style="overflow-x: auto;">
-                    <table id="powScheduleTable" style="min-width: 850px;">
-                        <thead>
-                            <tr>
-                                <th class="pow-drag-handle no-print" style="width: 25px;"></th>
-                                <th>Station Name</th>
-                                <th>Rubis Deadline</th>
-                                <th>Target Completion</th>
-                                <th>Status</th>
-                                <th>Remarks / Postpone Reason</th>
-                                <th class="no-print" style="width: 90px;">Actions</th>
-                            </tr>
-                        </thead>
+                    <table id="powScheduleTable" style="min-width: 1050px;">
+    <thead>
+        <tr>
+            <th class="pow-drag-handle no-print" style="width: 25px;"></th>
+            <th>Station Name</th>
+            <th>Class</th>
+            <th>Rubis Deadline</th>
+            <th>Target Completion</th>
+            <th>Next Painting Date</th>
+            <th>Next Cleaning Date</th>
+            <th>Status</th>
+            <th>Remarks / Postpone Reason</th>
+            <th class="no-print" style="width: 150px;">Actions</th>
+        </tr>
+    </thead>
                         <!-- Batches injected dynamically -->
                     </table>
                 </div>
@@ -1661,37 +1664,37 @@
     ];
 
     function getDefaultPowStations() {
-        return [
-            { id: 1, name: "RUBIS KOMAROCK (DODO)", deadline: "2026-10-05", target: "2026-10-03", batch: "Week 40 (Oct 3 - Oct 9)", status: "URGENT", remarks: "" },
-            { id: 2, name: "RUBIS MESORA", deadline: "2026-10-08", target: "2026-10-06", batch: "Week 40 (Oct 3 - Oct 9)", status: "URGENT", remarks: "" },
-            { id: 3, name: "RUBIS KANGUNDO RD", deadline: "2026-10-12", target: "2026-10-10", batch: "Week 40 (Oct 3 - Oct 9)", status: "SCHEDULED", remarks: "" },
-            { id: 4, name: "RUBIS FLYOVER - (DODO)", deadline: "2026-10-15", target: "2026-10-13", batch: "Week 41 (Oct 10 - Oct 16)", status: "SCHEDULED", remarks: "" },
-            { id: 5, name: "RUBIS MEMBLEY VIEW (DODO)", deadline: "2026-10-17", target: "2026-10-15", batch: "Week 41 (Oct 10 - Oct 16)", status: "SCHEDULED", remarks: "" },
-            { id: 6, name: "RUBIS RABAI ROAD", deadline: "2026-10-22", target: "2026-10-20", batch: "Week 42 (Oct 17 - Oct 23)", status: "SCHEDULED", remarks: "" },
-            { id: 7, name: "RUBIS BURUBURU", deadline: "2026-10-22", target: "2026-10-20", batch: "Week 42 (Oct 17 - Oct 23)", status: "SCHEDULED", remarks: "" },
-            { id: 8, name: "RUBIS KIAMBU RD - (DODO)", deadline: "2026-10-26", target: "2026-10-24", batch: "Week 43 (Oct 24 - Oct 30)", status: "SCHEDULED", remarks: "" },
-            { id: 9, name: "RUBIS KENOL", deadline: "2026-10-28", target: "2026-10-26", batch: "Week 43 (Oct 24 - Oct 30)", status: "SCHEDULED", remarks: "" },
-            { id: 10, name: "RUBIS MUGUMO - (DODO)", deadline: "2026-11-08", target: "2026-11-06", batch: "Week 44 & 45 (Nov 1 - Nov 14)", status: "SCHEDULED", remarks: "" },
-            { id: 11, name: "RUBIS WESTBAY - (DODO)", deadline: "2026-11-24", target: "2026-11-20", batch: "Week 46 & 47 (Nov 15 - Nov 30)", status: "SCHEDULED", remarks: "" },
-            { id: 12, name: "RUBIS RUNDA VIEW - (DODO)", deadline: "2026-11-27", target: "2026-11-25", batch: "Week 46 & 47 (Nov 15 - Nov 30)", status: "SCHEDULED", remarks: "" },
-            { id: 13, name: "RUBIS JOGOO ROAD", deadline: "2027-02-12", target: "2027-02-10", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 14, name: "RUBIS KAYOLE", deadline: "2027-02-12", target: "2027-02-10", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 15, name: "RUBIS MEMBLEY", deadline: "2027-02-22", target: "2027-02-19", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 16, name: "RUBIS BANANA", deadline: "2027-03-05", target: "2027-03-03", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 17, name: "RUBIS GARDEN ESTATE- (DODO)", deadline: "2027-03-12", target: "2027-03-10", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 18, name: "RUBIS KAMITI ROAD", deadline: "2027-03-30", target: "2027-03-27", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 19, name: "RUBIS THOME", deadline: "2027-04-12", target: "2027-04-09", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 20, name: "RUBIS MAGINA", deadline: "2027-04-13", target: "2027-04-10", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 21, name: "RUBIS LIMURU TOWN", deadline: "2027-04-14", target: "2027-04-12", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 22, name: "RUBIS LIMURU GREENS - (DODO)", deadline: "2027-04-14", target: "2027-04-12", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 23, name: "RUBIS KAHAWA WEST", deadline: "2027-04-24", target: "2027-04-21", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 24, name: "RUBIS NYAMBARI", deadline: "2027-05-11", target: "2027-05-08", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 25, name: "RUBIS UPLANDS", deadline: "2027-05-15", target: "2027-05-13", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 26, name: "RUBIS LIMURU - (DODO)", deadline: "2027-06-12", target: "2027-06-09", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 27, name: "RUBIS TIGONI", deadline: "2027-06-15", target: "2027-06-12", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-            { id: 28, name: "RUBIS MAGUMU - (DODO)", deadline: "2027-08-20", target: "2027-08-18", batch: "Quarter 3 (2027)", status: "SCHEDULED", remarks: "" }
-        ];
-    }
+    return [
+        { id: 1, name: "RUBIS KOMAROCK (DODO)", classType: "Class C", deadline: "2026-10-05", target: "2026-10-03", nextPainting: "2026-10-05", nextCleaning: "2026-10-05", cleaningInterval: 12, batch: "Week 40 (Oct 3 - Oct 9)", status: "URGENT", remarks: "" },
+        { id: 2, name: "RUBIS MESORA", classType: "Class B", deadline: "2026-10-08", target: "2026-10-06", nextPainting: "2026-10-08", nextCleaning: "2027-01-05", cleaningInterval: 9, batch: "Week 40 (Oct 3 - Oct 9)", status: "URGENT", remarks: "" },
+        { id: 3, name: "RUBIS KANGUNDO RD", classType: "Class B", deadline: "2026-10-12", target: "2026-10-10", nextPainting: "2026-10-12", nextCleaning: "2026-10-12", cleaningInterval: 9, batch: "Week 40 (Oct 3 - Oct 9)", status: "SCHEDULED", remarks: "" },
+        { id: 4, name: "RUBIS FLYOVER - (DODO)", classType: "Class B", deadline: "2026-10-15", target: "2026-10-13", nextPainting: "2026-10-15", nextCleaning: "2026-10-15", cleaningInterval: 9, batch: "Week 41 (Oct 10 - Oct 16)", status: "SCHEDULED", remarks: "" },
+        { id: 5, name: "RUBIS MEMBLEY VIEW (DODO)", classType: "Class B", deadline: "2026-10-17", target: "2026-10-15", nextPainting: "2027-07-17", nextCleaning: "2026-10-17", cleaningInterval: 9, batch: "Week 41 (Oct 10 - Oct 16)", status: "SCHEDULED", remarks: "" },
+        { id: 6, name: "RUBIS RABAI ROAD", classType: "Class A", deadline: "2026-10-22", target: "2026-10-20", nextPainting: "2027-08-22", nextCleaning: "2026-10-22", cleaningInterval: 6, batch: "Week 42 (Oct 17 - Oct 23)", status: "SCHEDULED", remarks: "" },
+        { id: 7, name: "RUBIS BURUBURU", classType: "Class B", deadline: "2026-10-22", target: "2026-10-20", nextPainting: "2028-02-22", nextCleaning: "2026-10-22", cleaningInterval: 9, batch: "Week 42 (Oct 17 - Oct 23)", status: "SCHEDULED", remarks: "" },
+        { id: 8, name: "RUBIS KIAMBU RD - (DODO)", classType: "Class B", deadline: "2026-10-26", target: "2026-10-24", nextPainting: "2027-07-26", nextCleaning: "2026-10-26", cleaningInterval: 9, batch: "Week 43 (Oct 24 - Oct 30)", status: "SCHEDULED", remarks: "" },
+        { id: 9, name: "RUBIS KENOL", classType: "Class A", deadline: "2026-10-28", target: "2026-10-26", nextPainting: "2026-10-28", nextCleaning: "2026-10-28", cleaningInterval: 6, batch: "Week 43 (Oct 24 - Oct 30)", status: "SCHEDULED", remarks: "" },
+        { id: 10, name: "RUBIS MUGUMO - (DODO)", classType: "Class B", deadline: "2026-11-08", target: "2026-11-06", nextPainting: "2027-08-08", nextCleaning: "2026-11-08", cleaningInterval: 9, batch: "Week 44 & 45 (Nov 1 - Nov 14)", status: "SCHEDULED", remarks: "" },
+        { id: 11, name: "RUBIS WESTBAY - (DODO)", classType: "Class B", deadline: "2026-11-24", target: "2026-11-20", nextPainting: "2026-11-24", nextCleaning: "2026-11-24", cleaningInterval: 9, batch: "Week 46 & 47 (Nov 15 - Nov 30)", status: "SCHEDULED", remarks: "" },
+        { id: 12, name: "RUBIS RUNDA VIEW - (DODO)", classType: "Class B", deadline: "2026-11-27", target: "2026-11-25", nextPainting: "2027-08-27", nextCleaning: "2026-11-27", cleaningInterval: 9, batch: "Week 46 & 47 (Nov 15 - Nov 30)", status: "SCHEDULED", remarks: "" },
+        { id: 13, name: "RUBIS JOGOO ROAD", classType: "Class A", deadline: "2027-02-12", target: "2027-02-10", nextPainting: "2027-08-12", nextCleaning: "2027-02-12", cleaningInterval: 6, batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 14, name: "RUBIS KAYOLE", classType: "Class A", deadline: "2027-02-12", target: "2027-02-10", nextPainting: "2027-02-12", nextCleaning: "2027-02-12", cleaningInterval: 6, batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 15, name: "RUBIS MEMBLEY", classType: "Class B", deadline: "2027-02-22", target: "2027-02-19", nextPainting: "2027-02-22", nextCleaning: "2027-02-22", cleaningInterval: 9, batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 16, name: "RUBIS BANANA", classType: "Class A", deadline: "2027-03-05", target: "2027-03-03", nextPainting: "2027-09-05", nextCleaning: "2027-03-05", cleaningInterval: 6, batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 17, name: "RUBIS GARDEN ESTATE- (DODO)", classType: "Class B", deadline: "2027-03-12", target: "2027-03-10", nextPainting: "2027-03-12", nextCleaning: "2027-03-12", cleaningInterval: 9, batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 18, name: "RUBIS KAMITI ROAD", classType: "Class B", deadline: "2027-03-30", target: "2027-03-27", nextPainting: "2027-12-30", nextCleaning: "2027-03-30", cleaningInterval: 9, batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 19, name: "RUBIS THOME", classType: "Class B", deadline: "2027-04-12", target: "2027-04-09", nextPainting: "2027-04-12", nextCleaning: "2027-04-12", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 20, name: "RUBIS MAGINA", classType: "Class B", deadline: "2027-04-13", target: "2027-04-10", nextPainting: "2027-04-13", nextCleaning: "2027-04-13", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 21, name: "RUBIS LIMURU TOWN", classType: "Class B", deadline: "2027-04-14", target: "2027-04-12", nextPainting: "2027-04-14", nextCleaning: "2027-04-14", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 22, name: "RUBIS LIMURU GREENS - (DODO)", classType: "Class B", deadline: "2027-04-14", target: "2027-04-12", nextPainting: "2027-04-14", nextCleaning: "2027-04-14", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 23, name: "RUBIS KAHAWA WEST", classType: "Class B", deadline: "2027-04-24", target: "2027-04-21", nextPainting: "2028-01-24", nextCleaning: "2027-04-24", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 24, name: "RUBIS NYAMBARI", classType: "Class B", deadline: "2027-05-11", target: "2027-05-08", nextPainting: "2028-02-11", nextCleaning: "2027-05-11", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 25, name: "RUBIS UPLANDS", classType: "Class B", deadline: "2027-05-15", target: "2027-05-13", nextPainting: "2027-05-15", nextCleaning: "2027-05-15", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 26, name: "RUBIS LIMURU - (DODO)", classType: "Class B", deadline: "2027-06-12", target: "2027-06-09", nextPainting: "2028-03-12", nextCleaning: "2027-06-12", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 27, name: "RUBIS TIGONI", classType: "Class B", deadline: "2027-06-15", target: "2027-06-12", nextPainting: "2028-03-15", nextCleaning: "2027-06-15", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 28, name: "RUBIS MAGUMU - (DODO)", classType: "Class C", deadline: "2027-08-20", target: "2027-08-18", nextPainting: "2028-08-20", nextCleaning: "2027-08-20", cleaningInterval: 12, batch: "Quarter 3 (2027)", status: "SCHEDULED", remarks: "" }
+    ];
+}
 
     async function openProgramOfWorksModal() {
         await loadProgramOfWorksData();
@@ -1715,58 +1718,92 @@
         renderPowTable();
     }
 
-    function renderPowTable() {
-        const table = document.getElementById("powScheduleTable");
-        while(table.rows.length > 1) { table.deleteRow(1); }
+function renderPowTable() {
+    const table = document.getElementById("powScheduleTable");
+    while(table.rows.length > 1) { table.deleteRow(1); }
 
-        powBatchesOrder.forEach(batch => {
-            const batchData = powStationsData.filter(s => s.batch === batch);
-            
-            const tbody = document.createElement("tbody");
-            tbody.className = "batch-body";
-            tbody.setAttribute("data-batch", batch);
-            tbody.ondragover = (e) => { e.preventDefault(); e.currentTarget.style.backgroundColor = "#F0F8FF"; };
-            tbody.ondragleave = (e) => { e.currentTarget.style.backgroundColor = "transparent"; };
-            tbody.ondrop = dropPowRow;
+    powBatchesOrder.forEach(batch => {
+        const batchData = powStationsData.filter(s => s.batch === batch);
+        
+        const tbody = document.createElement("tbody");
+        tbody.className = "batch-body";
+        tbody.setAttribute("data-batch", batch);
+        tbody.ondragover = (e) => { e.preventDefault(); e.currentTarget.style.backgroundColor = "#F0F8FF"; };
+        tbody.ondragleave = (e) => { e.currentTarget.style.backgroundColor = "transparent"; };
+        tbody.ondrop = dropPowRow;
 
-            const headerRow = document.createElement("tr");
-            headerRow.className = "batch-header";
-            headerRow.innerHTML = `<td colspan="7" style="padding: 8px 10px;">${batch}</td>`;
-            tbody.appendChild(headerRow);
+        const headerRow = document.createElement("tr");
+        headerRow.className = "batch-header";
+        headerRow.innerHTML = `<td colspan="10" style="padding: 8px 10px;">${batch}</td>`;
+        tbody.appendChild(headerRow);
 
-            if(batchData.length === 0) {
-                const emptyRow = document.createElement("tr");
-                emptyRow.innerHTML = `<td colspan="7" style="text-align:center; color:#999; font-style:italic; padding: 8px;">Drop sites here to assign to this batch</td>`;
-                tbody.appendChild(emptyRow);
-            } else {
-                batchData.forEach(site => {
-                    const tr = document.createElement("tr");
-                    tr.className = "pow-draggable";
-                    tr.draggable = true;
-                    tr.ondragstart = (e) => e.dataTransfer.setData("text/plain", site.id);
-                    
-                    let statusClass = site.status === "URGENT" ? "pow-urgent" : (site.status === "POSTPONED" ? "pow-postponed" : "pow-scheduled");
+        if(batchData.length === 0) {
+            const emptyRow = document.createElement("tr");
+            emptyRow.innerHTML = `<td colspan="10" style="text-align:center; color:#999; font-style:italic; padding: 8px;">Drop sites here to assign to this batch</td>`;
+            tbody.appendChild(emptyRow);
+        } else {
+            batchData.forEach(site => {
+                const tr = document.createElement("tr");
+                tr.className = "pow-draggable";
+                tr.draggable = true;
+                tr.ondragstart = (e) => e.dataTransfer.setData("text/plain", site.id);
+                
+                let statusClass = site.status === "URGENT" ? "pow-urgent" : 
+                                  (site.status === "COMPLETED" ? "pow-completed" : 
+                                  (site.status === "POSTPONED" ? "pow-postponed" : "pow-scheduled"));
 
-                    tr.innerHTML = `
-                        <td class="pow-drag-handle no-print">≡</td>
-                        <td style="font-weight:600; color:#003366;">${site.name}</td>
-                        <td>${formatPowDate(site.deadline)}</td>
-                        <td style="font-weight:bold;">${formatPowDate(site.target)}</td>
-                        <td><span class="status-badge-pow ${statusClass}">${site.status}</span></td>
-                        <td style="font-style:italic; font-size:11px;">${site.remarks || ''}</td>
-                        <td class="no-print">
-                            <button class="btn-action-pow" onclick="openPowPostponeModal(${site.id})">Postpone</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-            table.appendChild(tbody);
-        });
+                tr.innerHTML = `
+                    <td class="pow-drag-handle no-print">≡</td>
+                    <td style="font-weight:600; color:#003366;">${site.name}</td>
+                    <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:3px; font-weight:bold; font-size:10px;">${site.classType || 'Class A'}</span></td>
+                    <td>${formatPowDate(site.deadline)}</td>
+                    <td style="font-weight:bold;">${formatPowDate(site.target)}</td>
+                    <td style="color:#0369a1; font-weight:600;">${formatPowDate(site.nextPainting)}</td>
+                    <td style="color:#15803d; font-weight:600;">${formatPowDate(site.nextCleaning)}</td>
+                    <td><span class="status-badge-pow ${statusClass}">${site.status}</span></td>
+                    <td style="font-style:italic; font-size:11px;">${site.remarks || ''}</td>
+                    <td class="no-print" style="display:flex; gap:4px;">
+                        <button class="btn-action-pow" onclick="completePowStation(${site.id})" title="Mark complete & auto-update recurrent dates" style="background:#15803d; color:white; font-weight:bold;">Complete</button>
+                        <button class="btn-action-pow" onclick="openPowPostponeModal(${site.id})">Postpone</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        table.appendChild(tbody);
+    });
 
-        generatePowSuggestions();
-    }
+    generatePowSuggestions();
+}
 
+function completePowStation(id) {
+    const siteIndex = powStationsData.findIndex(s => s.id === id);
+    if (siteIndex === -1) return;
+
+    const site = powStationsData[siteIndex];
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // Parse current or target dates
+    const paintingDate = new Date(site.nextPainting || site.target);
+    const cleaningDate = new Date(site.nextCleaning || site.target);
+    
+    // Painting recurrent cycle: +12 months (1 year)
+    paintingDate.setFullYear(paintingDate.getFullYear() + 1);
+    
+    // Cleaning recurrent cycle dependent on class / interval (Class A = 6 mo, Class B = 9 mo, Class C = 12 mo)
+    const intervalMo = site.cleaningInterval || (site.classType === 'Class B' ? 9 : (site.classType === 'Class C' ? 12 : 6));
+    cleaningDate.setMonth(cleaningDate.getMonth() + intervalMo);
+
+    site.status = "COMPLETED";
+    site.target = todayStr;
+    site.nextPainting = paintingDate.toISOString().split('T')[0];
+    site.nextCleaning = cleaningDate.toISOString().split('T')[0];
+    site.remarks = `Completed on ${todayStr}. Recurrent schedules auto-updated.`;
+
+    renderPowTable();
+    savePowLocally();
+    alert(`Station ${site.name} marked as complete!\nNext Painting Due: ${site.nextPainting}\nNext Cleaning Due: ${site.nextCleaning}`);
+}        
     function formatPowDate(dateStr) {
         if(!dateStr) return "";
         return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
