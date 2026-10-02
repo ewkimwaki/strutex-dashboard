@@ -366,8 +366,24 @@
                 position: relative !important; 
                 background: white !important; 
                 width: 100% !important; 
+                height: auto !important;          /* UNLOCKS PDF HEIGHT */
+                overflow: visible !important;     /* PREVENTS CUT-OFF */
                 padding: 0 !important;
                 margin: 0 !important;
+            }
+            body.print-pow .modal-content {
+                max-height: none !important;      /* OVERRIDES 90vh LIMIT */
+                height: auto !important;
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            body.print-pow .print-scroll-fix {
+                overflow: visible !important;     /* REMOVES SCROLL CLIPPING ON PAPER */
+            }
+            body.print-pow tr {
+                page-break-inside: avoid !important; /* STOPS ROWS SPLITTING IN HALF */
+                break-inside: avoid !important;
             }
             body.print-pow .app-wrapper, 
             body.print-pow .modal:not(#programOfWorksModal), 
@@ -870,8 +886,7 @@
                     <ul id="powSuggestionsList"></ul>
                 </div>
 
-                <div style="overflow-x: auto;">
-                    <div style="overflow-x: auto;">
+                <div class="print-scroll-fix" style="overflow-x: auto;">
                     <table id="powScheduleTable">
     <thead>
         <tr>
