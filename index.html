@@ -393,8 +393,10 @@
 
             body.print-pow table {
                 width: 100% !important;
+                min-width: 0 !important; /* Overrides screen constraints for paper */
                 font-size: 8.5pt !important;
                 border-collapse: collapse !important;
+                table-layout: auto !important;
             }
 
             body.print-pow th, body.print-pow td {
@@ -869,7 +871,8 @@
                 </div>
 
                 <div style="overflow-x: auto;">
-                    <table id="powScheduleTable" style="min-width: 1050px;">
+                    <div style="overflow-x: auto;">
+                    <table id="powScheduleTable">
     <thead>
         <tr>
             <th class="pow-drag-handle no-print" style="width: 25px;"></th>
@@ -1769,7 +1772,20 @@
             try {
                 const { data, error } = await dbClient.from('strutex_program_of_works').select('*').order('id', { ascending: true });
                 if (!error && data && data.length > 0) {
-                    powStationsData = data;
+                    // Translate Supabase snake_case back to JavaScript camelCase
+                    powStationsData = data.map(d => ({
+                        id: d.id,
+                        name: d.name,
+                        classType: d.class_type || d.classType || 'Class A',
+                        deadline: d.deadline,
+                        target: d.target,
+                        nextPainting: d.next_painting || d.nextPainting,
+                        nextCleaning: d.next_cleaning || d.nextCleaning,
+                        cleaningInterval: d.cleaning_interval || d.cleaningInterval,
+                        batch: d.batch,
+                        status: d.status,
+                        remarks: d.remarks
+                    }));
                     renderPowTable();
                     return;
                 }
@@ -1956,7 +1972,21 @@ function completePowStation(id) {
 
         try {
             for (let station of powStationsData) {
-                const { error } = await dbClient.from('strutex_program_of_works').upsert(station, { onConflict: 'id' });
+                // Translate JavaScript camelCase to Supabase snake_case payload
+                const payload = {
+                    id: station.id,
+                    name: station.name,
+                    class_type: station.classType,
+                    deadline: station.deadline,
+                    target: station.target,
+                    next_painting: station.nextPainting,
+                    next_cleaning: station.nextCleaning,
+                    cleaning_interval: station.cleaningInterval,
+                    batch: station.batch,
+                    status: station.status,
+                    remarks: station.remarks
+                };
+                const { error } = await dbClient.from('strutex_program_of_works').upsert(payload, { onConflict: 'id' });
                 if (error) throw error;
             }
             alert("Proposed Program of Works synced to Supabase successfully!");
