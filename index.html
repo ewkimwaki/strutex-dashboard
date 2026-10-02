@@ -359,8 +359,52 @@
         .btn-action-pow:hover { background: #e2e2e2; }
 
         @media print {
-            body.print-pow #programOfWorksModal { display: block !important; position: relative !important; background: white !important; width: 100% !important; }
-            body.print-pow .app-wrapper, body.print-pow .modal:not(#programOfWorksModal), body.print-pow .no-print { display: none !important; }
+            body.print-pow #programOfWorksModal { 
+                display: block !important; 
+                position: relative !important; 
+                background: white !important; 
+                width: 100% !important; 
+                padding: 0 !important;
+            }
+            body.print-pow .app-wrapper, 
+            body.print-pow .modal:not(#programOfWorksModal), 
+            body.print-pow .no-print,
+            body.print-pow .pow-suggestions-panel { 
+                display: none !important; 
+            }
+            
+            /* Hide internal management columns for Rubis Engineers */
+            body.print-pow th:nth-child(6), body.print-pow td:nth-child(6), /* Next Painting Date */
+            body.print-pow th:nth-child(7), body.print-pow td:nth-child(7), /* Next Cleaning Date */
+            body.print-pow th:nth-child(9), body.print-pow td:nth-child(9)  /* Remarks / Postpone Reason */
+            {
+                display: none !important;
+            }
+
+            body.print-pow .pow-container {
+                padding: 0 !important;
+                max-width: 100% !important;
+                box-shadow: none !important;
+            }
+
+            body.print-pow table {
+                width: 100% !important;
+                font-size: 9pt !important;
+                border-collapse: collapse !important;
+            }
+
+            body.print-pow th, body.print-pow td {
+                border: 1px solid #333 !important;
+                padding: 6px 8px !important;
+                color: #000 !important;
+            }
+
+            body.print-pow .batch-header {
+                background-color: #003366 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 <style>
@@ -1691,7 +1735,7 @@
         { id: 24, name: "RUBIS NYAMBARI", classType: "Class B", deadline: "2027-05-11", target: "2027-05-08", nextPainting: "2028-02-11", nextCleaning: "2027-05-11", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
         { id: 25, name: "RUBIS UPLANDS", classType: "Class B", deadline: "2027-05-15", target: "2027-05-13", nextPainting: "2027-05-15", nextCleaning: "2027-05-15", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
         { id: 26, name: "RUBIS LIMURU - (DODO)", classType: "Class B", deadline: "2027-06-12", target: "2027-06-09", nextPainting: "2028-03-12", nextCleaning: "2027-06-12", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
-        { id: 27, name: "RUBIS TIGONI", classType: "Class B", deadline: "2027-06-15", target: "2027-06-12", nextPainting: "2028-03-15", nextCleaning: "2027-06-15", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+        { id: 27, name: "RUBIS TIGONI", classType: "Class B", deadline: "2027-06-15", target: "2027-06-12", nextPainting: "2028-03-15", nextCleaning: "2027-06-15", cleaningInterval: 9, batch: "Quarter 2 (2027)", status: "SCHEDULED, remarks: "" },
         { id: 28, name: "RUBIS MAGUMU - (DODO)", classType: "Class C", deadline: "2027-08-20", target: "2027-08-18", nextPainting: "2028-08-20", nextCleaning: "2027-08-20", cleaningInterval: 12, batch: "Quarter 3 (2027)", status: "SCHEDULED", remarks: "" }
     ];
 }
