@@ -328,6 +328,40 @@
             body.print-boq .boq-table th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body.print-boq tr { break-inside: avoid; page-break-inside: avoid; }
         }
+        /* --- PROGRAM OF WORKS MODAL & TABLE STYLES --- */
+        .pow-container { max-width: 1000px; margin: auto; background: #fff; padding: 25px; border-radius: 8px; }
+        .pow-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid #E2001A; padding-bottom: 15px; margin-bottom: 20px; }
+        .pow-header h1 { margin: 0; color: #003366; font-size: 22px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pow-header p { margin: 4px 0 0; color: #4A4A4A; font-size: 13px; }
+        
+        .btn-export { background-color: #E2001A; color: white; border: none; padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+        .btn-export:hover { background-color: #C00015; }
+        
+        .pow-suggestions-panel { background: #FFF4F4; border-left: 4px solid #E2001A; padding: 12px 15px; margin-bottom: 20px; border-radius: 4px; font-size: 12px; }
+        .pow-suggestions-panel h4 { margin: 0 0 8px 0; color: #E2001A; text-transform: uppercase; font-size: 11px; }
+        .pow-suggestions-panel ul { margin: 0; padding-left: 18px; color: #555; }
+        .pow-suggestions-panel li { margin-bottom: 3px; }
+
+        .batch-header { background-color: #E9EEF2 !important; color: #003366 !important; font-weight: 700; text-transform: uppercase; font-size: 11px; }
+        .batch-body { min-height: 35px; transition: background 0.2s; }
+        
+        tr.pow-draggable { cursor: grab; background: #fff; }
+        tr.pow-draggable:active { cursor: grabbing; }
+        
+        .pow-drag-handle { color: #aaa; cursor: grab; font-size: 14px; width: 20px; text-align: center; user-select: none; }
+        
+        .status-badge-pow { padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; color: white; display: inline-block; }
+        .pow-urgent { background-color: #E2001A; }
+        .pow-scheduled { background-color: #4A90E2; }
+        .pow-postponed { background-color: #F5A623; }
+        
+        .btn-action-pow { background: #f0f0f0; border: 1px solid #ccc; padding: 3px 6px; font-size: 10px; border-radius: 3px; cursor: pointer; }
+        .btn-action-pow:hover { background: #e2e2e2; }
+
+        @media print {
+            body.print-pow #programOfWorksModal { display: block !important; position: relative !important; background: white !important; width: 100% !important; }
+            body.print-pow .app-wrapper, body.print-pow .modal:not(#programOfWorksModal), body.print-pow .no-print { display: none !important; }
+        }
     </style>
 <style>
     /* ==========================================
@@ -381,6 +415,7 @@
                     <div class="btn-group no-print">
                         <span id="autosaveIndicator">Connecting to Supabase...</span>
                         <button class="btn btn-secondary" onclick="openScheduleCManager()">📋 Manage Schedule C</button>
+                        <button class="btn btn-secondary" onclick="openProgramOfWorksModal()">📅 Program of Works</button>
                         <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
                         <button class="btn btn-secondary" onclick="saveLocally()">Save Local</button>
                         <button class="btn" onclick="saveToCloud()">☁️ Sync to Cloud</button>
@@ -745,6 +780,81 @@
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
                 <button class="btn btn-secondary" onclick="closeModal('scheduleCModal')">Cancel</button>
                 <button class="btn btn-success" onclick="saveScheduleC()">☁️ Save & Sync to Cloud</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. NEW: Program of Works Modal -->
+    <div id="programOfWorksModal" class="modal">
+        <div class="modal-content" style="max-width: 1050px;">
+            <div class="pow-container">
+                <div class="pow-header">
+                    <div>
+                        <h1>Proposed Program of Works</h1>
+                        <p><strong>Contractor:</strong> STRUTEX BUILDERS LIMITED | <strong>Client:</strong> RUBIS ENERGY KENYA PLC</p>
+                        <p style="font-size: 12px; color: #666; margin-top: 2px;">Document Date: October 2, 2026</p>
+                    </div>
+                    <div class="controls no-print" style="text-align: right;">
+                        <button class="btn-export" onclick="printProgramOfWorks()">Export to PDF (A4)</button>
+                        <p style="font-size: 10px; margin-top: 6px; color: #666;">Drag rows by ≡ to reorganize batches.</p>
+                    </div>
+                </div>
+
+                <div class="pow-suggestions-panel no-print" id="powSuggestionsPanel">
+                    <h4>⚠️ Critical Path: Approaching Deadlines</h4>
+                    <ul id="powSuggestionsList"></ul>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table id="powScheduleTable" style="min-width: 850px;">
+                        <thead>
+                            <tr>
+                                <th class="pow-drag-handle no-print" style="width: 25px;"></th>
+                                <th>Station Name</th>
+                                <th>Rubis Deadline</th>
+                                <th>Target Completion</th>
+                                <th>Status</th>
+                                <th>Remarks / Postpone Reason</th>
+                                <th class="no-print" style="width: 90px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <!-- Batches injected dynamically -->
+                    </table>
+                </div>
+
+                <div style="margin-top: 20px; font-size: 10px; color: #666; text-align: justify; border-top: 1px solid #D1D9E6; padding-top: 10px; line-height: 1.4;">
+                    <p><strong>Operational Methodology:</strong> Master implementation cadence for Strutex Builders Limited sites. Works are strategically phased at optimal mobilization rates (2-3 sites/week) finalizing at least 48 hours prior to Rubis deadlines. Any deviations are strictly documented and verified by the Engineer In-Charge.</p>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 10px;" class="no-print">
+                <button class="btn btn-secondary" onclick="closeModal('programOfWorksModal')">Close Window</button>
+                <button class="btn btn-success" onclick="saveProgramOfWorksToCloud()">☁️ Sync to Cloud</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Postpone Sub-Modal -->
+    <div class="modal" id="powPostponeModal" style="z-index: 1100;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 id="powModalStationName" style="margin-top: 0; color: #003366; font-size: 1rem;">Postpone Station</h3>
+            <input type="hidden" id="powModalStationId">
+            
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label style="font-size: 0.8rem;">New Target Completion Date:</label>
+                <input type="date" id="powModalNewDate" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label style="font-size: 0.8rem;">Mandatory Reason for Postponement:</label>
+                <textarea id="powModalReason" class="form-control" placeholder="State reason..." required style="height: 60px; resize: none;"></textarea>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.75rem; color: #b91c1c; font-weight: bold; margin-bottom: 15px; background: #fff0f0; padding: 8px; border-radius: 4px;">
+                <input type="checkbox" id="powModalEngineerCheck" onchange="validatePowModal()" style="margin-top: 2px;">
+                <label for="powModalEngineerCheck">I confirm that the Engineer In-Charge has formally approved this change.</label>
+            </div>
+            <div style="text-align: right;">
+                <button class="btn btn-secondary" onclick="closeModal('powPostponeModal')" style="font-size: 0.75rem;">Cancel</button>
+                <button class="btn btn-success" id="powModalSaveBtn" onclick="savePowPostponement()" disabled style="font-size: 0.75rem;">Confirm</button>
             </div>
         </div>
     </div>
@@ -1537,6 +1647,230 @@
             nextWizardStep(1);
             document.getElementById('jobCardWizardModal').style.display = 'flex';
         }
+
+        /* ==========================================
+       PROGRAM OF WORKS & SUPABASE SYNC LOGIC
+       ========================================== */
+
+    let powStationsData = [];
+
+    const powBatchesOrder = [
+        "Week 40 (Oct 3 - Oct 9)", "Week 41 (Oct 10 - Oct 16)", "Week 42 (Oct 17 - Oct 23)", 
+        "Week 43 (Oct 24 - Oct 30)", "Week 44 & 45 (Nov 1 - Nov 14)", "Week 46 & 47 (Nov 15 - Nov 30)", 
+        "Quarter 1 (2027)", "Quarter 2 (2027)", "Quarter 3 (2027)"
+    ];
+
+    function getDefaultPowStations() {
+        return [
+            { id: 1, name: "RUBIS KOMAROCK (DODO)", deadline: "2026-10-05", target: "2026-10-03", batch: "Week 40 (Oct 3 - Oct 9)", status: "URGENT", remarks: "" },
+            { id: 2, name: "RUBIS MESORA", deadline: "2026-10-08", target: "2026-10-06", batch: "Week 40 (Oct 3 - Oct 9)", status: "URGENT", remarks: "" },
+            { id: 3, name: "RUBIS KANGUNDO RD", deadline: "2026-10-12", target: "2026-10-10", batch: "Week 40 (Oct 3 - Oct 9)", status: "SCHEDULED", remarks: "" },
+            { id: 4, name: "RUBIS FLYOVER - (DODO)", deadline: "2026-10-15", target: "2026-10-13", batch: "Week 41 (Oct 10 - Oct 16)", status: "SCHEDULED", remarks: "" },
+            { id: 5, name: "RUBIS MEMBLEY VIEW (DODO)", deadline: "2026-10-17", target: "2026-10-15", batch: "Week 41 (Oct 10 - Oct 16)", status: "SCHEDULED", remarks: "" },
+            { id: 6, name: "RUBIS RABAI ROAD", deadline: "2026-10-22", target: "2026-10-20", batch: "Week 42 (Oct 17 - Oct 23)", status: "SCHEDULED", remarks: "" },
+            { id: 7, name: "RUBIS BURUBURU", deadline: "2026-10-22", target: "2026-10-20", batch: "Week 42 (Oct 17 - Oct 23)", status: "SCHEDULED", remarks: "" },
+            { id: 8, name: "RUBIS KIAMBU RD - (DODO)", deadline: "2026-10-26", target: "2026-10-24", batch: "Week 43 (Oct 24 - Oct 30)", status: "SCHEDULED", remarks: "" },
+            { id: 9, name: "RUBIS KENOL", deadline: "2026-10-28", target: "2026-10-26", batch: "Week 43 (Oct 24 - Oct 30)", status: "SCHEDULED", remarks: "" },
+            { id: 10, name: "RUBIS MUGUMO - (DODO)", deadline: "2026-11-08", target: "2026-11-06", batch: "Week 44 & 45 (Nov 1 - Nov 14)", status: "SCHEDULED", remarks: "" },
+            { id: 11, name: "RUBIS WESTBAY - (DODO)", deadline: "2026-11-24", target: "2026-11-20", batch: "Week 46 & 47 (Nov 15 - Nov 30)", status: "SCHEDULED", remarks: "" },
+            { id: 12, name: "RUBIS RUNDA VIEW - (DODO)", deadline: "2026-11-27", target: "2026-11-25", batch: "Week 46 & 47 (Nov 15 - Nov 30)", status: "SCHEDULED", remarks: "" },
+            { id: 13, name: "RUBIS JOGOO ROAD", deadline: "2027-02-12", target: "2027-02-10", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 14, name: "RUBIS KAYOLE", deadline: "2027-02-12", target: "2027-02-10", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 15, name: "RUBIS MEMBLEY", deadline: "2027-02-22", target: "2027-02-19", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 16, name: "RUBIS BANANA", deadline: "2027-03-05", target: "2027-03-03", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 17, name: "RUBIS GARDEN ESTATE- (DODO)", deadline: "2027-03-12", target: "2027-03-10", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 18, name: "RUBIS KAMITI ROAD", deadline: "2027-03-30", target: "2027-03-27", batch: "Quarter 1 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 19, name: "RUBIS THOME", deadline: "2027-04-12", target: "2027-04-09", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 20, name: "RUBIS MAGINA", deadline: "2027-04-13", target: "2027-04-10", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 21, name: "RUBIS LIMURU TOWN", deadline: "2027-04-14", target: "2027-04-12", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 22, name: "RUBIS LIMURU GREENS - (DODO)", deadline: "2027-04-14", target: "2027-04-12", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 23, name: "RUBIS KAHAWA WEST", deadline: "2027-04-24", target: "2027-04-21", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 24, name: "RUBIS NYAMBARI", deadline: "2027-05-11", target: "2027-05-08", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 25, name: "RUBIS UPLANDS", deadline: "2027-05-15", target: "2027-05-13", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 26, name: "RUBIS LIMURU - (DODO)", deadline: "2027-06-12", target: "2027-06-09", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 27, name: "RUBIS TIGONI", deadline: "2027-06-15", target: "2027-06-12", batch: "Quarter 2 (2027)", status: "SCHEDULED", remarks: "" },
+            { id: 28, name: "RUBIS MAGUMU - (DODO)", deadline: "2027-08-20", target: "2027-08-18", batch: "Quarter 3 (2027)", status: "SCHEDULED", remarks: "" }
+        ];
+    }
+
+    async function openProgramOfWorksModal() {
+        await loadProgramOfWorksData();
+        document.getElementById('programOfWorksModal').style.display = 'flex';
+    }
+
+    async function loadProgramOfWorksData() {
+        if (dbClient) {
+            try {
+                const { data, error } = await dbClient.from('strutex_program_of_works').select('*').order('id', { ascending: true });
+                if (!error && data && data.length > 0) {
+                    powStationsData = data;
+                    renderPowTable();
+                    return;
+                }
+            } catch (err) {
+                console.warn("Supabase POW load failed, checking local storage.", err);
+            }
+        }
+        powStationsData = JSON.parse(localStorage.getItem('strutex_pow_data')) || getDefaultPowStations();
+        renderPowTable();
+    }
+
+    function renderPowTable() {
+        const table = document.getElementById("powScheduleTable");
+        while(table.rows.length > 1) { table.deleteRow(1); }
+
+        powBatchesOrder.forEach(batch => {
+            const batchData = powStationsData.filter(s => s.batch === batch);
+            
+            const tbody = document.createElement("tbody");
+            tbody.className = "batch-body";
+            tbody.setAttribute("data-batch", batch);
+            tbody.ondragover = (e) => { e.preventDefault(); e.currentTarget.style.backgroundColor = "#F0F8FF"; };
+            tbody.ondragleave = (e) => { e.currentTarget.style.backgroundColor = "transparent"; };
+            tbody.ondrop = dropPowRow;
+
+            const headerRow = document.createElement("tr");
+            headerRow.className = "batch-header";
+            headerRow.innerHTML = `<td colspan="7" style="padding: 8px 10px;">${batch}</td>`;
+            tbody.appendChild(headerRow);
+
+            if(batchData.length === 0) {
+                const emptyRow = document.createElement("tr");
+                emptyRow.innerHTML = `<td colspan="7" style="text-align:center; color:#999; font-style:italic; padding: 8px;">Drop sites here to assign to this batch</td>`;
+                tbody.appendChild(emptyRow);
+            } else {
+                batchData.forEach(site => {
+                    const tr = document.createElement("tr");
+                    tr.className = "pow-draggable";
+                    tr.draggable = true;
+                    tr.ondragstart = (e) => e.dataTransfer.setData("text/plain", site.id);
+                    
+                    let statusClass = site.status === "URGENT" ? "pow-urgent" : (site.status === "POSTPONED" ? "pow-postponed" : "pow-scheduled");
+
+                    tr.innerHTML = `
+                        <td class="pow-drag-handle no-print">≡</td>
+                        <td style="font-weight:600; color:#003366;">${site.name}</td>
+                        <td>${formatPowDate(site.deadline)}</td>
+                        <td style="font-weight:bold;">${formatPowDate(site.target)}</td>
+                        <td><span class="status-badge-pow ${statusClass}">${site.status}</span></td>
+                        <td style="font-style:italic; font-size:11px;">${site.remarks || ''}</td>
+                        <td class="no-print">
+                            <button class="btn-action-pow" onclick="openPowPostponeModal(${site.id})">Postpone</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            table.appendChild(tbody);
+        });
+
+        generatePowSuggestions();
+    }
+
+    function formatPowDate(dateStr) {
+        if(!dateStr) return "";
+        return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    }
+
+    function dropPowRow(e) {
+        e.preventDefault();
+        e.currentTarget.style.backgroundColor = "transparent";
+        const id = parseInt(e.dataTransfer.getData("text/plain"));
+        const newBatch = e.currentTarget.getAttribute("data-batch");
+        
+        const siteIndex = powStationsData.findIndex(s => s.id === id);
+        if(siteIndex > -1) {
+            powStationsData[siteIndex].batch = newBatch;
+            renderPowTable();
+            savePowLocally();
+        }
+    }
+
+    function openPowPostponeModal(id) {
+        const site = powStationsData.find(s => s.id === id);
+        document.getElementById("powModalStationName").innerText = `Postpone: ${site.name}`;
+        document.getElementById("powModalStationId").value = site.id;
+        document.getElementById("powModalNewDate").value = site.target;
+        document.getElementById("powModalReason").value = "";
+        document.getElementById("powModalEngineerCheck").checked = false;
+        validatePowModal();
+        document.getElementById("powPostponeModal").style.display = "flex";
+    }
+
+    function validatePowModal() {
+        const date = document.getElementById("powModalNewDate").value;
+        const reason = document.getElementById("powModalReason").value.trim();
+        const checked = document.getElementById("powModalEngineerCheck").checked;
+        document.getElementById("powModalSaveBtn").disabled = !(date && reason.length > 5 && checked);
+    }
+
+    document.getElementById("powModalReason").addEventListener("input", validatePowModal);
+    document.getElementById("powModalNewDate").addEventListener("input", validatePowModal);
+
+    function savePowPostponement() {
+        const id = parseInt(document.getElementById("powModalStationId").value);
+        const newDate = document.getElementById("powModalNewDate").value;
+        const reason = document.getElementById("powModalReason").value;
+        
+        const siteIndex = powStationsData.findIndex(s => s.id === id);
+        if(siteIndex > -1) {
+            powStationsData[siteIndex].target = newDate;
+            powStationsData[siteIndex].status = "POSTPONED";
+            powStationsData[siteIndex].remarks = `Postponed to ${formatPowDate(newDate)}. Reason: ${reason}. (Engineer Approved)`;
+        }
+        closeModal('powPostponeModal');
+        renderPowTable();
+        savePowLocally();
+    }
+
+    function generatePowSuggestions() {
+        const today = new Date("2026-10-02");
+        const list = document.getElementById("powSuggestionsList");
+        list.innerHTML = "";
+        
+        let count = 0;
+        powStationsData.forEach(site => {
+            const deadline = new Date(site.deadline);
+            const diffDays = Math.ceil(Math.abs(deadline - today) / (1000 * 60 * 60 * 24)); 
+            
+            if(diffDays <= 14 && site.batch !== "Week 40 (Oct 3 - Oct 9)" && site.batch !== "Week 41 (Oct 10 - Oct 16)") {
+                const li = document.createElement("li");
+                li.innerHTML = `<strong>${site.name}</strong> deadline is approaching on ${formatPowDate(site.deadline)}. Consider moving to Week 40 or 41.`;
+                list.appendChild(li);
+                count++;
+            }
+        });
+        document.getElementById("powSuggestionsPanel").style.display = count === 0 ? "none" : "block";
+    }
+
+    function savePowLocally() {
+        localStorage.setItem('strutex_pow_data', JSON.stringify(powStationsData));
+    }
+
+    async function saveProgramOfWorksToCloud() {
+        savePowLocally();
+        if (!dbClient) {
+            alert("Saved locally. Supabase client not connected.");
+            return;
+        }
+
+        try {
+            for (let station of powStationsData) {
+                const { error } = await dbClient.from('strutex_program_of_works').upsert(station, { onConflict: 'id' });
+                if (error) throw error;
+            }
+            alert("Proposed Program of Works synced to Supabase successfully!");
+        } catch (err) {
+            console.error("POW cloud sync failed:", err);
+            alert("Cloud sync failed: " + err.message);
+        }
+    }
+
+    function printProgramOfWorks() {
+        document.body.classList.add('print-pow');
+        window.print();
+        document.body.classList.remove('print-pow');
+    }
     </script>
 </body>
 </html>
