@@ -1489,7 +1489,7 @@
 
             div.innerHTML = `
                 <input type="text" class="form-control scope-item-input" value="${text}" placeholder="Task Description" style="flex: 1;">
-                <input type="number" class="form-control scope-qty-input" placeholder="Qty" value="1" min="0.01" step="any" style="width: 70px; flex: 0 0 70px;" data-code="${code}" data-desc="${desc}" title="Enter Item Quantity">
+                <input type="number" class="form-control scope-qty-input" placeholder="Qty" value="1" min="0.01" step="any" style="width: 70px; flex: 0 0 70px;" data-code="${code}" data-desc="${desc}" data-uom="${uom}" title="Enter Item Quantity">
                 <input type="number" class="form-control scope-rate-input" placeholder="Rate" value="${rateNum}" min="0" step="any" style="width: 90px; flex: 0 0 90px;" title="Unit Rate (KES)">
                 <button type="button" class="btn btn-secondary" style="padding: 6px 10px; font-size:0.75rem; flex: 0 0 30px;" onclick="this.parentElement.remove()">✕</button>
             `;
@@ -1519,7 +1519,8 @@
                 
                 let extractedCode = qtyInp ? qtyInp.getAttribute('data-code') : '';
                 let extractedDesc = qtyInp ? qtyInp.getAttribute('data-desc') : '';
-                
+                let extractedUom = qtyInp ? qtyInp.getAttribute('data-uom') : '';
+
                 if (!extractedCode && inpText.startsWith('[')) {
                     const cb = inpText.indexOf(']');
                     if (cb > -1) {
@@ -1533,7 +1534,8 @@
                     qty: qtyInp ? parseFloat(qtyInp.value) || 1 : 1,
                     rate: rateInp ? parseFloat(rateInp.value) || 0 : 0, // Injects rate into final payload
                     code: extractedCode,
-                    desc: extractedDesc || inpText
+                    desc: extractedDesc || inpText,
+                    uom: extractedUom || "ITEM"
                 };
             }).filter(v => v.text);
 
@@ -1798,7 +1800,7 @@
                     if (typeof item === 'string') {
                         addScopeItemRow(item);
                     } else {
-                        addScopeItemRow(item.text, item.code, item.desc, "", item.rate);
+                        addScopeItemRow(item.text, item.code, item.desc, item.uom || "", item.rate);
                         const wrapNode = scopeContainer.lastElementChild;
                         if(wrapNode && wrapNode.querySelector('.scope-qty-input')) {
                             wrapNode.querySelector('.scope-qty-input').value = item.qty;
@@ -2257,7 +2259,7 @@ function completePowStation(id) {
 
         // --- Table Headers ---
         const extHeaderRow = wsExt.getRow(14);
-        extHeaderRow.values = ['NO.', 'CODE', 'DESCRIPTION', 'UNIT', 'QTY', 'RATE (KES)', 'AMOUNT (KES)'];
+        extHeaderRow.values = ['NO.', 'CODE', 'DESCRIPTION', 'U.O.M', 'QTY', 'RATE (KES)', 'AMOUNT (KES)'];
         extHeaderRow.font = tableHeaderFont;
         extHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
         extHeaderRow.height = 25;
@@ -2328,11 +2330,32 @@ function completePowStation(id) {
         wsExt.getCell(`G${subtotalRowExt}`).fill = totalFill;
         wsExt.getCell(`G${subtotalRowExt}`).border = fullBorder;
 
+        // --- VAT Row (16%) ---
+        const vatRowExt = currentRow + 1;
+        wsExt.getCell(`F${vatRowExt}`).value = 'VAT (16%):';
+        wsExt.getCell(`F${vatRowExt}`).font = { name: 'Segoe UI', size: 10, bold: true };
+        wsExt.getCell(`F${vatRowExt}`).alignment = { horizontal: 'right' };
+        wsExt.getCell(`G${vatRowExt}`).value = { formula: `G${subtotalRowExt}*0.16` };
+        wsExt.getCell(`G${vatRowExt}`).font = { name: 'Segoe UI', size: 10, bold: true };
+        wsExt.getCell(`G${vatRowExt}`).numFmt = '#,##0.00';
+        wsExt.getCell(`G${vatRowExt}`).border = fullBorder;
+
+        // --- Grand Total Row ---
+        const grandTotalRowExt = currentRow + 2;
+        wsExt.getCell(`F${grandTotalRowExt}`).value = 'GRAND TOTAL:';
+        wsExt.getCell(`F${grandTotalRowExt}`).font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FF0F172A' } };
+        wsExt.getCell(`F${grandTotalRowExt}`).alignment = { horizontal: 'right' };
+        wsExt.getCell(`G${grandTotalRowExt}`).value = { formula: `G${subtotalRowExt}+G${vatRowExt}` };
+        wsExt.getCell(`G${grandTotalRowExt}`).font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: 'FF0284C7' } };
+        wsExt.getCell(`G${grandTotalRowExt}`).numFmt = '#,##0.00';
+        wsExt.getCell(`G${grandTotalRowExt}`).fill = totalFill;
+        wsExt.getCell(`G${grandTotalRowExt}`).border = fullBorder;
+
 
         // ----------------------------------------------------
-        // SHEET 2: COMMERCIAL SUMMARY
+        // SHEET 2: GRAND SUMMARY
         // ----------------------------------------------------
-        const wsSum = workbook.addWorksheet('Commercial Summary', { views: [{ showGridLines: false }] });
+        const wsSum = workbook.addWorksheet('Grand Summary', { views: [{ showGridLines: false }] });
         
         wsSum.columns = [
             { key: 'A', width: 5 },
@@ -2360,7 +2383,7 @@ function completePowStation(id) {
         }
 
         wsSum.mergeCells('B6:E6');
-        wsSum.getCell('B6').value = 'COMMERCIAL SUMMARY';
+        wsSum.getCell('B6').value = 'GRAND SUMMARY';
         wsSum.getCell('B6').font = { name: 'Segoe UI', size: 16, bold: true, color: { argb: 'FF0F172A' } };
         wsSum.getCell('B6').alignment = { horizontal: 'center' };
 
