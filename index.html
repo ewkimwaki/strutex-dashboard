@@ -2616,7 +2616,7 @@ function completePowStation(id) {
         /* ==========================================
        FULLCALENDAR VISUALIZATION ENGINE
        ========================================== */
-    let powCalendar = null;
+   let powCalendar = null;
     let isCalendarView = false;
 
     function togglePowView() {
@@ -2639,14 +2639,11 @@ function completePowStation(id) {
                 btnIcon.innerText = "📋";
             }
             
-            // Critical fix: Give the browser 50ms to paint the block display before rendering the calendar. 
-            // This prevents FullCalendar from squishing its layout to 0px wide.
+            // CRITICAL FIX: Give the browser layout engine 150ms to register display: block 
+            // before FullCalendar attempts to calculate its internal grid geometry.
             setTimeout(() => {
                 renderCalendar();
-                // Force mobile-friendly flexbox on the internal calendar header
-                const toolbars = document.querySelectorAll('.fc-toolbar');
-                toolbars.forEach(tb => { tb.style.display = 'flex'; tb.style.flexWrap = 'wrap'; tb.style.gap = '10px'; });
-            }, 50);
+            }, 150);
             
         } else {
             tableView.style.display = 'block';
@@ -2663,25 +2660,52 @@ function completePowStation(id) {
     function renderCalendar() {
         const calendarEl = document.getElementById('powCalendarView');
         
-        // 1. Map the PoW Data to FullCalendar Events dynamically
+        // 1. Map Target Dates & Rubis Deadlines dynamically
         const calendarEvents = [];
         powStationsData.forEach(site => {
+            // Target Completion Date
+            if (site.target) {
+                calendarEvents.push({
+                    title: `🎯 Target: ${site.name}`,
+                    start: site.target,
+                    backgroundColor: '#10b981', // Emerald green
+                    borderColor: '#047857',
+                    textColor: '#ffffff',
+                    allDay: true,
+                    extendedProps: { type: 'Target Completion', status: site.status }
+                });
+            }
+
+            // Official Rubis Deadline
+            if (site.deadline) {
+                calendarEvents.push({
+                    title: `🚨 Deadline: ${site.name}`,
+                    start: site.deadline,
+                    backgroundColor: '#e11d48', // Rose red
+                    borderColor: '#be123c',
+                    textColor: '#ffffff',
+                    allDay: true,
+                    extendedProps: { type: 'Rubis Official Deadline', status: site.status }
+                });
+            }
+
+            // Maintenance Schedules
             if (site.nextPainting) {
                 calendarEvents.push({
-                    title: `🎨 Painting: ${site.name}`,
+                    title: `🎨 Paint: ${site.name}`,
                     start: site.nextPainting,
-                    color: '#b91c1c', // Strutex/Rubis Red
-                    allDay: true,
-                    extendedProps: { type: 'Painting', status: site.status }
+                    backgroundColor: '#f59e0b', // Amber
+                    borderColor: '#d97706',
+                    allDay: true
                 });
             }
             if (site.nextCleaning) {
                 calendarEvents.push({
-                    title: `🧹 Cleaning: ${site.name}`,
+                    title: `🧹 Clean: ${site.name}`,
                     start: site.nextCleaning,
-                    color: '#0284c7', // Corporate Blue
-                    allDay: true,
-                    extendedProps: { type: 'Cleaning', status: site.status }
+                    backgroundColor: '#0ea5e9', // Sky blue
+                    borderColor: '#0284c7',
+                    allDay: true
                 });
             }
         });
@@ -2691,22 +2715,35 @@ function completePowStation(id) {
             powCalendar.destroy();
         }
 
-        // 3. Initialize the Calendar
+        // 3. Initialize the Calendar with fixed sizing constraints
         powCalendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
+            contentHeight: 600, // CRITICAL FIX: Forces grid drawing inside modals
+            handleWindowResize: true,
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,multiMonthYear' // multiMonthYear gives a fantastic 12-month bird's-eye view
+                right: 'dayGridMonth,listMonth' // List Month added for easy agenda reading
             },
             events: calendarEvents,
-            height: '100%',
+            eventDisplay: 'block', // Bold, professional timeline blocks
             eventClick: function(info) {
-                alert(`${info.event.title}\nScheduled Date: ${info.event.startStr}\nCurrent Status: ${info.event.extendedProps.status}`);
+                const props = info.event.extendedProps;
+                let msg = `${info.event.title}\nDate: ${info.event.startStr}`;
+                if (props.type) msg += `\nEvent Type: ${props.type}`;
+                if (props.status) msg += `\nCurrent Status: ${props.status}`;
+                alert(msg);
             }
         });
 
         powCalendar.render();
+        
+        // Force an immediate size recalculation now that it is rendered in the DOM
+        powCalendar.updateSize(); 
+        
+        // Force flexbox wrapping for the header toolbar on smaller screens
+        const toolbars = document.querySelectorAll('.fc-toolbar');
+        toolbars.forEach(tb => { tb.style.display = 'flex'; tb.style.flexWrap = 'wrap'; tb.style.gap = '10px'; });
     }
     </script>
 </body>
