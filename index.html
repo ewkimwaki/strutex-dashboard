@@ -6,6 +6,8 @@
     <title>Strutex Builders - Operations & Job Card Ecosystem</title>
     <!-- Supabase Library CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary-color: #1e293b;
@@ -843,6 +845,7 @@
             <!-- Action Footer for BoQ -->
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;" class="no-print">
                 <button class="btn btn-secondary" onclick="closeModal('boqModal')">Close View</button>
+                <button class="btn btn-success" style="background-color: #16a34a;" onclick="exportBoQToExcel()">📊 Download Excel</button>
                 <button class="btn btn-success" onclick="printBoQ()">🖨️ Print / Save BoQ PDF</button>
             </div>
         </div>
@@ -2062,6 +2065,141 @@ function completePowStation(id) {
         document.body.classList.add('print-pow');
         window.print();
         document.body.classList.remove('print-pow');
+    }
+
+        /* ==========================================
+       EXCEL EXPORT LOGIC (SheetJS)
+       ========================================== */
+    function exportBoQToExcel() {
+        if (!cachedJobCardData || !cachedJobCardData.scopeItems) {
+            alert("No data available to export. Please open a BoQ first.");
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+        const d = cachedJobCardData;
+        const reportDate = d.dateIssued || new Date().toISOString().split('T')[0];
+        const stationNameUpper = (d.stationName || "UNKNOWN").toUpperCase();
+        
+        let subTotal = 0;
+        const externalWorksData = [];
+
+        // Build Sheet 1: External Works Header
+        externalWorksData.push(["", "", "", "", "", ""]);
+        externalWorksData.push(["", "MILESTONE PLAZA EASTERN BYPASS; Suite C2", "", "", "P.O BOX 33472 – 00100, NAIROBI", ""]);
+        externalWorksData.push(["", "Email; sstrutenterpris@gmail.com   Cell: 0721702625", "", "", "", ""]);
+        externalWorksData.push(["", "", "", "", "", ""]);
+        externalWorksData.push(["", "BILLED TO: RUBIS ENERGY KENYA", "", "", "", ""]);
+        externalWorksData.push(["", "", "", "", "", ""]);
+        externalWorksData.push(["", `RUBIS ${stationNameUpper} CIVIL WORKS`, "", "", reportDate, ""]);
+        externalWorksData.push(["", "", "", "", "", ""]);
+        
+        // Table Headers
+        externalWorksData.push(["Item", "Description", "Unit", "Qty", "Rate", "Amount (Kshs.)", "Ref sch C"]);
+        externalWorksData.push(["", "", "", "", "", "", ""]);
+        externalWorksData.push(["", "ROUTINE MAINTENANCE & REPAIR WORKS", "", "", "", "", ""]);
+        
+        // Populate Tasks
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        d.scopeItems.forEach((item, index) => {
+            let code = '', desc = '', qty = 1, rate = 0;
+            if (typeof item === 'string') {
+                desc = item;
+                if (desc.includes('- Rate: KES')) {
+                    const parts = desc.split('- Rate: KES');
+                    desc = parts[0].trim();
+                    rate = parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0;
+                }
+            } else {
+                code = item.code || '';
+                desc = item.desc || item.text;
+                qty = parseFloat(item.qty) || 1;
+                rate = parseFloat(item.rate) || 0;
+            }
+            
+            const amount = qty * rate;
+            subTotal += amount;
+            
+            const itemLetter = index < 26 ? letters[index] : index + 1;
+            externalWorksData.push([itemLetter, desc, item.uom || "ITEM", qty, rate, amount, code]);
+        });
+
+        // Add padding at bottom of tasks
+        externalWorksData.push(["", "", "", "", "", "", ""]);
+        externalWorksData.push(["", "", "", "", "", "", ""]);
+
+        // Generate Sheet 1
+        const wsExternal = XLSX.utils.aoa_to_sheet(externalWorksData);
+        
+        // Define column widths for Sheet 1
+        wsExternal['!cols'] = [
+            { wch: 8 },   // Item
+            { wch: 80 },  // Description (Wide)
+            { wch: 10 },  // Unit
+            { wch: 10 },  // Qty
+            { wch: 15 },  // Rate
+            { wch: 20 },  // Amount
+            { wch: 15 }   // Ref
+        ];
+        
+        XLSX.utils.book_append_sheet(wb, wsExternal, "External Works");
+
+
+        // Build Sheet 2: GRAND SUMMARY
+        const summaryData = [];
+        const vat = subTotal * 0.16;
+        const grandTotal = subTotal + vat;
+
+        summaryData.push(["", "", "", "", "", "", "", ""]);
+        summaryData.push(["", "MILESTONE PLAZA EASTERN BYPASS; Suite C2", "", "", "P.O BOX 33472 – 00100, NAIROBI", "", "", ""]);
+        summaryData.push(["", "Email; sstrutenterpris@gmail.com   Cell: 0721702625", "", "", "", "", "", ""]);
+        summaryData.push(["", "", "", "", "", "", "", ""]);
+        summaryData.push(["", "BILLED TO: RUBIS ENERGY KENYA", "", "", "", "", reportDate, ""]);
+        summaryData.push(["", "", "", "", "", "", "", ""]);
+        summaryData.push(["", `MAINTENANCE WORKS FOR RUBIS ${stationNameUpper}`, "", "", "", "", "", ""]);
+        summaryData.push(["", "", "", "", "", "", "", ""]);
+        
+        // Summary Table Headers
+        summaryData.push(["", "ITEM", "REFERENCE NO.", "DATE OF COMPLETION", "STATION", "COST OF MATERIALS", "MILEAGE", "TOTAL COST", "Engineer in charge"]);
+        
+        // Summary Data Row
+        summaryData.push(["", 1, d.workOrder || "", reportDate, stationNameUpper, subTotal, "", subTotal, d.engineer || ""]);
+        
+        summaryData.push(["", "", "", "", "", "", "", "", ""]);
+        summaryData.push(["", "", "", "", "", "", "", "", ""]);
+        
+        // Totals
+        summaryData.push(["", "", "", "", "", "", "Sub- Total", subTotal, ""]);
+        summaryData.push(["", "", "", "", "", "", "VAT (16%)", vat, ""]);
+        summaryData.push(["", "", "", "", "", "", "Grand Total", grandTotal, ""]);
+        
+        summaryData.push(["", "", "", "", "", "", "", "", ""]);
+        summaryData.push(["", "Maintenance Assistant", "", "", "", "", "", "", ""]);
+        summaryData.push(["", "_______________________", "", "", "", "", "", "", ""]);
+        summaryData.push(["", "Maintenance Manager", "", "", "", "", "", "", ""]);
+        summaryData.push(["", "_______________________", "", "", "", "", "", "", ""]);
+
+        // Generate Sheet 2
+        const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+        
+        // Define column widths for Sheet 2
+        wsSummary['!cols'] = [
+            { wch: 5 },   // Spacer
+            { wch: 25 },  // Item / Signatures
+            { wch: 15 },  // Ref No
+            { wch: 20 },  // Date
+            { wch: 20 },  // Station
+            { wch: 20 },  // Cost
+            { wch: 15 },  // Mileage / Titles
+            { wch: 20 },  // Totals
+            { wch: 20 }   // Engineer
+        ];
+        
+        XLSX.utils.book_append_sheet(wb, wsSummary, "GRAND SUMMARY");
+
+        // Download the File
+        const fileName = `Strutex_BoQ_Rubis_${stationNameUpper.replace(/\s+/g, '_')}_${reportDate}.xlsx`;
+        XLSX.writeFile(wb, fileName);
     }
     </script>
 </body>
