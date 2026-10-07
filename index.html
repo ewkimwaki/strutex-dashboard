@@ -10,6 +10,8 @@
     <!-- ExcelJS & FileSaver for Professional Excel Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- FullCalendar Library for Interactive Visual Maintenance Scheduling -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     
     <style>
         :root {
@@ -925,18 +927,19 @@
                         <p style="font-size: 12px; color: #666; margin-top: 2px;">Document Date: October 2, 2026</p>
                     </div>
                     <div class="controls no-print" style="text-align: right;">
+                        <button class="btn-export" style="background-color: #f59e0b; color: #0f172a; margin-right: 8px;" onclick="togglePowView()">📅 Toggle Calendar View</button>
                         <button class="btn-export" style="background-color: #0284c7; margin-right: 8px;" onclick="sortPowByTargetDate()">↕ Sort by Target Date</button>
                         <button class="btn-export" onclick="printProgramOfWorks()">Export to PDF (A4)</button>
                         <p style="font-size: 10px; margin-top: 6px; color: #666;">Drag rows by ≡ to organize, or auto-sort chronologically.</p>
                     </div>
-                </div>
 
                 <div class="pow-suggestions-panel no-print" id="powSuggestionsPanel">
                     <h4>⚠️ Critical Path: Approaching Deadlines</h4>
                     <ul id="powSuggestionsList"></ul>
                 </div>
 
-                <div class="print-scroll-fix" style="overflow-x: auto;">
+                <!-- Table View Container -->
+                <div id="powTableView" class="print-scroll-fix" style="overflow-x: auto;">
                     <table id="powScheduleTable">
     <thead>
         <tr>
@@ -956,6 +959,9 @@
                     </table>
                 </div>
 
+                <!-- NEW: Calendar View Container -->
+                <div id="powCalendarView" style="display: none; height: 600px; margin-top: 15px; padding: 10px; background: white; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+
                 <div style="margin-top: 20px; font-size: 10px; color: #666; text-align: justify; border-top: 1px solid #D1D9E6; padding-top: 10px; line-height: 1.4;">
                     <p><strong>Operational Methodology:</strong> Master implementation cadence for Strutex Builders Limited sites. Works are strategically phased at optimal mobilization rates (2-3 sites/week) finalizing at least 48 hours prior to Rubis deadlines. Any deviations are strictly documented and verified by the Engineer In-Charge.</p>
                 </div>
@@ -964,6 +970,35 @@
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 10px;" class="no-print">
                 <button class="btn btn-secondary" onclick="closeModal('programOfWorksModal')">Close Window</button>
                 <button class="btn btn-success" onclick="saveProgramOfWorksToCloud()">☁️ Sync to Cloud</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 7. NEW: Quick Clone Job Card Modal -->
+    <div id="cloneModal" class="modal" style="z-index: 1200;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="background: #fffbeb; padding: 15px; border-radius: 50%; width: 50px; height: 50px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; border: 2px solid #fde68a;">
+                <span style="font-size: 1.5rem;">📄</span>
+            </div>
+            <h3 style="margin-top:0; color: #1e293b; font-size: 1.2rem;">Duplicate Job Card</h3>
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 20px;">Clone this exact scope, materials, and costing payload to a new station instantly.</p>
+            
+            <input type="hidden" id="cloneSourceIndex">
+            
+            <div class="form-group" style="text-align: left;">
+                <label>New Station Name</label>
+                <input type="text" id="cloneNewStation" class="form-control" placeholder="e.g. RUBIS KILIMANI" style="font-size: 0.95rem; font-weight: bold;">
+            </div>
+            
+            <div class="form-group" style="text-align: left;">
+                <label>Assignee / Engineer</label>
+                <input type="text" id="cloneNewEngineer" class="form-control">
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeModal('cloneModal')" style="width: 100%;">Cancel</button>
+                <button class="btn btn-success" onclick="executeClone()" style="width: 100%; background-color: #0ea5e9;">Clone Matrix Row</button>
             </div>
         </div>
     </div>
@@ -1228,8 +1263,13 @@
                         <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; width: 100%; background-color: #0f766e; font-weight: bold;" onclick='viewBoQ(${payloadSafe})'>💰 View BoQ / Costs</button>
                     `;
                     actionButtonsHtml = `
-                        <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #64748b;" onclick="resetStationCycle(${index})">🔄 Reset</button>
-                        <button class="btn btn-danger" style="padding: 4px 6px; font-size: 0.7rem;" onclick="deleteStation(${index})" title="Delete row">✕</button>
+                        <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #f59e0b; color: #0f172a; font-weight: bold;" onclick="openCloneModal(${index})">📄 Clone Scope</button>
+                            <div style="display:flex; width: 100%; gap: 4px;">
+                                <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #64748b;" onclick="resetStationCycle(${index})">🔄 Reset</button>
+                                <button class="btn btn-danger" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick="deleteStation(${index})" title="Delete row">✕</button>
+                            </div>
+                        </div>
                     `;
                 } else {
                     actionButtonsHtml = `
@@ -2137,6 +2177,66 @@ function completePowStation(id) {
     }
 
     /* ==========================================
+       JOB CARD CLONING ENGINE
+       ========================================== */
+    function openCloneModal(index) {
+        const stations = getTableStationsFromDOM();
+        const sourceStation = stations[index];
+        
+        if (!sourceStation || !sourceStation.jobCardSaved) return;
+
+        document.getElementById('cloneSourceIndex').value = index;
+        document.getElementById('cloneNewStation').value = sourceStation.name + " (Clone)";
+        document.getElementById('cloneNewEngineer').value = sourceStation.info;
+        
+        document.getElementById('cloneModal').style.display = 'flex';
+    }
+
+    function executeClone() {
+        const index = parseInt(document.getElementById('cloneSourceIndex').value);
+        const stations = getTableStationsFromDOM();
+        const sourceStation = stations[index];
+        
+        if (!sourceStation) return;
+
+        const newStationName = document.getElementById('cloneNewStation').value.trim() || (sourceStation.name + " (Clone)");
+        const newEngineer = document.getElementById('cloneNewEngineer').value.trim() || sourceStation.info;
+        
+        // Deep copy the background payload so modifying the clone doesn't alter the original
+        const clonedPayload = JSON.parse(JSON.stringify(sourceStation.jobCardPayload));
+        
+        // Dynamically update the cloned payload data to fit the new destination
+        clonedPayload.stationName = newStationName;
+        clonedPayload.engineer = newEngineer;
+        clonedPayload.dateIssued = new Date().toISOString().split('T')[0];
+        clonedPayload.workOrder = "C" + Math.floor(10000 + Math.random() * 90000) + "-CLONED"; 
+        
+        // Push the brand new fully loaded row to the array
+        stations.push({
+            rank: stations.length + 1,
+            tier: sourceStation.tier,
+            name: newStationName,
+            mapQuery: newStationName + " Kenya",
+            info: newEngineer,
+            scope: sourceStation.scope,
+            status: "Pending", // Set as pending so the team knows it hasn't actually been executed yet
+            comments: `Cloned scope from ${sourceStation.name}`,
+            jobCardSaved: true,
+            jobCardPayload: clonedPayload
+        });
+
+        // Re-render and Sync
+        renderTable(stations);
+        saveLocally();
+        closeModal('cloneModal');
+        
+        // Ping Supabase Cloud silently
+        if (dbClient) { saveToCloud(); }
+        
+        alert("Job Card cloned successfully! Scroll to the bottom to see the new station.");
+    }    
+
+    /* ==========================================
        PROGRAM OF WORKS AUTO-SORT LOGIC
        ========================================== */
     function sortPowByTargetDate() {
@@ -2480,6 +2580,80 @@ function completePowStation(id) {
             const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
             saveAs(blob, `Strutex_BoQ_${stationNameUpper}_${reportDate}.xlsx`);
         });
+    }
+
+        /* ==========================================
+       FULLCALENDAR VISUALIZATION ENGINE
+       ========================================== */
+    let powCalendar = null;
+    let isCalendarView = false;
+
+    function togglePowView() {
+        const tableView = document.getElementById('powTableView');
+        const calView = document.getElementById('powCalendarView');
+        const suggestions = document.getElementById('powSuggestionsPanel');
+        
+        isCalendarView = !isCalendarView;
+        
+        if (isCalendarView) {
+            tableView.style.display = 'none';
+            if (suggestions) suggestions.style.display = 'none';
+            calView.style.display = 'block';
+            renderCalendar();
+        } else {
+            tableView.style.display = 'block';
+            calView.style.display = 'none';
+            generatePowSuggestions(); // Re-trigger alerts if needed
+        }
+    }
+
+    function renderCalendar() {
+        const calendarEl = document.getElementById('powCalendarView');
+        
+        // 1. Map the PoW Data to FullCalendar Events dynamically
+        const calendarEvents = [];
+        powStationsData.forEach(site => {
+            if (site.nextPainting) {
+                calendarEvents.push({
+                    title: `🎨 Painting: ${site.name}`,
+                    start: site.nextPainting,
+                    color: '#b91c1c', // Strutex/Rubis Red
+                    allDay: true,
+                    extendedProps: { type: 'Painting', status: site.status }
+                });
+            }
+            if (site.nextCleaning) {
+                calendarEvents.push({
+                    title: `🧹 Cleaning: ${site.name}`,
+                    start: site.nextCleaning,
+                    color: '#0284c7', // Corporate Blue
+                    allDay: true,
+                    extendedProps: { type: 'Cleaning', status: site.status }
+                });
+            }
+        });
+
+        // 2. Destroy existing instance to prevent duplicate rendering bugs
+        if (powCalendar) {
+            powCalendar.destroy();
+        }
+
+        // 3. Initialize the Calendar
+        powCalendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,multiMonthYear' // multiMonthYear gives a fantastic 12-month bird's-eye view
+            },
+            events: calendarEvents,
+            height: '100%',
+            eventClick: function(info) {
+                alert(`${info.event.title}\nScheduled Date: ${info.event.startStr}\nCurrent Status: ${info.event.extendedProps.status}`);
+            }
+        });
+
+        powCalendar.render();
     }
     </script>
 </body>
