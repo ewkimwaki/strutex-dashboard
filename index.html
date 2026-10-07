@@ -920,18 +920,28 @@
     <div id="programOfWorksModal" class="modal">
         <div class="modal-content" style="max-width: 1050px;">
             <div class="pow-container">
-                <div class="pow-header">
+                <!-- Fixed Header Structure -->
+                <div class="pow-header" style="border-bottom: none; margin-bottom: 10px; padding-bottom: 0;">
                     <div>
                         <h1>Proposed Program of Works</h1>
                         <p><strong>Contractor:</strong> STRUTEX BUILDERS LIMITED | <strong>Client:</strong> RUBIS ENERGY KENYA PLC</p>
                         <p style="font-size: 12px; color: #666; margin-top: 2px;">Document Date: October 2, 2026</p>
                     </div>
-                    <div class="controls no-print" style="text-align: right;">
-                        <button class="btn-export" style="background-color: #f59e0b; color: #0f172a; margin-right: 8px;" onclick="togglePowView()">📅 Toggle Calendar View</button>
-                        <button class="btn-export" style="background-color: #0284c7; margin-right: 8px;" onclick="sortPowByTargetDate()">↕ Sort by Target Date</button>
-                        <button class="btn-export" onclick="printProgramOfWorks()">Export to PDF (A4)</button>
-                        <p style="font-size: 10px; margin-top: 6px; color: #666;">Drag rows by ≡ to organize, or auto-sort chronologically.</p>
-                    </div>
+                </div>
+
+                <!-- Modern Responsive Action Bar -->
+                <div class="pow-actions no-print" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 20px;">
+                    <button class="btn" style="background-color: #f59e0b; color: #0f172a; display: flex; align-items: center; gap: 5px; font-weight: bold; padding: 6px 12px;" onclick="togglePowView()">
+                        <span id="powViewIcon">📅</span> <span id="powViewText">Switch to Calendar View</span>
+                    </button>
+                    <button class="btn btn-secondary" style="background-color: #0284c7; padding: 6px 12px;" onclick="sortPowByTargetDate()">
+                        ↕ Sort Chronologically
+                    </button>
+                    <button class="btn btn-secondary" style="background-color: #E2001A; padding: 6px 12px;" onclick="printProgramOfWorks()">
+                        🖨️ Export PDF (A4)
+                    </button>
+                    <span style="font-size: 0.75rem; color: #64748b; margin-left: auto;">Drag rows by ≡ to organize.</span>
+                </div>
 
                 <div class="pow-suggestions-panel no-print" id="powSuggestionsPanel">
                     <h4>⚠️ Critical Path: Approaching Deadlines</h4>
@@ -1639,12 +1649,25 @@
             const rowIndex = activeRow._stationIndex;
             const payloadSafe = JSON.stringify(cachedJobCardData).replace(/'/g, "&#39;");
             
+            // 1. Re-render the View/Edit buttons
             activeRow.querySelector('.jc-cell').innerHTML = `
                 <div style="display: flex; gap: 4px; width: 100%; margin-bottom: 4px;">
                     <button class="btn btn-success" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick='viewSavedJobCard(${payloadSafe})'>👁️ Card</button>
                     <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${payloadSafe}, ${rowIndex})'>✏️ Edit</button>
                 </div>
                 <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; width: 100%; background-color: #0f766e; font-weight: bold;" onclick='viewBoQ(${payloadSafe})'>💰 View BoQ / Costs</button>
+            `;
+            
+            // 2. CRITICAL FIX: Re-render the Clone/Reset action buttons instantly
+            const actionCell = activeRow.cells[9];
+            actionCell.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
+                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #f59e0b; color: #0f172a; font-weight: bold;" onclick="openCloneModal(${rowIndex})">📄 Clone Scope</button>
+                    <div style="display:flex; width: 100%; gap: 4px;">
+                        <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #64748b;" onclick="resetStationCycle(${rowIndex})">🔄 Reset</button>
+                        <button class="btn btn-danger" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick="deleteStation(${rowIndex})" title="Delete row">✕</button>
+                    </div>
+                </div>
             `;
             
             closeModal('jobCardModal');
@@ -2180,14 +2203,22 @@ function completePowStation(id) {
        JOB CARD CLONING ENGINE
        ========================================== */
     function openCloneModal(index) {
-        const stations = getTableStationsFromDOM();
-        const sourceStation = stations[index];
+        // Direct DOM read avoids data mismatch
+        const tr = document.getElementById("tableBody").rows[index];
+        if (!tr) return;
         
-        if (!sourceStation || !sourceStation.jobCardSaved) return;
+        const isSaved = tr._jobCardSaved;
+        if (!isSaved) {
+            alert("Error: Cannot clone an incomplete or missing Job Card.");
+            return;
+        }
+        
+        const stationName = tr.cells[2].querySelector('input').value;
+        const engineerName = tr.cells[4].querySelector('input').value;
 
         document.getElementById('cloneSourceIndex').value = index;
-        document.getElementById('cloneNewStation').value = sourceStation.name + " (Clone)";
-        document.getElementById('cloneNewEngineer').value = sourceStation.info;
+        document.getElementById('cloneNewStation').value = stationName + " (Clone)";
+        document.getElementById('cloneNewEngineer').value = engineerName;
         
         document.getElementById('cloneModal').style.display = 'flex';
     }
@@ -2593,17 +2624,39 @@ function completePowStation(id) {
         const calView = document.getElementById('powCalendarView');
         const suggestions = document.getElementById('powSuggestionsPanel');
         
+        const btnText = document.getElementById('powViewText');
+        const btnIcon = document.getElementById('powViewIcon');
+        
         isCalendarView = !isCalendarView;
         
         if (isCalendarView) {
             tableView.style.display = 'none';
             if (suggestions) suggestions.style.display = 'none';
             calView.style.display = 'block';
-            renderCalendar();
+            
+            if (btnText) {
+                btnText.innerText = "Switch to Table View";
+                btnIcon.innerText = "📋";
+            }
+            
+            // Critical fix: Give the browser 50ms to paint the block display before rendering the calendar. 
+            // This prevents FullCalendar from squishing its layout to 0px wide.
+            setTimeout(() => {
+                renderCalendar();
+                // Force mobile-friendly flexbox on the internal calendar header
+                const toolbars = document.querySelectorAll('.fc-toolbar');
+                toolbars.forEach(tb => { tb.style.display = 'flex'; tb.style.flexWrap = 'wrap'; tb.style.gap = '10px'; });
+            }, 50);
+            
         } else {
             tableView.style.display = 'block';
             calView.style.display = 'none';
-            generatePowSuggestions(); // Re-trigger alerts if needed
+            generatePowSuggestions(); 
+            
+            if (btnText) {
+                btnText.innerText = "Switch to Calendar View";
+                btnIcon.innerText = "📅";
+            }
         }
     }
 
