@@ -2750,11 +2750,10 @@ function completePowStation(id) {
                 };
             },
 
-            // Rich Interactive Tooltips on Hover
+           // Rich Interactive Tooltips on Hover
             eventDidMount: function(info) {
                 const props = info.event.extendedProps;
                 
-                // Construct beautiful dark-mode HTML for the tooltip
                 const tooltipHtml = `
                     <div style="text-align: left; padding: 4px 6px; font-family: 'Segoe UI', sans-serif;">
                         <strong style="font-size: 14px; color: #38bdf8;">${props.icon} ${info.event.title}</strong><br>
@@ -2780,7 +2779,9 @@ function completePowStation(id) {
                     placement: 'top',
                     animation: 'scale-subtle',
                     theme: 'dark',
-                    interactive: true
+                    interactive: true,
+                    appendTo: document.body, // Escapes FullCalendar's overflow: hidden
+                    zIndex: 9999             // Forces it to render above your modal (z-index: 1000)
                 });
             },
 
