@@ -530,7 +530,34 @@
                     <h3 style="margin: 0; font-size: 1rem;">Master Priority & Tracking Matrix (Fully Editable)</h3>
                     <span style="font-size: 0.75rem; color: #64748b;">Click any cell to edit • Supabase Cloud Active</span>
                 </div>
+
+                <!-- Global Matrix Search Engine & Filtering -->
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;" class="no-print">
+                    <strong style="font-size: 0.85rem; color: #0f172a; margin-right: 4px;">🔍 Filter Matrix:</strong>
+                    
+                    <input type="text" id="filterStationName" class="form-control" placeholder="Search Station Name..." oninput="filterMasterTable()" style="width: 220px; padding: 6px 10px; font-size: 0.8rem;">
+                    
+                    <input type="text" id="filterEngineer" class="form-control" placeholder="Engineer Name..." oninput="filterMasterTable()" style="width: 160px; padding: 6px 10px; font-size: 0.8rem;">
+                    
+                    <select id="filterTier" class="status-select" onchange="filterMasterTable()" style="width: 160px; padding: 6px; background: white; border: 1px solid #cbd5e1;">
+                        <option value="">All Tiers</option>
+                        <option value="Tier 1: High Risk">Tier 1: High Risk</option>
+                        <option value="Tier 2: Medium Risk">Tier 2: Medium Risk</option>
+                        <option value="Tier 3: Low Risk">Tier 3: Low Risk</option>
+                    </select>
+
+                    <select id="filterStatus" class="status-select" onchange="filterMasterTable()" style="width: 140px; padding: 6px; background: white; border: 1px solid #cbd5e1;">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                    
+                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; background-color: #64748b;" onclick="resetFilters()">Reset</button>
+                </div>
+
                 <div class="table-responsive">
+                    
                     <table id="deploymentTable">
                         <thead>
                             <tr>
@@ -898,8 +925,9 @@
                         <p style="font-size: 12px; color: #666; margin-top: 2px;">Document Date: October 2, 2026</p>
                     </div>
                     <div class="controls no-print" style="text-align: right;">
+                        <button class="btn-export" style="background-color: #0284c7; margin-right: 8px;" onclick="sortPowByTargetDate()">↕ Sort by Target Date</button>
                         <button class="btn-export" onclick="printProgramOfWorks()">Export to PDF (A4)</button>
-                        <p style="font-size: 10px; margin-top: 6px; color: #666;">Drag rows by ≡ to reorganize batches.</p>
+                        <p style="font-size: 10px; margin-top: 6px; color: #666;">Drag rows by ≡ to organize, or auto-sort chronologically.</p>
                     </div>
                 </div>
 
@@ -1251,6 +1279,45 @@
                 tr._jobCardPayload = s.jobCardPayload || null;
                 tr._jobCardSaved = s.jobCardSaved || false;
             });
+        }
+
+        /* ==========================================
+           GLOBAL MATRIX SEARCH & FILTER LOGIC
+           ========================================== */
+        function filterMasterTable() {
+            const nameFilter = document.getElementById('filterStationName').value.toLowerCase();
+            const engFilter = document.getElementById('filterEngineer').value.toLowerCase();
+            const tierFilter = document.getElementById('filterTier').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            const rows = document.querySelectorAll("#tableBody tr");
+            
+            rows.forEach(tr => {
+                const tier = tr.cells[1].querySelector('select').value;
+                const name = tr.cells[2].querySelector('input').value.toLowerCase();
+                const eng = tr.cells[4].querySelector('input').value.toLowerCase();
+                const status = tr.cells[6].querySelector('select').value;
+                
+                const matchName = name.includes(nameFilter);
+                const matchEng = eng.includes(engFilter);
+                const matchTier = tierFilter === "" || tier === tierFilter;
+                const matchStatus = statusFilter === "" || status === statusFilter;
+                
+                // Show if all conditions match, otherwise hide row
+                if (matchName && matchEng && matchTier && matchStatus) {
+                    tr.style.display = "";
+                } else {
+                    tr.style.display = "none";
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('filterStationName').value = '';
+            document.getElementById('filterEngineer').value = '';
+            document.getElementById('filterTier').value = '';
+            document.getElementById('filterStatus').value = '';
+            filterMasterTable();
         }
 
         function getTableStationsFromDOM() {
@@ -2066,6 +2133,32 @@ function completePowStation(id) {
             alert("Cloud sync failed: " + err.message);
         }
     }
+
+    /* ==========================================
+       PROGRAM OF WORKS AUTO-SORT LOGIC
+       ========================================== */
+    function sortPowByTargetDate() {
+        if (confirm("Organize all stations chronologically by their Target Completion Date?")) {
+            powStationsData.sort((a, b) => {
+                // 1. Maintain Batch Integrity (Sort by defined batch order first)
+                const batchIndexA = powBatchesOrder.indexOf(a.batch);
+                const batchIndexB = powBatchesOrder.indexOf(b.batch);
+                
+                if (batchIndexA !== batchIndexB) {
+                    return batchIndexA - batchIndexB;
+                }
+                
+                // 2. Sort Chronologically within the same batch
+                if (!a.target) return 1;  // Push entries without dates to the bottom
+                if (!b.target) return -1;
+                
+                return new Date(a.target) - new Date(b.target);
+            });
+            
+            renderPowTable();
+            savePowLocally();
+        }
+    }    
 
     function printProgramOfWorks() {
         document.body.classList.add('print-pow');
