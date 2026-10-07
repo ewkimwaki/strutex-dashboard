@@ -2073,7 +2073,7 @@ function completePowStation(id) {
         document.body.classList.remove('print-pow');
     }
 
-       /* ==========================================
+      /* ==========================================
        PROFESSIONAL EXCEL EXPORT LOGIC (ExcelJS)
        ========================================== */
     function exportBoQToExcel() {
@@ -2088,198 +2088,281 @@ function completePowStation(id) {
         
         // Initialize Workbook
         const workbook = new ExcelJS.Workbook();
-        workbook.creator = 'Strutex Builders';
+        workbook.creator = 'Strutex Builders Limited';
         workbook.created = new Date();
 
-        // Standard Border Style
-        const borderStyle = { style: 'thin' };
-        const fullBorder = { top: borderStyle, left: borderStyle, bottom: borderStyle, right: borderStyle };
+        // ----------------------------------------------------
+        // COMMON STYLES
+        // ----------------------------------------------------
+        const primaryFont = { name: 'Segoe UI', family: 2, size: 10, color: { argb: 'FF1E293B' } };
+        const subHeaderFont = { name: 'Segoe UI', family: 2, size: 10, bold: true, color: { argb: 'FF475569' } };
+        const tableHeaderFont = { name: 'Segoe UI', family: 2, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+        const tableHeaderFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0284C7' } }; // Corporate Blue
+        const lightFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+        const totalFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+        
+        const thinBorder = { style: 'thin', color: { argb: 'FFCBD5E1' } };
+        const fullBorder = { top: thinBorder, left: thinBorder, bottom: thinBorder, right: thinBorder };
 
         // ----------------------------------------------------
-        // SHEET 1: External Works
+        // SHEET 1: BILL OF QUANTITIES (External Works)
         // ----------------------------------------------------
-        const wsExt = workbook.addWorksheet('External Works');
+        const wsExt = workbook.addWorksheet('Bill of Quantities', { views: [{ showGridLines: false }] });
         
         wsExt.columns = [
-            { key: 'A', width: 6 },
-            { key: 'B', width: 60 },
-            { key: 'C', width: 8 },
-            { key: 'D', width: 8 },
-            { key: 'E', width: 14 },
-            { key: 'F', width: 18 },
-            { key: 'G', width: 15 }
+            { key: 'A', width: 6 },   // Item
+            { key: 'B', width: 14 },  // Code
+            { key: 'C', width: 60 },  // Description
+            { key: 'D', width: 8 },   // Unit
+            { key: 'E', width: 10 },  // Qty
+            { key: 'F', width: 15 },  // Rate
+            { key: 'G', width: 18 }   // Amount
         ];
 
-        // Letterhead & Info
-        wsExt.getCell('B5').value = 'MILESTONE PLAZA EASTERN BYPASS; Suite C2';
-        wsExt.getCell('B5').font = { bold: true, size: 11, name: 'Calibri' };
-        wsExt.getCell('E5').value = 'P.O BOX 33472 – 00600, NAIROBI';
-        wsExt.getCell('E5').font = { bold: true, name: 'Calibri' };
-        
-        wsExt.getCell('B6').value = 'Email; sstrutenterpris@gmail.com';
-        wsExt.getCell('B6').font = { name: 'Calibri' };
-        wsExt.getCell('D6').value = 'Cell';
-        wsExt.getCell('E6').value = '0721702625';
-        wsExt.getCell('E6').font = { name: 'Calibri' };
-        
-        wsExt.getCell('B8').value = 'BILLED TO: RUBIS ENERGY KENYA';
-        wsExt.getCell('B8').font = { bold: true, underline: true, name: 'Calibri' };
-        
-        wsExt.getCell('B10').value = `RUBIS ${stationNameUpper} CIVIL WORKS`;
-        wsExt.getCell('B10').font = { bold: true, underline: true, name: 'Calibri' };
-        wsExt.getCell('F10').value = new Date(reportDate);
-        wsExt.getCell('F10').font = { bold: true, name: 'Calibri' };
-        wsExt.getCell('F10').numFmt = 'dd-mmm-yy';
+        // --- Modern Letterhead ---
+        wsExt.mergeCells('A2:G2');
+        wsExt.getCell('A2').value = 'STRUTEX BUILDERS LIMITED';
+        wsExt.getCell('A2').font = { name: 'Segoe UI', family: 2, size: 22, bold: true, color: { argb: 'FF0F172A' } };
+        wsExt.getCell('A2').alignment = { horizontal: 'center' };
 
-        // Table Headers
-        const extHeaderRow = wsExt.getRow(12);
-        extHeaderRow.values = ['Item', 'Description', 'Unit', 'Qty', 'Rate', 'Amount (Kshs.)', 'Ref sch C'];
-        extHeaderRow.font = { bold: true, name: 'Calibri' };
-        extHeaderRow.alignment = { horizontal: 'center' };
+        wsExt.mergeCells('A3:G3');
+        wsExt.getCell('A3').value = 'Milestone Plaza, Eastern Bypass, Suite C2 | P.O BOX 33472 – 00600, Nairobi';
+        wsExt.getCell('A3').font = subHeaderFont;
+        wsExt.getCell('A3').alignment = { horizontal: 'center' };
+
+        wsExt.mergeCells('A4:G4');
+        wsExt.getCell('A4').value = 'Email: sstrutenterpris@gmail.com | Cell: 0721702625';
+        wsExt.getCell('A4').font = primaryFont;
+        wsExt.getCell('A4').alignment = { horizontal: 'center' };
+
+        // Separator line
+        for (let i = 1; i <= 7; i++) {
+            wsExt.getCell(5, i).border = { bottom: { style: 'medium', color: { argb: 'FF0284C7' } } };
+        }
+
+        // --- Document Meta Data ---
+        wsExt.getCell('B7').value = 'BILLED TO:';
+        wsExt.getCell('B7').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: 'FF64748B' } };
+        wsExt.getCell('B8').value = 'RUBIS ENERGY KENYA';
+        wsExt.getCell('B8').font = { name: 'Segoe UI', size: 12, bold: true };
+
+        wsExt.getCell('F7').value = 'DATE ISSUED:';
+        wsExt.getCell('F7').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: 'FF64748B' } };
+        wsExt.getCell('F8').value = new Date(reportDate);
+        wsExt.getCell('F8').font = primaryFont;
+        wsExt.getCell('F8').numFmt = 'dd-mmm-yyyy';
+
+        wsExt.getCell('B10').value = 'PROJECT:';
+        wsExt.getCell('B10').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: 'FF64748B' } };
+        wsExt.getCell('B11').value = `CIVIL & MAINTENANCE WORKS - ${stationNameUpper}`;
+        wsExt.getCell('B11').font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: 'FF0284C7' } };
+
+        wsExt.getCell('F10').value = 'WORK ORDER REF:';
+        wsExt.getCell('F10').font = { name: 'Segoe UI', size: 9, bold: true, color: { argb: 'FF64748B' } };
+        wsExt.getCell('F11').value = d.workOrder || 'N/A';
+        wsExt.getCell('F11').font = primaryFont;
+
+        // --- Table Headers ---
+        const extHeaderRow = wsExt.getRow(14);
+        extHeaderRow.values = ['NO.', 'CODE', 'DESCRIPTION', 'UNIT', 'QTY', 'RATE (KES)', 'AMOUNT (KES)'];
+        extHeaderRow.font = tableHeaderFont;
+        extHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+        extHeaderRow.height = 25;
         
         for (let i = 1; i <= 7; i++) {
+            extHeaderRow.getCell(i).fill = tableHeaderFill;
             extHeaderRow.getCell(i).border = fullBorder;
         }
 
-        wsExt.getCell('B14').value = 'PAINTS & CLEANING WORKS';
-        wsExt.getCell('B14').font = { bold: true, italic: true, name: 'Calibri' };
-
+        // --- Populate Tasks ---
         let currentRow = 15;
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let indexCount = 1;
         
-        d.scopeItems.forEach((item, index) => {
-            let code = '', desc = '', qty = 1, rate = 0;
-            if (typeof item === 'string') {
-                desc = item;
-                if (desc.includes('- Rate: KES')) {
-                    const parts = desc.split('- Rate: KES');
-                    desc = parts[0].trim();
-                    rate = parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0;
+        if(d.scopeItems && d.scopeItems.length > 0) {
+            d.scopeItems.forEach((item) => {
+                let code = '', desc = '', qty = 1, rate = 0;
+                if (typeof item === 'string') {
+                    desc = item;
+                    if (desc.includes('- Rate: KES')) {
+                        const parts = desc.split('- Rate: KES');
+                        desc = parts[0].trim();
+                        rate = parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0;
+                    }
+                } else {
+                    code = item.code || '';
+                    desc = item.desc || item.text;
+                    qty = parseFloat(item.qty) || 1;
+                    rate = parseFloat(item.rate) || 0;
                 }
-            } else {
-                code = item.code || '';
-                desc = item.desc || item.text;
-                qty = parseFloat(item.qty) || 1;
-                rate = parseFloat(item.rate) || 0;
-            }
-            
-            let itemLetter = index < 26 ? letters[index] : index + 1;
-            
+                
+                const row = wsExt.getRow(currentRow);
+                row.values = [indexCount++, code, desc, item.uom || "ITEM", qty, rate, { formula: `E${currentRow}*F${currentRow}` }];
+                
+                row.font = primaryFont;
+                row.getCell(3).alignment = { wrapText: true, vertical: 'top' };
+                row.getCell(1).alignment = { horizontal: 'center', vertical: 'top' };
+                row.getCell(4).alignment = { horizontal: 'center', vertical: 'top' };
+                row.getCell(5).alignment = { horizontal: 'center', vertical: 'top' };
+                
+                row.getCell(6).numFmt = '#,##0.00';
+                row.getCell(7).numFmt = '#,##0.00';
+                
+                if (currentRow % 2 === 0) {
+                    for (let i = 1; i <= 7; i++) row.getCell(i).fill = lightFill;
+                }
+
+                for (let i = 1; i <= 7; i++) {
+                    row.getCell(i).border = fullBorder;
+                }
+                currentRow++;
+            });
+        } else {
             const row = wsExt.getRow(currentRow);
-            // Injecting live formulas (Qty * Rate)
-            row.values = [itemLetter, desc, item.uom || "ITEM", qty, rate, { formula: `D${currentRow}*E${currentRow}` }, code];
-            
-            row.getCell(2).alignment = { wrapText: true, vertical: 'top' };
-            row.getCell(2).font = { name: 'Calibri' };
-            row.getCell(5).numFmt = '#,##0.00';
-            row.getCell(6).numFmt = '#,##0.00';
-            
-            for (let i = 1; i <= 7; i++) {
-                row.getCell(i).border = fullBorder;
-                row.getCell(i).alignment = { vertical: 'top' };
-            }
-            currentRow += 2; // Spacing logic matching the sample
-        });
+            row.values = ['', '', 'No tasks recorded', '', '', '', ''];
+            row.font = { name: 'Segoe UI', italic: true, color: { argb: 'FF94A3B8' } };
+            for (let i = 1; i <= 7; i++) row.getCell(i).border = fullBorder;
+            currentRow++;
+        }
         
-        // Finalize Subtotal Row with Formula
+        // --- Subtotal Row ---
         const subtotalRowExt = currentRow;
-        wsExt.getCell(`E${subtotalRowExt}`).value = 'Sub- Total';
-        wsExt.getCell(`E${subtotalRowExt}`).font = { bold: true, name: 'Calibri' };
-        wsExt.getCell(`F${subtotalRowExt}`).value = { formula: `SUM(F15:F${currentRow-1})` };
-        wsExt.getCell(`F${subtotalRowExt}`).font = { bold: true, name: 'Calibri' };
-        wsExt.getCell(`F${subtotalRowExt}`).numFmt = '#,##0.00';
+        wsExt.getCell(`F${subtotalRowExt}`).value = 'SUB-TOTAL:';
+        wsExt.getCell(`F${subtotalRowExt}`).font = { name: 'Segoe UI', size: 10, bold: true };
+        wsExt.getCell(`F${subtotalRowExt}`).alignment = { horizontal: 'right' };
+        wsExt.getCell(`G${subtotalRowExt}`).value = { formula: `SUM(G15:G${currentRow-1})` };
+        wsExt.getCell(`G${subtotalRowExt}`).font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FF0284C7' } };
+        wsExt.getCell(`G${subtotalRowExt}`).numFmt = '#,##0.00';
+        wsExt.getCell(`G${subtotalRowExt}`).fill = totalFill;
+        wsExt.getCell(`G${subtotalRowExt}`).border = fullBorder;
+
 
         // ----------------------------------------------------
-        // SHEET 2: GRAND SUMMARY
+        // SHEET 2: COMMERCIAL SUMMARY
         // ----------------------------------------------------
-        const wsSum = workbook.addWorksheet('GRAND SUMMARY');
+        const wsSum = workbook.addWorksheet('Commercial Summary', { views: [{ showGridLines: false }] });
         
         wsSum.columns = [
-            { key: 'A', width: 4 },
-            { key: 'B', width: 32 },
-            { key: 'C', width: 16 },
-            { key: 'D', width: 20 },
-            { key: 'E', width: 18 },
-            { key: 'F', width: 22 },
-            { key: 'G', width: 16 },
-            { key: 'H', width: 20 },
-            { key: 'I', width: 20 }
+            { key: 'A', width: 5 },
+            { key: 'B', width: 15 },
+            { key: 'C', width: 45 },
+            { key: 'D', width: 25 },
+            { key: 'E', width: 25 },
+            { key: 'F', width: 5 }
         ];
 
-        wsSum.getCell('B6').value = 'MILESTONE PLAZA EASTERN BYPASS; Suite C2';
-        wsSum.getCell('B6').font = { bold: true, size: 11, name: 'Calibri' };
-        wsSum.getCell('F6').value = 'P.O BOX 33472 – 00600, NAIROBI';
-        wsSum.getCell('F6').font = { bold: true, name: 'Calibri' };
-        
-        wsSum.getCell('B7').value = 'Email; sstrutenterpris@gmail.com';
-        wsSum.getCell('B7').font = { name: 'Calibri' };
-        wsSum.getCell('D7').value = 'Cell';
-        wsSum.getCell('E7').value = '0721702625';
-        wsSum.getCell('E7').font = { name: 'Calibri' };
-        
-        wsSum.getCell('B9').value = 'BILLED TO: RUBIS ENERGY KENYA';
-        wsSum.getCell('B9').font = { bold: true, underline: true, name: 'Calibri' };
-        wsSum.getCell('H9').value = new Date(reportDate);
-        wsSum.getCell('H9').numFmt = 'dd-mmm-yy';
-        wsSum.getCell('H9').font = { bold: true, name: 'Calibri' };
-        
-        wsSum.getCell('B11').value = `PAINTING WORKS FOR RUBIS ${stationNameUpper}`;
-        wsSum.getCell('B11').font = { bold: true, underline: true, name: 'Calibri' };
-        
-        // Summary Headers
-        const sumHeaderRow = wsSum.getRow(13);
-        sumHeaderRow.values = ['', 'ITEM', 'REFERENCE NO.', 'DATE OF COMPLETION', 'STATION', 'COST OF MATERIALS', 'MILEAGE', 'TOTAL COST', 'Engineer in charge'];
-        sumHeaderRow.font = { bold: true, name: 'Calibri' };
-        sumHeaderRow.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
-        sumHeaderRow.height = 30;
-        
-        for (let i = 2; i <= 9; i++) {
-            sumHeaderRow.getCell(i).border = fullBorder;
+        // --- Letterhead ---
+        wsSum.mergeCells('B2:E2');
+        wsSum.getCell('B2').value = 'STRUTEX BUILDERS LIMITED';
+        wsSum.getCell('B2').font = { name: 'Segoe UI', family: 2, size: 22, bold: true, color: { argb: 'FF0F172A' } };
+        wsSum.getCell('B2').alignment = { horizontal: 'center' };
+
+        wsSum.mergeCells('B3:E3');
+        wsSum.getCell('B3').value = 'Milestone Plaza, Eastern Bypass, Suite C2 | P.O BOX 33472 – 00600, Nairobi';
+        wsSum.getCell('B3').font = subHeaderFont;
+        wsSum.getCell('B3').alignment = { horizontal: 'center' };
+
+        // Separator line
+        for (let i = 2; i <= 5; i++) {
+            wsSum.getCell(4, i).border = { bottom: { style: 'medium', color: { argb: 'FF0284C7' } } };
         }
 
-        // Summary Data Row (Links dynamically to Sheet 1)
-        const sumDataRow = wsSum.getRow(14);
-        sumDataRow.values = ['', 1, d.workOrder || '', new Date(reportDate), stationNameUpper, { formula: `'External Works'!F${subtotalRowExt}` }, '', { formula: 'F14' }, d.engineer || 'EVERLYNE'];
-        sumDataRow.font = { name: 'Calibri' };
-        sumDataRow.getCell(4).numFmt = 'dd-mmm-yy';
-        sumDataRow.getCell(6).numFmt = '#,##0.00';
-        sumDataRow.getCell(8).numFmt = '#,##0.00';
+        wsSum.mergeCells('B6:E6');
+        wsSum.getCell('B6').value = 'COMMERCIAL SUMMARY';
+        wsSum.getCell('B6').font = { name: 'Segoe UI', size: 16, bold: true, color: { argb: 'FF0F172A' } };
+        wsSum.getCell('B6').alignment = { horizontal: 'center' };
+
+        // --- Project Meta Box ---
+        wsSum.getCell('B8').value = 'CLIENT:';
+        wsSum.getCell('B8').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('C8').value = 'RUBIS ENERGY KENYA';
+        wsSum.getCell('C8').font = primaryFont;
+
+        wsSum.getCell('B9').value = 'PROJECT:';
+        wsSum.getCell('B9').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('C9').value = `CIVIL WORKS - ${stationNameUpper}`;
+        wsSum.getCell('C9').font = primaryFont;
+
+        wsSum.getCell('D8').value = 'DATE:';
+        wsSum.getCell('D8').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('E8').value = new Date(reportDate);
+        wsSum.getCell('E8').font = primaryFont;
+        wsSum.getCell('E8').numFmt = 'dd-mmm-yyyy';
+
+        wsSum.getCell('D9').value = 'REF NO:';
+        wsSum.getCell('D9').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('E9').value = d.workOrder || 'N/A';
+        wsSum.getCell('E9').font = primaryFont;
+
+        // --- Financial Summary Table ---
+        const sumHeaderRow = wsSum.getRow(12);
+        sumHeaderRow.values = ['', 'ITEM', 'DESCRIPTION', 'AMOUNT (KES)', '', ''];
+        sumHeaderRow.font = tableHeaderFont;
+        sumHeaderRow.height = 25;
+        sumHeaderRow.alignment = { vertical: 'middle' };
         
-        for (let i = 2; i <= 9; i++) {
-            sumDataRow.getCell(i).border = fullBorder;
-            sumDataRow.getCell(i).alignment = { horizontal: 'center', vertical: 'middle' };
+        wsSum.getCell('B12').fill = tableHeaderFill; wsSum.getCell('B12').border = fullBorder;
+        wsSum.getCell('C12').fill = tableHeaderFill; wsSum.getCell('C12').border = fullBorder;
+        wsSum.getCell('D12').fill = tableHeaderFill; wsSum.getCell('D12').border = fullBorder;
+
+        // Subtotal Link
+        wsSum.getCell('B13').value = 1;
+        wsSum.getCell('B13').alignment = { horizontal: 'center' };
+        wsSum.getCell('C13').value = 'Total Cost of Materials & Labour';
+        wsSum.getCell('D13').value = { formula: `'Bill of Quantities'!G${subtotalRowExt}` };
+        wsSum.getCell('D13').numFmt = '#,##0.00';
+        
+        for (let i = 2; i <= 4; i++) {
+            wsSum.getCell(13, i).font = primaryFont;
+            wsSum.getCell(13, i).border = fullBorder;
         }
 
-        // Totals Calculations
-        wsSum.getCell('G22').value = 'Sub- Total';
-        wsSum.getCell('G22').font = { bold: true, name: 'Calibri' };
-        wsSum.getCell('H22').value = { formula: 'H14' };
-        wsSum.getCell('H22').numFmt = '#,##0.00';
-        wsSum.getCell('H22').font = { bold: true, name: 'Calibri' };
-        
-        wsSum.getCell('G23').value = 'VAT';
-        wsSum.getCell('G23').font = { bold: true, name: 'Calibri' };
-        // Formula calculates 16% automatically
-        wsSum.getCell('H23').value = { formula: 'H22*0.16' };
-        wsSum.getCell('H23').numFmt = '#,##0.00';
-        wsSum.getCell('H23').font = { bold: true, name: 'Calibri' };
-        
-        wsSum.getCell('G24').value = 'Grand Total';
-        wsSum.getCell('G24').font = { bold: true, name: 'Calibri' };
-        wsSum.getCell('H24').value = { formula: 'H22+H23' };
-        wsSum.getCell('H24').numFmt = '#,##0.00';
-        wsSum.getCell('H24').font = { bold: true, name: 'Calibri' };
+        // Calculations Box
+        wsSum.getCell('C15').value = 'SUB-TOTAL';
+        wsSum.getCell('C15').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('C15').alignment = { horizontal: 'right' };
+        wsSum.getCell('D15').value = { formula: 'D13' };
+        wsSum.getCell('D15').numFmt = '#,##0.00';
+        wsSum.getCell('D15').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('D15').border = fullBorder;
 
-        // Signatures
-        wsSum.getCell('B27').value = 'Maintenance Assistant';
-        wsSum.getCell('B27').font = { name: 'Calibri' };
-        wsSum.getCell('B29').value = 'Maintenance Manager';
-        wsSum.getCell('B29').font = { name: 'Calibri' };
+        wsSum.getCell('C16').value = 'VAT (16%)';
+        wsSum.getCell('C16').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('C16').alignment = { horizontal: 'right' };
+        wsSum.getCell('D16').value = { formula: 'D15*0.16' };
+        wsSum.getCell('D16').numFmt = '#,##0.00';
+        wsSum.getCell('D16').font = { name: 'Segoe UI', bold: true };
+        wsSum.getCell('D16').border = fullBorder;
+
+        wsSum.getCell('C17').value = 'GRAND TOTAL';
+        wsSum.getCell('C17').font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: 'FF0F172A' } };
+        wsSum.getCell('C17').alignment = { horizontal: 'right' };
+        wsSum.getCell('D17').value = { formula: 'D15+D16' };
+        wsSum.getCell('D17').numFmt = '#,##0.00';
+        wsSum.getCell('D17').font = { name: 'Segoe UI', size: 12, bold: true, color: { argb: 'FF0284C7' } };
+        wsSum.getCell('D17').fill = totalFill;
+        wsSum.getCell('D17').border = fullBorder;
+
+        // --- Signatures ---
+        wsSum.getCell('B21').value = 'Prepared By:';
+        wsSum.getCell('B21').font = { name: 'Segoe UI', bold: true, color: { argb: 'FF64748B' } };
+        wsSum.getCell('B22').value = d.engineer || 'Strutex Representative';
+        wsSum.getCell('B22').font = primaryFont;
+        wsSum.getCell('B23').value = '_________________________';
+        wsSum.getCell('B24').value = 'Signature / Date';
+        wsSum.getCell('B24').font = { name: 'Segoe UI', size: 9, italic: true };
+
+        wsSum.getCell('D21').value = 'Approved By (Client):';
+        wsSum.getCell('D21').font = { name: 'Segoe UI', bold: true, color: { argb: 'FF64748B' } };
+        wsSum.getCell('D22').value = 'Rubis Energy Kenya';
+        wsSum.getCell('D22').font = primaryFont;
+        wsSum.getCell('D23').value = '_________________________';
+        wsSum.getCell('D24').value = 'Signature / Date / Stamp';
+        wsSum.getCell('D24').font = { name: 'Segoe UI', size: 9, italic: true };
 
         // Trigger Download
         workbook.xlsx.writeBuffer().then(function(buffer) {
             const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-            saveAs(blob, `Rubis_${stationNameUpper}_BOQ_${reportDate}.xlsx`);
+            saveAs(blob, `Strutex_BoQ_${stationNameUpper}_${reportDate}.xlsx`);
         });
     }
     </script>
