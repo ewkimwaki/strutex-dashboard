@@ -7,7 +7,10 @@
     <!-- Supabase Library CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- ExcelJS & FileSaver for Professional Excel Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
     <style>
         :root {
             --primary-color: #1e293b;
@@ -1547,6 +1550,9 @@
         }
 
         function viewBoQ(data) {
+            // FIX: Ensure the background data cache is updated for the Excel exporter
+            cachedJobCardData = data; 
+            
             document.getElementById('boqWorkOrder').innerText = data.workOrder || 'N/A';
             document.getElementById('boqLocation').innerText = data.stationName || 'N/A';
             document.getElementById('boqDate').innerText = data.dateIssued || new Date().toLocaleDateString();
@@ -2067,8 +2073,8 @@ function completePowStation(id) {
         document.body.classList.remove('print-pow');
     }
 
-        /* ==========================================
-       EXCEL EXPORT LOGIC (SheetJS)
+       /* ==========================================
+       PROFESSIONAL EXCEL EXPORT LOGIC (ExcelJS)
        ========================================== */
     function exportBoQToExcel() {
         if (!cachedJobCardData || !cachedJobCardData.scopeItems) {
@@ -2076,31 +2082,71 @@ function completePowStation(id) {
             return;
         }
 
-        const wb = XLSX.utils.book_new();
         const d = cachedJobCardData;
         const reportDate = d.dateIssued || new Date().toISOString().split('T')[0];
         const stationNameUpper = (d.stationName || "UNKNOWN").toUpperCase();
         
-        let subTotal = 0;
-        const externalWorksData = [];
+        // Initialize Workbook
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'Strutex Builders';
+        workbook.created = new Date();
 
-        // Build Sheet 1: External Works Header
-        externalWorksData.push(["", "", "", "", "", ""]);
-        externalWorksData.push(["", "MILESTONE PLAZA EASTERN BYPASS; Suite C2", "", "", "P.O BOX 33472 – 00100, NAIROBI", ""]);
-        externalWorksData.push(["", "Email; sstrutenterpris@gmail.com   Cell: 0721702625", "", "", "", ""]);
-        externalWorksData.push(["", "", "", "", "", ""]);
-        externalWorksData.push(["", "BILLED TO: RUBIS ENERGY KENYA", "", "", "", ""]);
-        externalWorksData.push(["", "", "", "", "", ""]);
-        externalWorksData.push(["", `RUBIS ${stationNameUpper} CIVIL WORKS`, "", "", reportDate, ""]);
-        externalWorksData.push(["", "", "", "", "", ""]);
+        // Standard Border Style
+        const borderStyle = { style: 'thin' };
+        const fullBorder = { top: borderStyle, left: borderStyle, bottom: borderStyle, right: borderStyle };
+
+        // ----------------------------------------------------
+        // SHEET 1: External Works
+        // ----------------------------------------------------
+        const wsExt = workbook.addWorksheet('External Works');
         
+        wsExt.columns = [
+            { key: 'A', width: 6 },
+            { key: 'B', width: 60 },
+            { key: 'C', width: 8 },
+            { key: 'D', width: 8 },
+            { key: 'E', width: 14 },
+            { key: 'F', width: 18 },
+            { key: 'G', width: 15 }
+        ];
+
+        // Letterhead & Info
+        wsExt.getCell('B5').value = 'MILESTONE PLAZA EASTERN BYPASS; Suite C2';
+        wsExt.getCell('B5').font = { bold: true, size: 11, name: 'Calibri' };
+        wsExt.getCell('E5').value = 'P.O BOX 33472 – 00600, NAIROBI';
+        wsExt.getCell('E5').font = { bold: true, name: 'Calibri' };
+        
+        wsExt.getCell('B6').value = 'Email; sstrutenterpris@gmail.com';
+        wsExt.getCell('B6').font = { name: 'Calibri' };
+        wsExt.getCell('D6').value = 'Cell';
+        wsExt.getCell('E6').value = '0721702625';
+        wsExt.getCell('E6').font = { name: 'Calibri' };
+        
+        wsExt.getCell('B8').value = 'BILLED TO: RUBIS ENERGY KENYA';
+        wsExt.getCell('B8').font = { bold: true, underline: true, name: 'Calibri' };
+        
+        wsExt.getCell('B10').value = `RUBIS ${stationNameUpper} CIVIL WORKS`;
+        wsExt.getCell('B10').font = { bold: true, underline: true, name: 'Calibri' };
+        wsExt.getCell('F10').value = new Date(reportDate);
+        wsExt.getCell('F10').font = { bold: true, name: 'Calibri' };
+        wsExt.getCell('F10').numFmt = 'dd-mmm-yy';
+
         // Table Headers
-        externalWorksData.push(["Item", "Description", "Unit", "Qty", "Rate", "Amount (Kshs.)", "Ref sch C"]);
-        externalWorksData.push(["", "", "", "", "", "", ""]);
-        externalWorksData.push(["", "ROUTINE MAINTENANCE & REPAIR WORKS", "", "", "", "", ""]);
+        const extHeaderRow = wsExt.getRow(12);
+        extHeaderRow.values = ['Item', 'Description', 'Unit', 'Qty', 'Rate', 'Amount (Kshs.)', 'Ref sch C'];
+        extHeaderRow.font = { bold: true, name: 'Calibri' };
+        extHeaderRow.alignment = { horizontal: 'center' };
         
-        // Populate Tasks
+        for (let i = 1; i <= 7; i++) {
+            extHeaderRow.getCell(i).border = fullBorder;
+        }
+
+        wsExt.getCell('B14').value = 'PAINTS & CLEANING WORKS';
+        wsExt.getCell('B14').font = { bold: true, italic: true, name: 'Calibri' };
+
+        let currentRow = 15;
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        
         d.scopeItems.forEach((item, index) => {
             let code = '', desc = '', qty = 1, rate = 0;
             if (typeof item === 'string') {
@@ -2117,89 +2163,124 @@ function completePowStation(id) {
                 rate = parseFloat(item.rate) || 0;
             }
             
-            const amount = qty * rate;
-            subTotal += amount;
+            let itemLetter = index < 26 ? letters[index] : index + 1;
             
-            const itemLetter = index < 26 ? letters[index] : index + 1;
-            externalWorksData.push([itemLetter, desc, item.uom || "ITEM", qty, rate, amount, code]);
+            const row = wsExt.getRow(currentRow);
+            // Injecting live formulas (Qty * Rate)
+            row.values = [itemLetter, desc, item.uom || "ITEM", qty, rate, { formula: `D${currentRow}*E${currentRow}` }, code];
+            
+            row.getCell(2).alignment = { wrapText: true, vertical: 'top' };
+            row.getCell(2).font = { name: 'Calibri' };
+            row.getCell(5).numFmt = '#,##0.00';
+            row.getCell(6).numFmt = '#,##0.00';
+            
+            for (let i = 1; i <= 7; i++) {
+                row.getCell(i).border = fullBorder;
+                row.getCell(i).alignment = { vertical: 'top' };
+            }
+            currentRow += 2; // Spacing logic matching the sample
         });
-
-        // Add padding at bottom of tasks
-        externalWorksData.push(["", "", "", "", "", "", ""]);
-        externalWorksData.push(["", "", "", "", "", "", ""]);
-
-        // Generate Sheet 1
-        const wsExternal = XLSX.utils.aoa_to_sheet(externalWorksData);
         
-        // Define column widths for Sheet 1
-        wsExternal['!cols'] = [
-            { wch: 8 },   // Item
-            { wch: 80 },  // Description (Wide)
-            { wch: 10 },  // Unit
-            { wch: 10 },  // Qty
-            { wch: 15 },  // Rate
-            { wch: 20 },  // Amount
-            { wch: 15 }   // Ref
+        // Finalize Subtotal Row with Formula
+        const subtotalRowExt = currentRow;
+        wsExt.getCell(`E${subtotalRowExt}`).value = 'Sub- Total';
+        wsExt.getCell(`E${subtotalRowExt}`).font = { bold: true, name: 'Calibri' };
+        wsExt.getCell(`F${subtotalRowExt}`).value = { formula: `SUM(F15:F${currentRow-1})` };
+        wsExt.getCell(`F${subtotalRowExt}`).font = { bold: true, name: 'Calibri' };
+        wsExt.getCell(`F${subtotalRowExt}`).numFmt = '#,##0.00';
+
+        // ----------------------------------------------------
+        // SHEET 2: GRAND SUMMARY
+        // ----------------------------------------------------
+        const wsSum = workbook.addWorksheet('GRAND SUMMARY');
+        
+        wsSum.columns = [
+            { key: 'A', width: 4 },
+            { key: 'B', width: 32 },
+            { key: 'C', width: 16 },
+            { key: 'D', width: 20 },
+            { key: 'E', width: 18 },
+            { key: 'F', width: 22 },
+            { key: 'G', width: 16 },
+            { key: 'H', width: 20 },
+            { key: 'I', width: 20 }
         ];
-        
-        XLSX.utils.book_append_sheet(wb, wsExternal, "External Works");
 
+        wsSum.getCell('B6').value = 'MILESTONE PLAZA EASTERN BYPASS; Suite C2';
+        wsSum.getCell('B6').font = { bold: true, size: 11, name: 'Calibri' };
+        wsSum.getCell('F6').value = 'P.O BOX 33472 – 00600, NAIROBI';
+        wsSum.getCell('F6').font = { bold: true, name: 'Calibri' };
+        
+        wsSum.getCell('B7').value = 'Email; sstrutenterpris@gmail.com';
+        wsSum.getCell('B7').font = { name: 'Calibri' };
+        wsSum.getCell('D7').value = 'Cell';
+        wsSum.getCell('E7').value = '0721702625';
+        wsSum.getCell('E7').font = { name: 'Calibri' };
+        
+        wsSum.getCell('B9').value = 'BILLED TO: RUBIS ENERGY KENYA';
+        wsSum.getCell('B9').font = { bold: true, underline: true, name: 'Calibri' };
+        wsSum.getCell('H9').value = new Date(reportDate);
+        wsSum.getCell('H9').numFmt = 'dd-mmm-yy';
+        wsSum.getCell('H9').font = { bold: true, name: 'Calibri' };
+        
+        wsSum.getCell('B11').value = `PAINTING WORKS FOR RUBIS ${stationNameUpper}`;
+        wsSum.getCell('B11').font = { bold: true, underline: true, name: 'Calibri' };
+        
+        // Summary Headers
+        const sumHeaderRow = wsSum.getRow(13);
+        sumHeaderRow.values = ['', 'ITEM', 'REFERENCE NO.', 'DATE OF COMPLETION', 'STATION', 'COST OF MATERIALS', 'MILEAGE', 'TOTAL COST', 'Engineer in charge'];
+        sumHeaderRow.font = { bold: true, name: 'Calibri' };
+        sumHeaderRow.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
+        sumHeaderRow.height = 30;
+        
+        for (let i = 2; i <= 9; i++) {
+            sumHeaderRow.getCell(i).border = fullBorder;
+        }
 
-        // Build Sheet 2: GRAND SUMMARY
-        const summaryData = [];
-        const vat = subTotal * 0.16;
-        const grandTotal = subTotal + vat;
+        // Summary Data Row (Links dynamically to Sheet 1)
+        const sumDataRow = wsSum.getRow(14);
+        sumDataRow.values = ['', 1, d.workOrder || '', new Date(reportDate), stationNameUpper, { formula: `'External Works'!F${subtotalRowExt}` }, '', { formula: 'F14' }, d.engineer || 'EVERLYNE'];
+        sumDataRow.font = { name: 'Calibri' };
+        sumDataRow.getCell(4).numFmt = 'dd-mmm-yy';
+        sumDataRow.getCell(6).numFmt = '#,##0.00';
+        sumDataRow.getCell(8).numFmt = '#,##0.00';
+        
+        for (let i = 2; i <= 9; i++) {
+            sumDataRow.getCell(i).border = fullBorder;
+            sumDataRow.getCell(i).alignment = { horizontal: 'center', vertical: 'middle' };
+        }
 
-        summaryData.push(["", "", "", "", "", "", "", ""]);
-        summaryData.push(["", "MILESTONE PLAZA EASTERN BYPASS; Suite C2", "", "", "P.O BOX 33472 – 00100, NAIROBI", "", "", ""]);
-        summaryData.push(["", "Email; sstrutenterpris@gmail.com   Cell: 0721702625", "", "", "", "", "", ""]);
-        summaryData.push(["", "", "", "", "", "", "", ""]);
-        summaryData.push(["", "BILLED TO: RUBIS ENERGY KENYA", "", "", "", "", reportDate, ""]);
-        summaryData.push(["", "", "", "", "", "", "", ""]);
-        summaryData.push(["", `MAINTENANCE WORKS FOR RUBIS ${stationNameUpper}`, "", "", "", "", "", ""]);
-        summaryData.push(["", "", "", "", "", "", "", ""]);
+        // Totals Calculations
+        wsSum.getCell('G22').value = 'Sub- Total';
+        wsSum.getCell('G22').font = { bold: true, name: 'Calibri' };
+        wsSum.getCell('H22').value = { formula: 'H14' };
+        wsSum.getCell('H22').numFmt = '#,##0.00';
+        wsSum.getCell('H22').font = { bold: true, name: 'Calibri' };
         
-        // Summary Table Headers
-        summaryData.push(["", "ITEM", "REFERENCE NO.", "DATE OF COMPLETION", "STATION", "COST OF MATERIALS", "MILEAGE", "TOTAL COST", "Engineer in charge"]);
+        wsSum.getCell('G23').value = 'VAT';
+        wsSum.getCell('G23').font = { bold: true, name: 'Calibri' };
+        // Formula calculates 16% automatically
+        wsSum.getCell('H23').value = { formula: 'H22*0.16' };
+        wsSum.getCell('H23').numFmt = '#,##0.00';
+        wsSum.getCell('H23').font = { bold: true, name: 'Calibri' };
         
-        // Summary Data Row
-        summaryData.push(["", 1, d.workOrder || "", reportDate, stationNameUpper, subTotal, "", subTotal, d.engineer || ""]);
-        
-        summaryData.push(["", "", "", "", "", "", "", "", ""]);
-        summaryData.push(["", "", "", "", "", "", "", "", ""]);
-        
-        // Totals
-        summaryData.push(["", "", "", "", "", "", "Sub- Total", subTotal, ""]);
-        summaryData.push(["", "", "", "", "", "", "VAT (16%)", vat, ""]);
-        summaryData.push(["", "", "", "", "", "", "Grand Total", grandTotal, ""]);
-        
-        summaryData.push(["", "", "", "", "", "", "", "", ""]);
-        summaryData.push(["", "Maintenance Assistant", "", "", "", "", "", "", ""]);
-        summaryData.push(["", "_______________________", "", "", "", "", "", "", ""]);
-        summaryData.push(["", "Maintenance Manager", "", "", "", "", "", "", ""]);
-        summaryData.push(["", "_______________________", "", "", "", "", "", "", ""]);
+        wsSum.getCell('G24').value = 'Grand Total';
+        wsSum.getCell('G24').font = { bold: true, name: 'Calibri' };
+        wsSum.getCell('H24').value = { formula: 'H22+H23' };
+        wsSum.getCell('H24').numFmt = '#,##0.00';
+        wsSum.getCell('H24').font = { bold: true, name: 'Calibri' };
 
-        // Generate Sheet 2
-        const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-        
-        // Define column widths for Sheet 2
-        wsSummary['!cols'] = [
-            { wch: 5 },   // Spacer
-            { wch: 25 },  // Item / Signatures
-            { wch: 15 },  // Ref No
-            { wch: 20 },  // Date
-            { wch: 20 },  // Station
-            { wch: 20 },  // Cost
-            { wch: 15 },  // Mileage / Titles
-            { wch: 20 },  // Totals
-            { wch: 20 }   // Engineer
-        ];
-        
-        XLSX.utils.book_append_sheet(wb, wsSummary, "GRAND SUMMARY");
+        // Signatures
+        wsSum.getCell('B27').value = 'Maintenance Assistant';
+        wsSum.getCell('B27').font = { name: 'Calibri' };
+        wsSum.getCell('B29').value = 'Maintenance Manager';
+        wsSum.getCell('B29').font = { name: 'Calibri' };
 
-        // Download the File
-        const fileName = `Strutex_BoQ_Rubis_${stationNameUpper.replace(/\s+/g, '_')}_${reportDate}.xlsx`;
-        XLSX.writeFile(wb, fileName);
+        // Trigger Download
+        workbook.xlsx.writeBuffer().then(function(buffer) {
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            saveAs(blob, `Rubis_${stationNameUpper}_BOQ_${reportDate}.xlsx`);
+        });
     }
     </script>
 </body>
