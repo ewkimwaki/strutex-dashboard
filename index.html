@@ -12,7 +12,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <!-- FullCalendar Library for Interactive Visual Maintenance Scheduling -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
-    
+
+    <!-- Tippy.js & Popper for Modern Interactive Tooltips -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale-subtle.css"/>
     <style>
         :root {
             --primary-color: #1e293b;
@@ -2660,88 +2664,161 @@ function completePowStation(id) {
     function renderCalendar() {
         const calendarEl = document.getElementById('powCalendarView');
         
-        // 1. Map Target Dates & Rubis Deadlines dynamically
+        // 1. Map Data with deep extendedProps for tooltips and drag-and-drop tracking
         const calendarEvents = [];
         powStationsData.forEach(site => {
-            // Target Completion Date
+            const baseProps = {
+                stationId: site.id,
+                classType: site.classType,
+                batch: site.batch,
+                status: site.status,
+                remarks: site.remarks
+            };
+
+            // Target Completion
             if (site.target) {
                 calendarEvents.push({
-                    title: `🎯 Target: ${site.name}`,
+                    id: `target_${site.id}`,
+                    title: site.name,
                     start: site.target,
-                    backgroundColor: '#10b981', // Emerald green
-                    borderColor: '#047857',
-                    textColor: '#ffffff',
+                    backgroundColor: '#10b981', borderColor: '#047857', textColor: '#ffffff',
                     allDay: true,
-                    extendedProps: { type: 'Target Completion', status: site.status }
+                    extendedProps: { ...baseProps, type: 'Target Completion', dateField: 'target', icon: '🎯' }
                 });
             }
 
-            // Official Rubis Deadline
+            // Rubis Deadline
             if (site.deadline) {
                 calendarEvents.push({
-                    title: `🚨 Deadline: ${site.name}`,
+                    id: `deadline_${site.id}`,
+                    title: site.name,
                     start: site.deadline,
-                    backgroundColor: '#e11d48', // Rose red
-                    borderColor: '#be123c',
-                    textColor: '#ffffff',
+                    backgroundColor: '#e11d48', borderColor: '#be123c', textColor: '#ffffff',
                     allDay: true,
-                    extendedProps: { type: 'Rubis Official Deadline', status: site.status }
+                    extendedProps: { ...baseProps, type: 'Official Deadline', dateField: 'deadline', icon: '🚨' }
                 });
             }
 
             // Maintenance Schedules
             if (site.nextPainting) {
                 calendarEvents.push({
-                    title: `🎨 Paint: ${site.name}`,
+                    id: `paint_${site.id}`,
+                    title: site.name,
                     start: site.nextPainting,
-                    backgroundColor: '#f59e0b', // Amber
-                    borderColor: '#d97706',
-                    allDay: true
+                    backgroundColor: '#f59e0b', borderColor: '#d97706', textColor: '#ffffff',
+                    allDay: true,
+                    extendedProps: { ...baseProps, type: 'Scheduled Painting', dateField: 'nextPainting', icon: '🎨' }
                 });
             }
             if (site.nextCleaning) {
                 calendarEvents.push({
-                    title: `🧹 Clean: ${site.name}`,
+                    id: `clean_${site.id}`,
+                    title: site.name,
                     start: site.nextCleaning,
-                    backgroundColor: '#0ea5e9', // Sky blue
-                    borderColor: '#0284c7',
-                    allDay: true
+                    backgroundColor: '#0ea5e9', borderColor: '#0284c7', textColor: '#ffffff',
+                    allDay: true,
+                    extendedProps: { ...baseProps, type: 'Scheduled Cleaning', dateField: 'nextCleaning', icon: '🧹' }
                 });
             }
         });
 
-        // 2. Destroy existing instance to prevent duplicate rendering bugs
         if (powCalendar) {
             powCalendar.destroy();
         }
 
-        // 3. Initialize the Calendar with fixed sizing constraints
+        // 2. Initialize Modern Interactive Calendar
         powCalendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            contentHeight: 600, // CRITICAL FIX: Forces grid drawing inside modals
-            handleWindowResize: true,
+            contentHeight: 600,
+            editable: true,             // ENABLES DRAG AND DROP
+            eventStartEditable: true,
+            eventDurationEditable: false,
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,listMonth' // List Month added for easy agenda reading
+                right: 'dayGridMonth,timeGridWeek,listMonth'
             },
             events: calendarEvents,
-            eventDisplay: 'block', // Bold, professional timeline blocks
-            eventClick: function(info) {
+            
+            // Custom HTML rendering for the pills
+            eventContent: function(arg) {
+                let icon = arg.event.extendedProps.icon || '';
+                return { 
+                    html: `<div style="padding: 2px 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: grab;">
+                                ${icon} <b style="letter-spacing: 0.2px;">${arg.event.title}</b>
+                           </div>` 
+                };
+            },
+
+            // Rich Interactive Tooltips on Hover
+            eventDidMount: function(info) {
                 const props = info.event.extendedProps;
-                let msg = `${info.event.title}\nDate: ${info.event.startStr}`;
-                if (props.type) msg += `\nEvent Type: ${props.type}`;
-                if (props.status) msg += `\nCurrent Status: ${props.status}`;
-                alert(msg);
+                
+                // Construct beautiful dark-mode HTML for the tooltip
+                const tooltipHtml = `
+                    <div style="text-align: left; padding: 4px 6px; font-family: 'Segoe UI', sans-serif;">
+                        <strong style="font-size: 14px; color: #38bdf8;">${props.icon} ${info.event.title}</strong><br>
+                        <hr style="border: 0; border-top: 1px solid #475569; margin: 6px 0;">
+                        <div style="font-size: 12px; line-height: 1.6;">
+                            <b>Date:</b> ${new Date(info.event.startStr).toLocaleDateString('en-GB')}<br>
+                            <b>Event:</b> <span style="color: #cbd5e1;">${props.type}</span><br>
+                            <b>Status:</b> <span style="background: #475569; padding: 2px 5px; border-radius: 3px; font-size: 10px; color: white;">${props.status || 'N/A'}</span><br>
+                            <b>Class:</b> ${props.classType || 'N/A'} | <b>Batch:</b> ${props.batch || 'Unassigned'}<br>
+                            <div style="margin-top: 4px; border-left: 2px solid #f59e0b; padding-left: 6px; color: #cbd5e1;">
+                                <i>${props.remarks || 'No remarks recorded.'}</i>
+                            </div>
+                        </div>
+                        <div style="margin-top: 6px; font-size: 10px; color: #94a3b8; text-align: right;">
+                            (Drag to reschedule)
+                        </div>
+                    </div>
+                `;
+
+                tippy(info.el, {
+                    content: tooltipHtml,
+                    allowHTML: true,
+                    placement: 'top',
+                    animation: 'scale-subtle',
+                    theme: 'dark',
+                    interactive: true
+                });
+            },
+
+            // Intercept Drag and Drop to Sync Data automatically
+            eventDrop: function(info) {
+                const props = info.event.extendedProps;
+                const newDateStr = info.event.startStr; 
+                const stationId = props.stationId;
+                const dateField = props.dateField; 
+
+                // Confirm action before mutating data
+                if (confirm(`Reschedule ${props.type} for ${info.event.title} to ${newDateStr}?`)) {
+                    
+                    // 1. Find the station in your master data array
+                    const siteIndex = powStationsData.findIndex(s => s.id === stationId);
+                    if(siteIndex > -1) {
+                        
+                        // 2. Update the exact date field (Target, Deadline, Paint, or Clean)
+                        powStationsData[siteIndex][dateField] = newDateStr;
+                        
+                        // 3. Re-render the background table so they match perfectly
+                        renderPowTable();
+                        
+                        // 4. Save to Local Storage immediately
+                        savePowLocally();
+                        
+                        // Optional: Trigger background sync to Supabase
+                        // if (dbClient) { saveProgramOfWorksToCloud(); }
+                    }
+                } else {
+                    info.revert(); // Snaps the block back if the user clicks "Cancel"
+                }
             }
         });
 
         powCalendar.render();
-        
-        // Force an immediate size recalculation now that it is rendered in the DOM
         powCalendar.updateSize(); 
         
-        // Force flexbox wrapping for the header toolbar on smaller screens
         const toolbars = document.querySelectorAll('.fc-toolbar');
         toolbars.forEach(tb => { tb.style.display = 'flex'; tb.style.flexWrap = 'wrap'; tb.style.gap = '10px'; });
     }
