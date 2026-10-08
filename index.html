@@ -2573,24 +2573,25 @@ function completePowStation(id) {
         }
 
         try {
-            for (let station of powStationsData) {
-                // Translate JavaScript camelCase to Supabase snake_case payload
-                const payload = {
-                    id: station.id,
-                    name: station.name,
-                    class_type: station.classType,
-                    deadline: station.deadline,
-                    target: station.target,
-                    next_painting: station.nextPainting,
-                    next_cleaning: station.nextCleaning,
-                    cleaning_interval: station.cleaningInterval,
-                    batch: station.batch,
-                    status: station.status,
-                    remarks: station.remarks
-                };
-                const { error } = await dbClient.from('strutex_program_of_works').upsert(payload, { onConflict: 'id' });
-                if (error) throw error;
-            }
+            // 1. Map all stations into a single array payload
+            const payloads = powStationsData.map(station => ({
+                id: station.id,
+                name: station.name,
+                class_type: station.classType,
+                deadline: station.deadline,
+                target: station.target,
+                next_painting: station.nextPainting,
+                next_cleaning: station.nextCleaning,
+                cleaning_interval: station.cleaningInterval,
+                batch: station.batch,
+                status: station.status,
+                remarks: station.remarks
+            }));
+
+            // 2. Send ALL program of works records to Supabase in ONE single bulk batch request!
+            const { error } = await dbClient.from('strutex_program_of_works').upsert(payloads, { onConflict: 'id' });
+            if (error) throw error;
+
             alert("Proposed Program of Works synced to Supabase successfully!");
         } catch (err) {
             console.error("POW cloud sync failed:", err);
