@@ -865,6 +865,79 @@
         font-size: 0.9rem !important; 
         padding: 8px !important;
     }
+
+    /* ==========================================
+       PHASE 6: MOBILE CALENDAR & POW OPTIMIZATION
+       ========================================== */
+       
+    @media (max-width: 768px) {
+        /* 1. Modal & Container Full-Screen App Mode */
+        #programOfWorksModal .modal-content {
+            width: 100%;
+            padding: 12px;
+            margin: 0;
+            border-radius: 0;
+            height: 100vh;
+            max-height: 100vh;
+        }
+        
+        .pow-container {
+            padding: 10px 5px;
+        }
+
+        /* 2. Action Bar Stacking */
+        .pow-actions {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 8px;
+        }
+        
+        .pow-actions button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* 3. FullCalendar Responsive Overrides */
+        .fc .fc-toolbar.fc-header-toolbar {
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 1em !important;
+        }
+        
+        .fc .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            text-align: center;
+        }
+        
+        .fc .fc-toolbar-chunk {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .fc .fc-button-group {
+            width: 100%;
+        }
+        
+        .fc .fc-button {
+            flex: 1; /* Stretches buttons evenly */
+            padding: 8px 4px !important;
+            font-size: 0.75rem !important;
+        }
+
+        /* 4. Calendar View Container Sizing */
+        #powCalendarView {
+            height: calc(100vh - 260px) !important; /* Responsive dynamic height */
+            min-height: 450px;
+            padding: 5px;
+        }
+        
+        /* Smooth scrolling for the table view fallback */
+        #powTableView {
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+    
 </style>
 </head>
 <body>
