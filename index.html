@@ -865,25 +865,29 @@
         padding: 8px !important;
     }
 
-    /* --- SAMSUNG CALENDAR MOBILE OPTIMIZATION --- */
-@media (max-width: 768px) {
-    #powCalendarView {
-        padding: 10px !important;
-        height: auto !important;
-        min-height: 450px;
+/* --- SAMSUNG CALENDAR MOBILE OPTIMIZATION (NO HORIZONTAL SCROLL) --- */
+    @media (max-width: 768px) {
+        #powCalendarView {
+            padding: 8px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
+        }
+        #powCalendarView > div:nth-child(3) { /* Calendar Grid Container */
+            gap: 2px !important;
+            width: 100% !important;
+        }
+        .samsung-cell {
+            min-height: 60px !important;
+            padding: 3px !important;
+            font-size: 10px !important;
+        }
+        .samsung-event-pill {
+            font-size: 7.5px !important;
+            padding: 1px 2px !important;
+        }
     }
-    #powCalendarView > div:nth-child(3) { /* Calendar Grid Container */
-        gap: 3px !important;
-    }
-    .samsung-cell {
-        min-height: 65px !important;
-        padding: 4px !important;
-    }
-    .samsung-event-pill {
-        font-size: 8px !important;
-        padding: 1px 2px !important;
-    }
-}
 </style>
 </head>
 <body>
@@ -3036,7 +3040,7 @@ function completePowStation(id) {
     function renderSamsungCalendar() {
         const calendarEl = document.getElementById('powCalendarView');
         calendarEl.innerHTML = '';
-        calendarEl.style.cssText = `background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px;`;
+        calendarEl.style.cssText = `background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; width: 100%; box-sizing: border-box; overflow-x: hidden;`;
 
         const year = currentCalendarDate.getFullYear();
         const month = currentCalendarDate.getMonth();
@@ -3059,7 +3063,7 @@ function completePowStation(id) {
 
         // Weekdays Header
         const weekdaysRow = document.createElement('div');
-        weekdaysRow.style.cssText = `display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase;`;
+        weekdaysRow.style.cssText = `display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase;`;
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(d => {
             const div = document.createElement('div'); div.innerText = d; weekdaysRow.appendChild(div);
         });
@@ -3082,7 +3086,7 @@ function completePowStation(id) {
 
         // Grid Days
         const gridEl = document.createElement('div');
-        gridEl.style.cssText = `display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;`;
+        gridEl.style.cssText = `display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; width: 100%;`;
 
         const firstDayIndex = new Date(year, month, 1).getDay();
         const startDayOffset = (firstDayIndex === 0) ? 6 : firstDayIndex - 1;
@@ -3108,7 +3112,7 @@ function completePowStation(id) {
         renderAgendaContent(agendaDrawer, selectedCalendarDate, eventsMap);
         calendarEl.appendChild(agendaDrawer);
 
-        // Initialize Tippy.js Hover Effects on all event pills
+        // Initialize Tippy.js Hover Effects with Comments & Dates
         if (typeof tippy === 'function') {
             tippy('.samsung-event-pill', {
                 animation: 'scale-subtle',
@@ -3129,11 +3133,37 @@ function completePowStation(id) {
         cell.style.cssText = `
             background: ${isSelected ? '#e0f2fe' : (isOther ? '#f8fafc' : '#ffffff')};
             border: 1px solid ${isSelected ? '#0284c7' : (isToday ? '#0ea5e9' : '#e2e8f0')};
-            border-radius: 6px; min-height: 85px; padding: 6px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: 0.15s;
+            border-radius: 6px; min-height: 80px; padding: 5px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: 0.15s; overflow: hidden;
         `;
 
-        if (!isOther) {
+        // Enable Drag & Drop onto calendar cells to reschedule
+        if (!isOther && dateKey) {
             cell.onclick = () => { selectedCalendarDate = dateKey; renderSamsungCalendar(); };
+            cell.ondragover = (e) => { e.preventDefault(); cell.style.background = '#e0f2fe'; };
+            cell.ondragleave = (e) => { cell.style.background = isSelected ? '#e0f2fe' : '#ffffff'; };
+            cell.ondrop = (e) => {
+                e.preventDefault();
+                cell.style.background = isSelected ? '#e0f2fe' : '#ffffff';
+                try {
+                    const payload = JSON.parse(e.dataTransfer.getData('text/plain'));
+                    const site = powStationsData.find(s => s.id === payload.siteId);
+                    if (site) {
+                        if (payload.type.includes('Target')) site.target = dateKey;
+                        else if (payload.type.includes('Deadline')) site.deadline = dateKey;
+                        else if (payload.type.includes('Painting')) site.nextPainting = dateKey;
+                        else if (payload.type.includes('Cleaning')) site.nextCleaning = dateKey;
+                        else site.target = dateKey;
+
+                        site.remarks = `Rescheduled to ${dateKey} via Calendar Drag & Drop`;
+                        renderPowTable();
+                        renderSamsungCalendar();
+                        savePowLocally();
+                        if (typeof saveProgramOfWorksToCloud === 'function' && dbClient) {
+                            saveProgramOfWorksToCloud();
+                        }
+                    }
+                } catch(err) { console.error("Drop error:", err); }
+            };
         }
 
         cell.innerHTML = `
@@ -3149,8 +3179,19 @@ function completePowStation(id) {
             eventsMap[dateKey].forEach(evt => {
                 const pill = document.createElement('div');
                 pill.className = 'samsung-event-pill';
-                pill.setAttribute('data-tippy-content', `<b>${evt.icon} ${evt.title}</b><br><span style="font-size:11px;">Type: ${evt.type}</span>`);
-                pill.style.cssText = `background: ${evt.color}; color: #fff; font-size: 9.5px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; cursor: pointer;`;
+                pill.draggable = true;
+                
+                // Drag start for calendar pills
+                pill.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify({ siteId: evt.site.id, type: evt.type }));
+                };
+
+                const remarksHtml = evt.site.remarks ? `<br><b>Comments:</b> ${evt.site.remarks}` : '<br><b>Comments:</b> No comments recorded';
+                const classHtml = evt.site.classType ? `<br><b>Class:</b> ${evt.site.classType}` : '';
+                const dateHtml = `<br><b>Date:</b> ${dateKey}`;
+                
+                pill.setAttribute('data-tippy-content', `<b>${evt.icon} ${evt.title}</b><br><span style="font-size:11px;"><b>Type:</b> ${evt.type}${classHtml}${dateHtml}${remarksHtml}</span>`);
+                pill.style.cssText = `background: ${evt.color}; color: #fff; font-size: 9px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; cursor: grab;`;
                 pill.innerHTML = `${evt.icon} ${evt.title}`;
                 evContainer.appendChild(pill);
             });
@@ -3158,16 +3199,28 @@ function completePowStation(id) {
         }
         return cell;
     }
-        
+
     function renderAgendaContent(drawer, dateKey, eventsMap) {
         if (!dateKey || !eventsMap[dateKey]) return;
         drawer.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">
-                <strong style="color: #003366; font-size: 0.85rem;">📅 Agenda for ${dateKey}</strong>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
+                <strong style="color: #003366; font-size: 0.9rem;">📅 Agenda & Comments for ${dateKey}</strong>
                 <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="selectedCalendarDate=null; renderSamsungCalendar();">✕ Close</button>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-                ${eventsMap[dateKey].map(e => `<div style="background: white; border-left: 4px solid ${e.color}; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;"><b style="font-size: 0.8rem;">${e.icon}${e.title}</b> <span style="font-size: 0.75rem; color: #64748b;">(${e.type})</span></div>`).join('')}
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;">
+                ${eventsMap[dateKey].map(e => `
+                    <div style="background: white; border-left: 4px solid ${e.color}; padding: 8px 10px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 0.8rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <b>${e.icon}${e.title}</b>
+                            <span style="background: #e2e8f0; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: bold;">${e.type}</span>
+                        </div>
+                        <div style="margin-top: 4px; color: #475569; font-size: 0.75rem;">
+                            <span><b>Class:</b> ${e.site.classType || 'N/A'}</span> | 
+                            <span><b>Date:</b> ${dateKey}</span>
+                        </div>
+                        ${e.site.remarks ? `<div style="margin-top: 4px; font-size: 0.75rem; color: #1e293b; background: #f8fafc; padding: 4px 6px; border-radius: 3px; border-left: 2px solid #0284c7;"><b>Comments/Remarks:</b> ${e.site.remarks}</div>` : '<div style="margin-top: 4px; font-size: 0.75rem; color: #94a3b8; font-style: italic;">No comments recorded</div>'}
+                    </div>
+                `).join('')}
             </div>
         `;
     }
