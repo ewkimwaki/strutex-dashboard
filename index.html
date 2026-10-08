@@ -1864,34 +1864,35 @@
             const localNames = stations.map(s => s.name);
 
             try {
-                // 1. Fetch existing stations from Supabase to detect deletions or renames
+                // 1. Bulk delete removed stations in ONE single request
                 const { data: cloudStations, error: fetchError } = await dbClient.from('strutex_stations').select('name');
-                if (!fetchError && cloudStations) {
-                    for (let cloudRow of cloudStations) {
-                        if (!localNames.includes(cloudRow.name)) {
-                            // If a station was deleted or renamed locally, remove the old record from Supabase
-                            await dbClient.from('strutex_stations').delete().eq('name', cloudRow.name);
-                        }
+                if (!fetchError && cloudStations && cloudStations.length > 0) {
+                    const namesToDelete = cloudStations
+                        .map(c => c.name)
+                        .filter(cloudName => !localNames.includes(cloudName));
+
+                    if (namesToDelete.length > 0) {
+                        await dbClient.from('strutex_stations').delete().in('name', namesToDelete);
                     }
                 }
 
-                // 2. Upsert current active stations
-                for (let s of stations) {
-                    const payload = {
-                        rank: s.rank,
-                        tier: s.tier,
-                        name: s.name,
-                        map_query: s.mapQuery,
-                        engineer: s.info,
-                        scope: s.scope,
-                        status: s.status,
-                        comments: s.comments,
-                        job_card_saved: s.jobCardSaved,
-                        job_card_payload: s.jobCardPayload
-                    };
-                    const { error } = await dbClient.from('strutex_stations').upsert(payload, { onConflict: 'name' });
-                    if (error) throw error;
-                }
+                // 2. Prepare the complete array of all stations for bulk batch upsert
+                const payloads = stations.map(s => ({
+                    rank: s.rank,
+                    tier: s.tier,
+                    name: s.name,
+                    map_query: s.mapQuery,
+                    engineer: s.info,
+                    scope: s.scope,
+                    status: s.status,
+                    comments: s.comments,
+                    job_card_saved: s.jobCardSaved,
+                    job_card_payload: s.jobCardPayload
+                }));
+
+                // 3. Send ALL stations to Supabase in ONE single network round-trip!
+                const { error: upsertError } = await dbClient.from('strutex_stations').upsert(payloads, { onConflict: 'name' });
+                if (upsertError) throw upsertError;
 
                 indicator.innerText = "Supabase Synced (" + new Date().toLocaleTimeString() + ")";
                 indicator.style.color = "#15803d";
