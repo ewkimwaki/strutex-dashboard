@@ -17,460 +17,303 @@
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <script src="https://unpkg.com/tippy.js@6"></script>
     <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale-subtle.css"/>
-    <style>
+    /* ==========================================
+           STRUTEX BUILDERS - CORE DESIGN SYSTEM
+           ========================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
         :root {
-            --primary-color: #1e293b;
-            --accent-color: #f59e0b;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #334155;
-            --border-color: #cbd5e1;
-            --tier1-color: #b91c1c;
-            --tier2-color: #c2410c;
-            --tier3-color: #15803d;
+            /* Industrial Palette */
+            --sbl-navy: #0f172a;      /* Primary dark */
+            --sbl-blue: #0284c7;      /* Action blue */
+            --sbl-orange: #ea580c;    /* Accent & Focus */
+            --sbl-green: #15803d;     /* Success */
+            --sbl-red: #b91c1c;       /* Danger / Urgent */
+            
+            /* Structural Boundaries */
+            --border-heavy: #64748b;  /* Hard structural lines */
+            --border-light: #cbd5e1;  /* Soft internal dividers */
+            --bg-app: #e2e8f0;        /* Outer background */
+            --bg-panel: #ffffff;      /* Inner card background */
+            
+            /* Typography */
+            --text-main: #1e293b;
+            --text-muted: #475569;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-app);
             color: var(--text-main);
             margin: 0;
-            padding: 10px;
+            padding: 16px;
+            -webkit-font-smoothing: antialiased;
         }
 
         .app-wrapper {
-            max-width: 1450px;
+            max-width: 1550px;
             margin: 0 auto;
         }
 
+        /* --- 1. STRUCTURAL HEADERS & CARDS --- */
         header {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: var(--primary-color);
+            background: var(--sbl-navy);
             color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        @media(min-width: 768px) {
-            header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-
-        header h1 { margin: 0; font-size: 1.25rem; }
-        header p { margin: 3px 0 0 0; font-size: 0.8rem; color: #94a3b8; }
-
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-
-        .btn {
-            background-color: var(--accent-color);
-            color: #0f172a;
-            border: none;
-            padding: 8px 12px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn:hover { opacity: 0.9; }
-        .btn-secondary { background-color: #475569; color: white; }
-        .btn-success { background-color: #15803d; color: white; }
-        .btn-danger { background-color: #b91c1c; color: white; }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-        }
-
-        /* Modal styling */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 750px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-sizing: border-box;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        /* Rich Text Editor Styling */
-        .editor-toolbar { display: flex; gap: 5px; margin-bottom: 8px; background: #f1f5f9; padding: 6px; border-radius: 4px; flex-wrap: wrap; }
-        .editor-toolbar button { background: white; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: #1e293b; }
-        .editor-toolbar button:hover { background: #e2e8f0; }
-        .rich-editable { min-height: 140px; border: 1px solid #cbd5e1; padding: 12px; border-radius: 4px; background: white; font-size: 0.9rem; outline: none; line-height: 1.5; color: #1e293b; }
-
-        /* Wizard Form */
-        .wizard-step { display: none; }
-        .wizard-step.active { display: block; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; color: #1e293b; }
-        .form-control { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.85rem; box-sizing: border-box; }
-        .dynamic-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
-        .dynamic-row input { flex: 1; }
-
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; text-align: left; min-width: 1150px; }
-        th, td { padding: 10px; border: 1px solid var(--border-color); font-size: 0.8rem; vertical-align: middle; }
-        th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
-
-        .map-link { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 6px; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.75rem; }
-        .status-select { padding: 5px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
-        .editable-cell { background: #ffffff; border: 1px solid transparent; padding: 6px; border-radius: 4px; outline: none; width: 100%; box-sizing: border-box; }
-        .editable-cell:focus { background: #fffbeb; border-color: #f59e0b; }
-
-        .preview-snippet { font-size: 0.75rem; color: #475569; max-height: 45px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-
-        /* Schedule C Search Dropdown UI */
-        .sched-picker-card {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 12px;
-        }
-        .sched-search-input {
-            width: 100%;
-            padding: 8px;
-            font-size: 0.82rem;
-            border: 1px solid #0284c7;
+            padding: 16px 24px;
             border-radius: 4px;
-            box-sizing: border-box;
-            outline: none;
-        }
-        .sched-results-list {
-            max-height: 160px;
-            overflow-y: auto;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            background: #ffffff;
-            margin-top: 5px;
-            list-style: none;
-            padding: 0;
-            display: none;
-        }
-        .sched-results-list li {
-            padding: 7px 10px;
-            font-size: 0.78rem;
-            border-bottom: 1px solid #f1f5f9;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-        .sched-results-list li:hover {
-            background-color: #e0f2fe;
-        }
-        .sched-tag-code {
-            font-weight: bold;
-            color: #0369a1;
-            background: #e0f2fe;
-            padding: 2px 6px;
-            border-radius: 3px;
-            white-space: nowrap;
-        }
-        .sched-tag-rate {
-            font-weight: 600;
-            color: #15803d;
-            white-space: nowrap;
-        }
-
-        /* --- SCREEN VIEW: PORTRAIT COMFORTABLE CONTAINER --- */
-        .jobcard-container {
-            background: white;
-            border: 2px solid #1e293b;
-            border-radius: 8px;
-            padding: 16px;
-            box-sizing: border-box;
-            width: 100%;
-            max-width: 210mm;
-            margin: 0 auto;
-            font-size: 0.85rem;
-            color: #1e293b;
+            border-bottom: 4px solid var(--sbl-orange);
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
+        @media(min-width: 768px) {
+            header { flex-direction: row; justify-content: space-between; align-items: center; }
+        }
+        header h1 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+        header p { margin: 4px 0 0 0; font-size: 0.85rem; color: #94a3b8; }
 
-        .jc-header { display: flex; flex-direction: column; gap: 6px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
-        .jc-box { border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; background: #f8fafc; box-sizing: border-box; width: 100%; word-break: break-word; overflow-wrap: break-word; }
-        .jc-box strong { display: block; color: #0f172a; margin-bottom: 6px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-heavy);
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+        }
+
+        /* Override inline styles for Matrix Search to enforce rigid borders */
+        div[style*="background: #f8fafc; border: 1px solid #cbd5e1"] {
+            background: var(--bg-panel) !important;
+            border: 1px solid var(--border-heavy) !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        }
+
+        /* --- 2. FUNCTIONAL BUTTONS --- */
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .btn {
+            background-color: var(--sbl-orange);
+            color: white;
+            border: 1px solid rgba(0,0,0,0.2);
+            padding: 6px 12px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn:active { transform: translateY(0); }
+        .btn-secondary { background-color: var(--sbl-navy); color: white; border-color: #000; }
+        .btn-secondary:hover { background-color: #1e293b; }
+        .btn-success { background-color: var(--sbl-green); }
+        .btn-danger { background-color: var(--sbl-red); }
+
+        /* --- 3. MASTER MATRIX TABLES (Strict Boundaries) --- */
+        .table-responsive { 
+            width: 100%; 
+            overflow-x: auto; 
+            border: 1px solid var(--border-heavy); 
+            background: white; 
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1150px; }
+        th, td { 
+            padding: 8px 10px; 
+            border: 1px solid var(--border-light); 
+            font-size: 0.85rem; 
+            vertical-align: middle; 
+        }
+        th { 
+            background-color: #f1f5f9; 
+            color: var(--sbl-navy); 
+            font-weight: 700; 
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-heavy);
+        }
+        tr:hover td { background-color: #f0f9ff; }
+
+        /* --- 4. DATA ENTRY & INPUTS --- */
+        .form-control, .status-select { 
+            width: 100%; 
+            padding: 6px 8px; 
+            border: 1px solid var(--border-heavy); 
+            border-radius: 3px; 
+            font-size: 0.85rem; 
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .form-control:focus, .status-select:focus { 
+            border-color: var(--sbl-blue); 
+            outline: 2px solid rgba(2, 132, 199, 0.2); 
+        }
         
+        /* Integrated editable cells signaling interaction */
+        .editable-cell { 
+            width: 100%; 
+            box-sizing: border-box; 
+            background: transparent; 
+            border: 1px solid transparent; 
+            border-bottom: 1px dashed var(--border-heavy); 
+            padding: 6px; 
+            font-size: 0.85rem; 
+            font-family: inherit;
+            color: inherit;
+            transition: all 0.2s;
+        }
+        .editable-cell:focus { 
+            background: #fffbeb; 
+            border: 1px solid var(--sbl-orange); 
+            outline: none; 
+        }
+
+        .map-link { display: inline-block; background: #e0f2fe; color: var(--sbl-blue); padding: 4px 8px; border: 1px solid #7dd3fc; border-radius: 3px; text-decoration: none; font-weight: 600; font-size: 0.75rem; }
+        .map-link:hover { background: #bae6fd; }
+
+        .preview-snippet { font-size: 0.8rem; color: var(--text-muted); max-height: 48px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; }
+
+        /* --- 5. MODALS & WIZARDS --- */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.8); /* Darker, isolating backdrop */
+            justify-content: center; align-items: flex-start; padding: 40px 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-heavy);
+            border-radius: 4px;
+            padding: 24px;
+            width: 100%; max-width: 800px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+        }
+        
+        /* Wizard Specifics */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; color: var(--sbl-navy); text-transform: uppercase; letter-spacing: 0.5px; }
+        .dynamic-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+
+        /* Rich Text Editor */
+        .editor-toolbar { display: flex; gap: 4px; margin-bottom: 0; background: #f1f5f9; padding: 6px; border: 1px solid var(--border-heavy); border-bottom: none; border-radius: 3px 3px 0 0; flex-wrap: wrap; }
+        .editor-toolbar button { background: white; border: 1px solid var(--border-light); padding: 4px 8px; border-radius: 2px; cursor: pointer; font-size: 0.75rem; font-weight: 600; color: var(--sbl-navy); }
+        .editor-toolbar button:hover { background: var(--sbl-blue); color: white; border-color: var(--sbl-blue); }
+        .rich-editable { min-height: 140px; border: 1px solid var(--border-heavy); padding: 12px; border-radius: 0 0 3px 3px; background: white; font-size: 0.85rem; outline: none; line-height: 1.5; color: var(--text-main); }
+        .rich-editable:focus { border: 2px solid var(--sbl-blue); padding: 11px; }
+
+        /* Schedule C Search Dropdown UI */
+        .sched-picker-card { background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 4px; padding: 12px; margin-bottom: 16px; }
+        .sched-search-input { width: 100%; padding: 8px; font-size: 0.85rem; border: 1px solid var(--sbl-blue); border-radius: 3px; box-sizing: border-box; outline: none; }
+        .sched-search-input:focus { box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2); }
+        .sched-results-list { max-height: 180px; overflow-y: auto; border: 1px solid var(--border-heavy); border-radius: 3px; background: #ffffff; margin-top: 4px; list-style: none; padding: 0; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .sched-results-list li { padding: 8px 12px; font-size: 0.8rem; border-bottom: 1px solid var(--border-light); cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .sched-results-list li:hover { background-color: #e0f2fe; }
+        .sched-tag-code { font-weight: 700; color: var(--sbl-blue); background: #e0f2fe; padding: 2px 6px; border-radius: 2px; white-space: nowrap; border: 1px solid #bae6fd; }
+        .sched-tag-rate { font-weight: 700; color: var(--sbl-green); white-space: nowrap; }
+
+        /* --- 6. PRINT & PDF OPTIMIZED CONTAINERS (Boundaries Strictly Preserved) --- */
+        .jobcard-container {
+            background: white; border: 2px solid #000; border-radius: 0; padding: 20px; box-sizing: border-box;
+            width: 100%; max-width: 210mm; margin: 0 auto; font-size: 0.85rem; color: #000; display: flex; flex-direction: column; gap: 12px;
+        }
+        .jc-header { display: flex; flex-direction: column; gap: 6px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .jc-box { border: 1px solid #000; padding: 12px; background: #fff; box-sizing: border-box; width: 100%; word-break: break-word; overflow-wrap: break-word; }
+        .jc-box strong { display: block; color: #000; margin-bottom: 6px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #000; padding-bottom: 4px; }
         .jc-data-row { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
         @media(min-width: 480px) { .jc-data-row { flex-direction: row; justify-content: space-between; } }
-
         .jc-table-clean { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 6px; }
-        .jc-table-clean th, .jc-table-clean td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 0.8rem; text-align: left; word-break: break-word; overflow-wrap: break-word; }
-        .jc-table-clean th { background-color: #f1f5f9; color: #334155; }
+        .jc-table-clean th, .jc-table-clean td { border: 1px solid #000; padding: 6px 8px; font-size: 0.8rem; text-align: left; }
+        .jc-table-clean th { background-color: #e2e8f0; color: #000; }
+        .signature-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        @media(min-width: 600px) { .signature-grid { flex-direction: row; } }
+        .sig-box { flex: 1; border: 1px solid #000; padding: 10px; height: 90px; display: flex; flex-direction: column; justify-content: space-between; background: white; }
+        .stamp-box { flex: 1; border: 2px dashed #000; padding: 10px; height: 90px; display: flex; justify-content: center; align-items: center; background: #f8fafc; }
 
-        .signature-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        @media(min-width: 600px) {
-            .signature-grid { flex-direction: row; }
-        }
-        .sig-box {
-            flex: 1;
-            border: 1px solid #94a3b8;
-            padding: 10px;
-            border-radius: 4px;
-            height: 90px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background: white;
-        }
-        .stamp-box {
-            flex: 1;
-            border: 2px dashed #94a3b8;
-            padding: 10px;
-            border-radius: 4px;
-            height: 90px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f1f5f9;
-        }
-
-        /* --- SAHARA DESK EMULATION: BILL OF QUANTITIES STYLING --- */
-        .boq-container { background: white; border-radius: 8px; padding: 20px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; color: #1e293b; width: 100%; max-width: 210mm; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .boq-header { display: flex; flex-direction: column; gap: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+        /* SAHARA DESK EMULATION: BILL OF QUANTITIES */
+        .boq-container { background: white; border: 1px solid #000; padding: 30px; box-sizing: border-box; font-family: 'Inter', sans-serif; color: #000; width: 100%; max-width: 210mm; margin: 0 auto; }
+        .boq-header { display: flex; flex-direction: column; gap: 15px; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
         .boq-header-right { text-align: left; }
         @media(min-width: 600px) {
             .boq-header { flex-direction: row; justify-content: space-between; align-items: flex-start; }
             .boq-header-right { text-align: right; }
-            .boq-container { padding: 30px; }
         }
         .boq-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 20px; }
-        .boq-table th { padding: 12px 8px; text-align: left; font-size: 0.85rem; color: #475569; font-weight: 600; border-bottom: 2px solid #cbd5e1; }
-        .boq-table td { padding: 12px 8px; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; vertical-align: top; }
+        .boq-table th { padding: 12px 8px; text-align: left; font-size: 0.85rem; color: #000; font-weight: 700; border-top: 2px solid #000; border-bottom: 2px solid #000; }
+        .boq-table td { padding: 12px 8px; font-size: 0.85rem; border-bottom: 1px solid #94a3b8; word-wrap: break-word; vertical-align: top; }
+        #autosaveIndicator { font-size: 0.75rem; color: #cbd5e1; align-self: center; font-weight: 600; text-transform: uppercase; }
+
+        /* --- 7. PROGRAM OF WORKS (PoW) --- */
+        .pow-container { max-width: 1100px; margin: auto; background: #fff; padding: 24px; border: 1px solid var(--border-heavy); }
+        .pow-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--sbl-red); padding-bottom: 12px; margin-bottom: 20px; }
+        .pow-header h1 { margin: 0; color: var(--sbl-navy); font-size: 1.25rem; font-weight: 800; text-transform: uppercase; }
+        .pow-header p { margin: 4px 0 0; color: var(--text-muted); font-size: 0.85rem; }
         
-        #autosaveIndicator { font-size: 0.75rem; color: #94a3b8; align-self: center; font-weight: 600; }
-
-        /* --- SEAMLESS MULTI-MODAL LANDSCAPE PRINT & PDF EXPORT RULES --- */
-        @page { size: A4 landscape; margin: 12mm; }
-
-        @media print {
-            .app-wrapper { display: none !important; }
-            .no-print { display: none !important; }
-            html, body {
-                margin: 0 !important; padding: 0 !important; background: white !important; color: black !important;
-                height: auto !important; overflow: visible !important;
-            }
-
-            /* Hide all modals natively */
-            .modal { display: none !important; }
-
-            /* --- JOB CARD PRINT ACTIVATION (LANDSCAPE OPTIMIZED & SPACE-MAXIMIZED) --- */
-            body.print-jc #jobCardModal {
-                display: block !important; position: relative !important; background: transparent !important;
-                padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important;
-            }
-            body.print-jc .modal-content {
-                box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important;
-                max-height: none !important; overflow: visible !important; width: 100% !important; max-width: 100% !important; background: white !important;
-            }
-            body.print-jc .jobcard-container {
-                border: 1.5px solid #000000 !important; max-width: 100% !important; width: 100% !important;
-                padding: 8mm 10mm !important; margin: 0 !important; box-shadow: none !important; font-size: 9pt !important;
-                line-height: 1.25 !important; color: #000000 !important; display: grid !important; grid-template-columns: 1fr 1fr !important;
-                gap: 6mm 8mm !important; page-break-after: avoid !important;
-            }
-            body.print-jc .jc-header { grid-column: span 2 !important; border-bottom: 2px solid #000000 !important; padding-bottom: 4px !important; margin-bottom: 0 !important; }
-            body.print-jc .jc-header strong { font-size: 12pt !important; color: #000000 !important; }
-            body.print-jc .jc-box {
-                background: #ffffff !important;
-                border: 1px solid #333333 !important; padding: 6px 8px !important; margin-bottom: 0 !important;
-                break-inside: avoid !important; page-break-inside: avoid !important;
-            }
-            body.print-jc .jc-box.span-2 { grid-column: span 2 !important; }
-            body.print-jc .jc-box strong { font-size: 9pt !important; color: #000000 !important; border-bottom: 1px solid #888888 !important; margin-bottom: 4px !important; padding-bottom: 2px !important; }
-            body.print-jc .jc-table-clean th, body.print-jc .jc-table-clean td { font-size: 8.5pt !important; padding: 4px 6px !important; border: 1px solid #444444 !important; color: #000000 !important; }
-            body.print-jc .jc-table-clean th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            body.print-jc .signature-grid { display: flex !important; flex-direction: row !important; gap: 10px !important; margin-top: 4px !important; }
-            body.print-jc .sig-box, body.print-jc .stamp-box { height: 65px !important; border-color: #000000 !important; padding: 6px !important; }
-            body.print-jc .stamp-box { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 2px dashed #666666 !important; }
-
-            /* --- BOQ PRINT ACTIVATION (LANDSCAPE OPTIMIZED) --- */
-            body.print-boq #boqModal {
-                display: block !important; position: relative !important; background: white !important;
-                padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important;
-            }
-            body.print-boq .modal-content {
-                box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important;
-                max-height: none !important; overflow: visible !important; width: 100% !important; max-width: 100% !important;
-            }
-            body.print-boq .boq-container {
-                width: 100% !important; max-width: 100% !important; padding: 12mm !important; border: none !important; font-size: 10pt !important;
-            }
-            body.print-boq .boq-table { width: 100% !important; table-layout: auto !important; }
-            body.print-boq .boq-table th, body.print-boq .boq-table td { font-size: 10pt !important; color: #000000 !important; padding: 10px 8px !important; }
-            body.print-boq .boq-table th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            body.print-boq tr { break-inside: avoid; page-break-inside: avoid; }
-        }
-        /* --- PROGRAM OF WORKS MODAL & TABLE STYLES --- */
-        .pow-container { max-width: 1100px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; }
-        .pow-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #E2001A; padding-bottom: 15px; margin-bottom: 25px; }
-        .pow-header h1 { margin: 0; color: #003366; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .pow-header p { margin: 4px 0 0; color: #4A4A4A; font-size: 12.5px; }
-
-        /* Inline Editable POW Cells */
-        .pow-edit-input { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: inherit; color: inherit; padding: 4px; box-sizing: border-box; }
-        .pow-edit-input:focus { border: 1px solid #0284c7; background: #f0f9ff; outline: none; border-radius: 4px; }
-        .pow-edit-select { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: inherit; color: inherit; padding: 2px; font-weight: bold; cursor: pointer; }
-        .pow-edit-select:focus { border: 1px solid #0284c7; background: #fff; outline: none; }
+        .pow-edit-input, .pow-edit-select { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: inherit; color: inherit; padding: 4px; box-sizing: border-box; border-bottom: 1px dashed var(--border-heavy); }
+        .pow-edit-input:focus, .pow-edit-select:focus { border: 1px solid var(--sbl-blue); background: #f0f9ff; outline: none; }
+        .pow-edit-select { font-weight: 600; cursor: pointer; }
         
-        .btn-export { background-color: #E2001A; color: white; border: none; padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; }
-        .btn-export:hover { background-color: #C00015; }
+        .pow-suggestions-panel { background: #fef2f2; border-left: 4px solid var(--sbl-red); padding: 12px 16px; margin-bottom: 20px; border: 1px solid #fecaca; border-left-width: 4px; font-size: 0.8rem; }
+        .pow-suggestions-panel h4 { margin: 0 0 8px 0; color: var(--sbl-red); text-transform: uppercase; font-size: 0.75rem; font-weight: 700; }
+        .pow-suggestions-panel ul { margin: 0; padding-left: 18px; color: #7f1d1d; }
         
-        .pow-suggestions-panel { background: #FFF4F4; border-left: 4px solid #E2001A; padding: 12px 15px; margin-bottom: 20px; border-radius: 4px; font-size: 12px; }
-        .pow-suggestions-panel h4 { margin: 0 0 8px 0; color: #E2001A; text-transform: uppercase; font-size: 11px; }
-        .pow-suggestions-panel ul { margin: 0; padding-left: 18px; color: #555; }
-        .pow-suggestions-panel li { margin-bottom: 3px; }
-
-        .batch-header td { background-color: #f1f5f9 !important; color: #0f172a !important; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-top: 2px solid #cbd5e1 !important; border-bottom: 2px solid #cbd5e1 !important; padding: 8px 12px !important; }
-        .batch-body { min-height: 35px; }
-        
+        .batch-header td { background-color: var(--sbl-navy) !important; color: white !important; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; border: 1px solid var(--sbl-navy) !important; padding: 8px 12px !important; }
         tr.pow-draggable { cursor: grab; background: #fff; }
         tr.pow-draggable:active { cursor: grabbing; }
+        .pow-drag-handle { color: var(--border-heavy); cursor: grab; font-size: 1.2rem; width: 25px; text-align: center; user-select: none; }
         
-        .pow-drag-handle { color: #94a3b8; cursor: grab; font-size: 14px; width: 25px; text-align: center; user-select: none; }
+        .status-badge-pow { padding: 4px 8px; border-radius: 2px; font-size: 0.65rem; font-weight: 700; color: white; display: inline-block; text-align: center; letter-spacing: 0.5px; text-transform: uppercase; }
+        .pow-urgent { background-color: var(--sbl-red); }
+        .pow-scheduled { background-color: var(--sbl-blue); }
+        .pow-postponed { background-color: var(--sbl-orange); }
+        .pow-completed { background-color: var(--sbl-green); }
         
-        .status-badge-pow { padding: 4px 8px; border-radius: 4px; font-size: 9.5px; font-weight: 700; color: white; display: inline-block; text-align: center; letter-spacing: 0.3px; }
-        .pow-urgent { background-color: #b91c1c; }
-        .pow-scheduled { background-color: #0284c7; }
-        .pow-postponed { background-color: #d97706; }
-        .pow-completed { background-color: #15803d; }
-        
-        .btn-action-pow { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 8px; font-size: 10px; border-radius: 4px; cursor: pointer; font-weight: 600; color: #334155; }
-        .btn-action-pow:hover { background: #e2e8f0; }
+        .btn-action-pow { background: #f1f5f9; border: 1px solid var(--border-heavy); padding: 4px 8px; font-size: 0.65rem; border-radius: 2px; cursor: pointer; font-weight: 700; color: var(--sbl-navy); text-transform: uppercase; }
+        .btn-action-pow:hover { background: #e2e8f0; border-color: var(--sbl-navy); }
 
+        /* --- 8. GLOBAL PRINT MEDIA QUERIES --- */
+        @page { size: A4 landscape; margin: 12mm; }
         @media print {
-            @page { size: A4 landscape; margin: 10mm; }
-            body.print-pow #programOfWorksModal { 
-                display: block !important; 
-                position: relative !important; 
-                background: white !important; 
-                width: 100% !important; 
-                height: auto !important;          /* UNLOCKS PDF HEIGHT */
-                overflow: visible !important;     /* PREVENTS CUT-OFF */
-                padding: 0 !important;
-                margin: 0 !important;
-            }
+            .app-wrapper, .no-print { display: none !important; }
+            html, body { margin: 0 !important; padding: 0 !important; background: white !important; color: black !important; height: auto !important; overflow: visible !important; }
+            .modal { display: none !important; }
 
-            body.print-pow .pow-edit-input, 
-            body.print-pow .pow-edit-select { 
-                border: none !important; 
-                background: transparent !important; 
-                padding: 0 !important; 
-            }
+            /* Job Card Print */
+            body.print-jc #jobCardModal { display: block !important; position: relative !important; background: transparent !important; padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important; }
+            body.print-jc .modal-content { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; background: white !important; }
+            body.print-jc .jobcard-container { border: 2px solid #000 !important; max-width: 100% !important; width: 100% !important; padding: 8mm 10mm !important; margin: 0 !important; box-shadow: none !important; font-size: 9pt !important; line-height: 1.25 !important; color: #000 !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6mm 8mm !important; page-break-after: avoid !important; }
+            body.print-jc .jc-header { grid-column: span 2 !important; border-bottom: 2px solid #000 !important; padding-bottom: 4px !important; margin-bottom: 0 !important; }
+            body.print-jc .jc-box { border: 1px solid #000 !important; padding: 6px 8px !important; break-inside: avoid !important; }
+            body.print-jc .jc-box.span-2 { grid-column: span 2 !important; }
+            body.print-jc .jc-table-clean th, body.print-jc .jc-table-clean td { border: 1px solid #000 !important; color: #000 !important; }
+            body.print-jc .jc-table-clean th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+            /* BoQ Print */
+            body.print-boq #boqModal { display: block !important; position: relative !important; background: white !important; padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important; }
+            body.print-boq .modal-content { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+            body.print-boq .boq-container { width: 100% !important; max-width: 100% !important; padding: 12mm !important; border: none !important; font-size: 10pt !important; }
+            body.print-boq .boq-table th { border-top: 2px solid #000 !important; border-bottom: 2px solid #000 !important; }
+            body.print-boq tr { break-inside: avoid; page-break-inside: avoid; }
+
+            /* PoW Print */
+            @page { size: A4 landscape; margin: 10mm; }
+            body.print-pow #programOfWorksModal { display: block !important; position: relative !important; background: white !important; width: 100% !important; height: auto !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; }
+            body.print-pow .modal-content { max-height: none !important; height: auto !important; overflow: visible !important; border: none !important; box-shadow: none !important; }
+            body.print-pow .pow-edit-input, body.print-pow .pow-edit-select { border: none !important; background: transparent !important; padding: 0 !important; }
             body.print-pow .pow-edit-select { -webkit-appearance: none; appearance: none; }
             body.print-pow input[type="date"]::-webkit-calendar-picker-indicator { display: none !important; }
-            
-            body.print-pow .modal-content {
-                max-height: none !important;      /* OVERRIDES 90vh LIMIT */
-                height: auto !important;
-                overflow: visible !important;
-                border: none !important;
-                box-shadow: none !important;
-            }
-            body.print-pow .print-scroll-fix {
-                overflow: visible !important;     /* REMOVES SCROLL CLIPPING ON PAPER */
-            }
-            body.print-pow tr {
-                page-break-inside: avoid !important; /* STOPS ROWS SPLITTING IN HALF */
-                break-inside: avoid !important;
-            }
-            body.print-pow .app-wrapper, 
-            body.print-pow .modal:not(#programOfWorksModal), 
-            body.print-pow .no-print,
-            body.print-pow .pow-suggestions-panel { 
-                display: none !important; 
-            }
-            
-            /* Hide internal management columns for Rubis Engineers */
-            body.print-pow th:nth-child(6), body.print-pow td:nth-child(6), /* Next Painting Date */
-            body.print-pow th:nth-child(7), body.print-pow td:nth-child(7), /* Next Cleaning Date */
-            body.print-pow th:nth-child(9), body.print-pow td:nth-child(9)  /* Remarks / Postpone Reason */
-            {
-                display: none !important;
-            }
-
-            body.print-pow .pow-container {
-                padding: 0 !important;
-                max-width: 100% !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-
-            body.print-pow table {
-                width: 100% !important;
-                min-width: 0 !important; /* Overrides screen constraints for paper */
-                font-size: 8.5pt !important;
-                border-collapse: collapse !important;
-                table-layout: auto !important;
-            }
-
-            body.print-pow th, body.print-pow td {
-                border: 1px solid #475569 !important;
-                padding: 5px 8px !important;
-                color: #000000 !important;
-                vertical-align: middle !important;
-            }
-
-            body.print-pow th {
-                background-color: #e2e8f0 !important;
-                font-weight: 700 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            body.print-pow .batch-header td {
-                background-color: #cbd5e1 !important;
-                color: #0f172a !important;
-                font-weight: 800 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            body.print-pow .pow-header {
-                border-bottom: 2.5px solid #003366 !important;
-                margin-bottom: 12px !important;
-                padding-bottom: 8px !important;
-            }
+            body.print-pow tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+            body.print-pow th:nth-child(6), body.print-pow td:nth-child(6), body.print-pow th:nth-child(7), body.print-pow td:nth-child(7), body.print-pow th:nth-child(9), body.print-pow td:nth-child(9) { display: none !important; }
+            body.print-pow .pow-container { padding: 0 !important; max-width: 100% !important; border: none !important; }
+            body.print-pow table { width: 100% !important; font-size: 8.5pt !important; border-collapse: collapse !important; }
+            body.print-pow th, body.print-pow td { border: 1px solid #000 !important; padding: 5px 8px !important; color: #000 !important; }
+            body.print-pow th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body.print-pow .batch-header td { background-color: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
-    </style>
 <style>
     /* ==========================================
        MOBILE RESPONSIVE & STATION NAME FIX
