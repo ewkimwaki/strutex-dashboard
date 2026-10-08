@@ -3149,7 +3149,6 @@ function completePowStation(id) {
             border-radius: 6px; min-height: 80px; padding: 5px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: 0.15s; overflow: hidden;
         `;
 
-        // Enable Drag & Drop onto calendar cells to reschedule
         if (!isOther && dateKey) {
             cell.onclick = () => { selectedCalendarDate = dateKey; renderSamsungCalendar(); };
             cell.ondragover = (e) => { e.preventDefault(); cell.style.background = '#e0f2fe'; };
@@ -3194,16 +3193,16 @@ function completePowStation(id) {
                 pill.className = 'samsung-event-pill';
                 pill.draggable = true;
                 
-                // Drag start for calendar pills
                 pill.ondragstart = (e) => {
                     e.dataTransfer.setData('text/plain', JSON.stringify({ siteId: evt.site.id, type: evt.type }));
                 };
 
                 const remarksHtml = evt.site.remarks ? `<br><b>Comments:</b> ${evt.site.remarks}` : '<br><b>Comments:</b> No comments recorded';
                 const classHtml = evt.site.classType ? `<br><b>Class:</b> ${evt.site.classType}` : '';
+                const statusHtml = evt.site.status ? `<br><b>Status:</b> ${evt.site.status}` : '';
                 const dateHtml = `<br><b>Date:</b> ${dateKey}`;
                 
-                pill.setAttribute('data-tippy-content', `<b>${evt.icon} ${evt.title}</b><br><span style="font-size:11px;"><b>Type:</b> ${evt.type}${classHtml}${dateHtml}${remarksHtml}</span>`);
+                pill.setAttribute('data-tippy-content', `<b>${evt.icon} ${evt.title}</b><br><span style="font-size:11px;"><b>Type:</b> ${evt.type}${classHtml}${statusHtml}${dateHtml}${remarksHtml}</span>`);
                 pill.style.cssText = `background: ${evt.color}; color: #fff; font-size: 9px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; cursor: grab;`;
                 pill.innerHTML = `${evt.icon} ${evt.title}`;
                 evContainer.appendChild(pill);
@@ -3229,6 +3228,7 @@ function completePowStation(id) {
                         </div>
                         <div style="margin-top: 4px; color: #475569; font-size: 0.75rem;">
                             <span><b>Class:</b> ${e.site.classType || 'N/A'}</span> | 
+                            <span><b>Status:</b> ${e.site.status || 'N/A'}</span> | 
                             <span><b>Date:</b> ${dateKey}</span>
                         </div>
                         ${e.site.remarks ? `<div style="margin-top: 4px; font-size: 0.75rem; color: #1e293b; background: #f8fafc; padding: 4px 6px; border-radius: 3px; border-left: 2px solid #0284c7;"><b>Comments/Remarks:</b> ${e.site.remarks}</div>` : '<div style="margin-top: 4px; font-size: 0.75rem; color: #94a3b8; font-style: italic;">No comments recorded</div>'}
