@@ -1861,8 +1861,21 @@
 
             indicator.innerText = "Syncing to Supabase...";
             const stations = getTableStationsFromDOM();
+            const localNames = stations.map(s => s.name);
 
             try {
+                // 1. Fetch existing stations from Supabase to detect deletions or renames
+                const { data: cloudStations, error: fetchError } = await dbClient.from('strutex_stations').select('name');
+                if (!fetchError && cloudStations) {
+                    for (let cloudRow of cloudStations) {
+                        if (!localNames.includes(cloudRow.name)) {
+                            // If a station was deleted or renamed locally, remove the old record from Supabase
+                            await dbClient.from('strutex_stations').delete().eq('name', cloudRow.name);
+                        }
+                    }
+                }
+
+                // 2. Upsert current active stations
                 for (let s of stations) {
                     const payload = {
                         rank: s.rank,
@@ -1887,7 +1900,7 @@
                 console.error("Cloud sync failed:", err);
                 indicator.innerText = "Supabase sync error";
                 indicator.style.color = "#b91c1c";
-                alert("Cloud sync failed: " + err.message + "\n\nTip: Ensure 'name' is marked as UNIQUE in your Supabase table.");
+                alert("Cloud sync failed: " + err.message);
             }
         }
 
