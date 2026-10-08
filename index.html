@@ -11,7 +11,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <!-- FullCalendar Library for Interactive Visual Maintenance Scheduling -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 
     <!-- Tippy.js & Popper for Modern Interactive Tooltips -->
     <script src="https://unpkg.com/@popperjs/core@2"></script>
@@ -2978,8 +2977,9 @@ function completePowStation(id) {
         /* ==========================================
        FULLCALENDAR VISUALIZATION ENGINE
        ========================================== */
-   let powCalendar = null;
-    let isCalendarView = false;
+   let isCalendarView = false;
+    let currentCalendarDate = new Date(2026, 9, 1); // Oct 2026
+    let selectedCalendarDate = null;
 
     function togglePowView() {
         const tableView = document.getElementById('powTableView');
@@ -3000,13 +3000,7 @@ function completePowStation(id) {
                 btnText.innerText = "Switch to Table View";
                 btnIcon.innerText = "📋";
             }
-            
-            // CRITICAL FIX: Give the browser layout engine 150ms to register display: block 
-            // before FullCalendar attempts to calculate its internal grid geometry.
-            setTimeout(() => {
-                renderCalendar();
-            }, 150);
-            
+            renderSamsungCalendar();
         } else {
             tableView.style.display = 'block';
             calView.style.display = 'none';
@@ -3019,168 +3013,134 @@ function completePowStation(id) {
         }
     }
 
-    function renderCalendar() {
+    function renderSamsungCalendar() {
         const calendarEl = document.getElementById('powCalendarView');
-        
-        // 1. Map Data with deep extendedProps for tooltips and drag-and-drop tracking
-        const calendarEvents = [];
+        calendarEl.innerHTML = '';
+        calendarEl.style.cssText = `background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px;`;
+
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        // Toolbar
+        const toolbar = document.createElement('div');
+        toolbar.style.cssText = `display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;`;
+        toolbar.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #003366;">${monthNames[month]} ${year}</h2>
+                <div style="display: flex; gap: 4px;">
+                    <button class="btn btn-secondary" onclick="changeMonth(-1)">‹</button>
+                    <button class="btn btn-secondary" onclick="changeMonth(1)">›</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="goToToday()">Today</button>
+        `;
+        calendarEl.appendChild(toolbar);
+
+        // Weekdays Header
+        const weekdaysRow = document.createElement('div');
+        weekdaysRow.style.cssText = `display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase;`;
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(d => {
+            const div = document.createElement('div'); div.innerText = d; weekdaysRow.appendChild(div);
+        });
+        calendarEl.appendChild(weekdaysRow);
+
+        // Map Events by Date
+        const eventsMap = {};
         powStationsData.forEach(site => {
-            const baseProps = {
-                stationId: site.id,
-                classType: site.classType,
-                batch: site.batch,
-                status: site.status,
-                remarks: site.remarks
+            const addEvt = (dateStr, type, color, icon) => {
+                if (!dateStr) return;
+                const dKey = dateStr.split('T')[0];
+                if (!eventsMap[dKey]) eventsMap[dKey] = [];
+                eventsMap[dKey].push({ title: site.name, type, color, icon, site });
             };
-
-            // Target Completion
-            if (site.target) {
-                calendarEvents.push({
-                    id: `target_${site.id}`,
-                    title: site.name,
-                    start: site.target,
-                    backgroundColor: '#10b981', borderColor: '#047857', textColor: '#ffffff',
-                    allDay: true,
-                    extendedProps: { ...baseProps, type: 'Target Completion', dateField: 'target', icon: '🎯' }
-                });
-            }
-
-            // Rubis Deadline
-            if (site.deadline) {
-                calendarEvents.push({
-                    id: `deadline_${site.id}`,
-                    title: site.name,
-                    start: site.deadline,
-                    backgroundColor: '#e11d48', borderColor: '#be123c', textColor: '#ffffff',
-                    allDay: true,
-                    extendedProps: { ...baseProps, type: 'Official Deadline', dateField: 'deadline', icon: '🚨' }
-                });
-            }
-
-            // Maintenance Schedules
-            if (site.nextPainting) {
-                calendarEvents.push({
-                    id: `paint_${site.id}`,
-                    title: site.name,
-                    start: site.nextPainting,
-                    backgroundColor: '#f59e0b', borderColor: '#d97706', textColor: '#ffffff',
-                    allDay: true,
-                    extendedProps: { ...baseProps, type: 'Scheduled Painting', dateField: 'nextPainting', icon: '🎨' }
-                });
-            }
-            if (site.nextCleaning) {
-                calendarEvents.push({
-                    id: `clean_${site.id}`,
-                    title: site.name,
-                    start: site.nextCleaning,
-                    backgroundColor: '#0ea5e9', borderColor: '#0284c7', textColor: '#ffffff',
-                    allDay: true,
-                    extendedProps: { ...baseProps, type: 'Scheduled Cleaning', dateField: 'nextCleaning', icon: '🧹' }
-                });
-            }
+            addEvt(site.target, 'Target Completion', '#10b981', '🎯');
+            addEvt(site.deadline, 'Official Deadline', '#e11d48', '🚨');
+            addEvt(site.nextPainting, 'Scheduled Painting', '#f59e0b', '🎨');
+            addEvt(site.nextCleaning, 'Scheduled Cleaning', '#0ea5e9', '🧹');
         });
 
-        if (powCalendar) {
-            powCalendar.destroy();
+        // Grid Days
+        const gridEl = document.createElement('div');
+        gridEl.style.cssText = `display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;`;
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const startDayOffset = (firstDayIndex === 0) ? 6 : firstDayIndex - 1;
+        const totalDays = new Date(year, month + 1, 0).getDate();
+        const prevMonthDays = new Date(year, month, 0).getDate();
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        // Leading days
+        for (let i = startDayOffset - 1; i >= 0; i--) {
+            gridEl.appendChild(createSamsungCell(prevMonthDays - i, true, null, eventsMap, todayStr));
+        }
+        // Current month days
+        for (let d = 1; d <= totalDays; d++) {
+            const dKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            gridEl.appendChild(createSamsungCell(d, false, dKey, eventsMap, todayStr));
+        }
+        calendarEl.appendChild(gridEl);
+
+        // Agenda Drawer
+        const agendaDrawer = document.createElement('div');
+        agendaDrawer.id = 'samsungAgendaDrawer';
+        agendaDrawer.style.cssText = `background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 10px; display: ${selectedCalendarDate && eventsMap[selectedCalendarDate] ? 'block' : 'none'};`;
+        renderAgendaContent(agendaDrawer, selectedCalendarDate, eventsMap);
+        calendarEl.appendChild(agendaDrawer);
+    }
+
+    function createSamsungCell(dayNum, isOther, dateKey, eventsMap, todayStr) {
+        const cell = document.createElement('div');
+        const hasEvents = dateKey && eventsMap[dateKey] && eventsMap[dateKey].length > 0;
+        const isToday = dateKey === todayStr;
+        const isSelected = dateKey === selectedCalendarDate;
+
+        cell.style.cssText = `
+            background: ${isSelected ? '#e0f2fe' : (isOther ? '#f8fafc' : '#ffffff')};
+            border: 1px solid ${isSelected ? '#0284c7' : (isToday ? '#0ea5e9' : '#e2e8f0')};
+            border-radius: 6px; min-height: 80px; padding: 6px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: 0.15s;
+        `;
+
+        if (!isOther) {
+            cell.onclick = () => { selectedCalendarDate = dateKey; renderSamsungCalendar(); };
         }
 
-        // 2. Initialize Modern Interactive Calendar
-        powCalendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            contentHeight: 600,
-            editable: true,             // ENABLES DRAG AND DROP
-            eventStartEditable: true,
-            eventDurationEditable: false,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
-            },
-            events: calendarEvents,
-            
-            // Custom HTML rendering for the pills
-            eventContent: function(arg) {
-                let icon = arg.event.extendedProps.icon || '';
-                return { 
-                    html: `<div style="padding: 2px 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: grab;">
-                                ${icon} <b style="letter-spacing: 0.2px;">${arg.event.title}</b>
-                           </div>` 
-                };
-            },
+        cell.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.75rem; font-weight: ${isToday || isSelected ? '800' : '600'}; color: ${isToday ? '#fff' : (isOther ? '#94a3b8' : '#1e293b')}; background: ${isToday ? '#0284c7' : 'transparent'}; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">${dayNum}</span>
+                ${hasEvents ? `<span style="font-size: 9px; background: #e2e8f0; padding: 1px 4px; border-radius: 4px; font-weight: bold;">${eventsMap[dateKey].length}</span>` : ''}
+            </div>
+        `;
 
-           // Rich Interactive Tooltips on Hover
-            eventDidMount: function(info) {
-                const props = info.event.extendedProps;
-                
-                const tooltipHtml = `
-                    <div style="text-align: left; padding: 4px 6px; font-family: 'Segoe UI', sans-serif;">
-                        <strong style="font-size: 14px; color: #38bdf8;">${props.icon} ${info.event.title}</strong><br>
-                        <hr style="border: 0; border-top: 1px solid #475569; margin: 6px 0;">
-                        <div style="font-size: 12px; line-height: 1.6;">
-                            <b>Date:</b> ${new Date(info.event.startStr).toLocaleDateString('en-GB')}<br>
-                            <b>Event:</b> <span style="color: #cbd5e1;">${props.type}</span><br>
-                            <b>Status:</b> <span style="background: #475569; padding: 2px 5px; border-radius: 3px; font-size: 10px; color: white;">${props.status || 'N/A'}</span><br>
-                            <b>Class:</b> ${props.classType || 'N/A'} | <b>Batch:</b> ${props.batch || 'Unassigned'}<br>
-                            <div style="margin-top: 4px; border-left: 2px solid #f59e0b; padding-left: 6px; color: #cbd5e1;">
-                                <i>${props.remarks || 'No remarks recorded.'}</i>
-                            </div>
-                        </div>
-                        <div style="margin-top: 6px; font-size: 10px; color: #94a3b8; text-align: right;">
-                            (Drag to reschedule)
-                        </div>
-                    </div>
-                `;
-
-                tippy(info.el, {
-                    content: tooltipHtml,
-                    allowHTML: true,
-                    placement: 'top',
-                    animation: 'scale-subtle',
-                    theme: 'dark',
-                    interactive: true,
-                    appendTo: document.body, // Escapes FullCalendar's overflow: hidden
-                    zIndex: 9999             // Forces it to render above your modal (z-index: 1000)
-                });
-            },
-
-            // Intercept Drag and Drop to Sync Data automatically
-            eventDrop: function(info) {
-                const props = info.event.extendedProps;
-                const newDateStr = info.event.startStr; 
-                const stationId = props.stationId;
-                const dateField = props.dateField; 
-
-                // Confirm action before mutating data
-                if (confirm(`Reschedule ${props.type} for ${info.event.title} to ${newDateStr}?`)) {
-                    
-                    // 1. Find the station in your master data array
-                    const siteIndex = powStationsData.findIndex(s => s.id === stationId);
-                    if(siteIndex > -1) {
-                        
-                        // 2. Update the exact date field (Target, Deadline, Paint, or Clean)
-                        powStationsData[siteIndex][dateField] = newDateStr;
-                        
-                        // 3. Re-render the background table so they match perfectly
-                        renderPowTable();
-                        
-                        // 4. Save to Local Storage immediately
-                        savePowLocally();
-                        
-                        // Optional: Trigger background sync to Supabase
-                        // if (dbClient) { saveProgramOfWorksToCloud(); }
-                    }
-                } else {
-                    info.revert(); // Snaps the block back if the user clicks "Cancel"
-                }
-            }
-        });
-
-        powCalendar.render();
-        powCalendar.updateSize(); 
-        
-        const toolbars = document.querySelectorAll('.fc-toolbar');
-        toolbars.forEach(tb => { tb.style.display = 'flex'; tb.style.flexWrap = 'wrap'; tb.style.gap = '10px'; });
+        if (hasEvents) {
+            const evContainer = document.createElement('div');
+            evContainer.style.cssText = `display: flex; flex-direction: column; gap: 2px; overflow: hidden;`;
+            eventsMap[dateKey].slice(0, 2).forEach(evt => {
+                const pill = document.createElement('div');
+                pill.style.cssText = `background: ${evt.color}; color: #fff; font-size: 9.5px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;`;
+                pill.innerHTML = `${evt.icon} ${evt.title}`;
+                evContainer.appendChild(pill);
+            });
+            cell.appendChild(evContainer);
+        }
+        return cell;
     }
+
+    function renderAgendaContent(drawer, dateKey, eventsMap) {
+        if (!dateKey || !eventsMap[dateKey]) return;
+        drawer.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">
+                <strong style="color: #003366; font-size: 0.85rem;">📅 Agenda for ${dateKey}</strong>
+                <button class="btn btn-secondary" style="padding: 2px 6px; font-size: 0.7rem;" onclick="selectedCalendarDate=null; renderSamsungCalendar();">✕ Close</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                ${eventsMap[dateKey].map(e => `<div style="background: white; border-left: 4px solid ${e.color}; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;"><b style="font-size: 0.8rem;">${e.icon}${e.title}</b> <span style="font-size: 0.75rem; color: #64748b;">(${e.type})</span></div>`).join('')}
+            </div>
+        `;
+    }
+
+    function changeMonth(dir) { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir); renderSamsungCalendar(); }
+    function goToToday() { currentCalendarDate = new Date(); selectedCalendarDate = new Date().toISOString().split('T')[0]; renderSamsungCalendar(); }
     </script>
 </body>
 </html>
