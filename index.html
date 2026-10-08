@@ -864,6 +864,26 @@
         font-size: 0.9rem !important; 
         padding: 8px !important;
     }
+
+    /* --- SAMSUNG CALENDAR MOBILE OPTIMIZATION --- */
+@media (max-width: 768px) {
+    #powCalendarView {
+        padding: 10px !important;
+        height: auto !important;
+        min-height: 450px;
+    }
+    #powCalendarView > div:nth-child(3) { /* Calendar Grid Container */
+        gap: 3px !important;
+    }
+    .samsung-cell {
+        min-height: 65px !important;
+        padding: 4px !important;
+    }
+    .samsung-event-pill {
+        font-size: 8px !important;
+        padding: 1px 2px !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -3024,7 +3044,7 @@ function completePowStation(id) {
 
         // Toolbar
         const toolbar = document.createElement('div');
-        toolbar.style.cssText = `display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;`;
+        toolbar.style.cssText = `display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; gap: 10px;`;
         toolbar.innerHTML = `
             <div style="display: flex; align-items: center; gap: 12px;">
                 <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #003366;">${monthNames[month]} ${year}</h2>
@@ -3087,10 +3107,21 @@ function completePowStation(id) {
         agendaDrawer.style.cssText = `background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 10px; display: ${selectedCalendarDate && eventsMap[selectedCalendarDate] ? 'block' : 'none'};`;
         renderAgendaContent(agendaDrawer, selectedCalendarDate, eventsMap);
         calendarEl.appendChild(agendaDrawer);
+
+        // Initialize Tippy.js Hover Effects on all event pills
+        if (typeof tippy === 'function') {
+            tippy('.samsung-event-pill', {
+                animation: 'scale-subtle',
+                placement: 'top',
+                theme: 'light',
+                allowHTML: true
+            });
+        }
     }
 
     function createSamsungCell(dayNum, isOther, dateKey, eventsMap, todayStr) {
         const cell = document.createElement('div');
+        cell.className = 'samsung-cell';
         const hasEvents = dateKey && eventsMap[dateKey] && eventsMap[dateKey].length > 0;
         const isToday = dateKey === todayStr;
         const isSelected = dateKey === selectedCalendarDate;
@@ -3098,7 +3129,7 @@ function completePowStation(id) {
         cell.style.cssText = `
             background: ${isSelected ? '#e0f2fe' : (isOther ? '#f8fafc' : '#ffffff')};
             border: 1px solid ${isSelected ? '#0284c7' : (isToday ? '#0ea5e9' : '#e2e8f0')};
-            border-radius: 6px; min-height: 80px; padding: 6px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: 0.15s;
+            border-radius: 6px; min-height: 85px; padding: 6px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: 0.15s;
         `;
 
         if (!isOther) {
@@ -3115,9 +3146,11 @@ function completePowStation(id) {
         if (hasEvents) {
             const evContainer = document.createElement('div');
             evContainer.style.cssText = `display: flex; flex-direction: column; gap: 2px; overflow: hidden;`;
-            eventsMap[dateKey].slice(0, 2).forEach(evt => {
+            eventsMap[dateKey].forEach(evt => {
                 const pill = document.createElement('div');
-                pill.style.cssText = `background: ${evt.color}; color: #fff; font-size: 9.5px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;`;
+                pill.className = 'samsung-event-pill';
+                pill.setAttribute('data-tippy-content', `<b>${evt.icon} ${evt.title}</b><br><span style="font-size:11px;">Type: ${evt.type}</span>`);
+                pill.style.cssText = `background: ${evt.color}; color: #fff; font-size: 9.5px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; cursor: pointer;`;
                 pill.innerHTML = `${evt.icon} ${evt.title}`;
                 evContainer.appendChild(pill);
             });
@@ -3125,7 +3158,7 @@ function completePowStation(id) {
         }
         return cell;
     }
-
+        
     function renderAgendaContent(drawer, dateKey, eventsMap) {
         if (!dateKey || !eventsMap[dateKey]) return;
         drawer.innerHTML = `
