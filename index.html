@@ -865,47 +865,97 @@
         font-size: 0.9rem !important; 
         padding: 8px !important;
     }
-
+       
     /* ==========================================
-       PHASE 6: MOBILE CALENDAR & POW OPTIMIZATION
+       PHASE 6: MOBILE CALENDAR & POW OPTIMIZATION (STRICT CONTAINMENT)
        ========================================== */
        
     @media (max-width: 768px) {
-        /* 1. Modal & Container Full-Screen App Mode */
-        #programOfWorksModal .modal-content {
-            width: 100%;
-            padding: 12px;
-            margin: 0;
-            border-radius: 0;
-            height: 100vh;
-            max-height: 100vh;
+        /* 1. Force Modal to exactly fit the viewport, eliminate padding/margins */
+        .modal { 
+            padding: 0 !important; 
         }
         
+        #programOfWorksModal .modal-content {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            padding: 12px 10px !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important; /* CRITICAL: Stops horizontal bleed */
+            overflow-y: auto !important;
+        }
+        
+        /* 2. Constrain the inner container strictly to the modal */
         .pow-container {
-            padding: 10px 5px;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important; 
         }
 
-        /* 2. Action Bar Stacking */
+        /* 3. Action Bar Stacking */
         .pow-actions {
             flex-direction: column;
             align-items: stretch !important;
             gap: 8px;
+            padding: 10px !important;
+            margin-bottom: 12px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         
-        .pow-actions button {
-            width: 100%;
-            justify-content: center;
+        .pow-actions button { 
+            width: 100%; 
+            justify-content: center; 
         }
 
-        /* 3. FullCalendar Responsive Overrides */
+        /* 4. Table View strict internal scrolling */
+        #powTableView {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            display: block !important;
+            box-sizing: border-box !important;
+        }
+        
+        #powScheduleTable {
+            width: 100% !important;
+            min-width: 850px !important; /* Keeps table structured while allowing container to scroll */
+        }
+
+        /* 5. FullCalendar Mobile Confinement */
+        #powCalendarView {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: calc(100vh - 220px) !important;
+            min-height: 450px;
+            padding: 0 !important;
+            margin-top: 10px !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important; /* Stop calendar from breaking out */
+        }
+        
+        /* FullCalendar Responsive Overrides */
+        .fc .fc-view-harness {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
         .fc .fc-toolbar.fc-header-toolbar {
             flex-direction: column;
-            gap: 12px;
-            margin-bottom: 1em !important;
+            gap: 8px;
+            margin-bottom: 10px !important;
         }
         
         .fc .fc-toolbar-title {
-            font-size: 1.25rem !important;
+            font-size: 1.15rem !important;
             text-align: center;
         }
         
@@ -915,26 +965,10 @@
             justify-content: center;
         }
         
-        .fc .fc-button-group {
-            width: 100%;
-        }
-        
         .fc .fc-button {
-            flex: 1; /* Stretches buttons evenly */
-            padding: 8px 4px !important;
+            flex: 1; 
+            padding: 6px 4px !important;
             font-size: 0.75rem !important;
-        }
-
-        /* 4. Calendar View Container Sizing */
-        #powCalendarView {
-            height: calc(100vh - 260px) !important; /* Responsive dynamic height */
-            min-height: 450px;
-            padding: 5px;
-        }
-        
-        /* Smooth scrolling for the table view fallback */
-        #powTableView {
-            -webkit-overflow-scrolling: touch;
         }
     }
     
