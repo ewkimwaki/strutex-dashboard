@@ -1558,39 +1558,6 @@
             `).join('');
             resultsList.style.display = 'block';
         }
-            const resultsList = document.getElementById('scheduleSearchResults');
-            if (!query || query.trim().length < 2) {
-                resultsList.style.display = 'none';
-                resultsList.innerHTML = '';
-                return;
-            }
-
-            const cleanQuery = query.toLowerCase().trim();
-            const matches = scheduleCCatalog.filter(item => 
-                item.code.toLowerCase().includes(cleanQuery) || 
-                item.desc.toLowerCase().includes(cleanQuery)
-            ).slice(0, 8);
-
-            if (matches.length === 0) {
-                resultsList.innerHTML = `<li style="color:#94a3b8; cursor:default;">No Schedule C items match "${query}"</li>`;
-                resultsList.style.display = 'block';
-                return;
-            }
-
-            resultsList.innerHTML = matches.map(item => `
-                <li onclick="selectScheduleCItem('${item.code}', '${item.desc.replace(/'/g, "\\'")}', '${item.uom}', '${item.rate}')">
-                    <div>
-                        <span class="sched-tag-code">${item.code}</span>
-                        <span style="font-size:0.8rem; color:#1e293b; margin-left:4px;">${item.desc}</span>
-                    </div>
-                    <div style="text-align:right;">
-                        <span style="font-size:0.75rem; color:#64748b;">${item.uom ? '['+item.uom+']' : ''}</span>
-                        <span class="sched-tag-rate">${item.rate}</span>
-                    </div>
-                </li>
-            `).join('');
-            resultsList.style.display = 'block';
-        }
 
         function selectScheduleCItem(code, desc, uom, rate) {
             const taskFormatted = `[${code}] ${desc}`; 
@@ -1847,9 +1814,6 @@
         }
 
         function executeMasterFilter() {
-            // ... keep the existing logic of filterMasterTable here ...
-            const nameFilter = document.getElementById('filterStationName').value.toLowerCase();
-            // ... (rest of the original function)
             const nameFilter = document.getElementById('filterStationName').value.toLowerCase();
             const engFilter = document.getElementById('filterEngineer').value.toLowerCase();
             const tierFilter = document.getElementById('filterTier').value;
@@ -1876,7 +1840,7 @@
                 }
             });
         }
-
+        
         function resetFilters() {
             document.getElementById('filterStationName').value = '';
             document.getElementById('filterEngineer').value = '';
