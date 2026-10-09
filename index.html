@@ -914,7 +914,8 @@
                     <div class="btn-group no-print">
                     <span id="autosaveIndicator">Connecting to Supabase...</span>
                     <div id="authControls">
-                        <button id="loginBtn" class="btn btn-secondary" onclick="openModal('authModal')">🔑 Log In</button>
+                        <button id="activityLogBtn" class="btn btn-secondary" onclick="openActivityLogModal()" style="display:none; background-color: #0f766e; color: white;">👥 Activity Log</button>
+                        <button id="loginBtn" class="btn btn-secondary" onclick="switchToAuthTab('login'); openModal('authModal');">🔑 Log In</button>
                         <button id="logoutBtn" class="btn btn-danger" onclick="handleLogout()" style="display:none;">🔒 Log Out (<span id="userEmailTag"></span>)</button>
                     </div>
                     <button class="btn btn-secondary" onclick="openScheduleCManager()">📋 Manage Schedule C</button>
@@ -925,6 +926,22 @@
                 </div>
                 </div>
             </header>
+
+            <!-- Landing Page Banner for Unauthenticated Users (Requirement #5) -->
+            <div id="landingHeroBanner" style="background: linear-gradient(135deg, #003366 0%, #0284c7 100%); color: white; padding: 20px 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: block;">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h2 style="margin:0; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Welcome to Strutex Operations Platform</h2>
+                            <p style="margin: 4px 0 0 0; font-size: 0.88rem; opacity: 0.9;">Sign in to access secure cloud synchronization, digital job card generation, program of works tracking, and master cost management.</p>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success" style="padding: 10px 20px; font-size: 0.9rem; font-weight: bold; background-color: #15803d; border: none; cursor: pointer;" onclick="switchToAuthTab('login'); openModal('authModal');">🔑 Sign In</button>
+                            <button class="btn btn-secondary" style="padding: 10px 20px; font-size: 0.9rem; font-weight: bold; background: white; color: #003366; border: none; cursor: pointer;" onclick="switchToAuthTab('signup'); openModal('authModal');">📝 Register New Account</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -1437,22 +1454,128 @@
         </div>
     </div>
 
-    <!-- Auth / Login Modal -->
+    <!-- Comprehensive Auth Modal Hub -->
     <div id="authModal" class="modal">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <h3 style="margin-top:0; color: #003366;">Strutex Authentication</h3>
-            <p style="font-size: 0.8rem; color: #64748b;">Sign in to sync changes to Supabase Cloud.</p>
-            <div class="form-group" style="text-align: left;">
-                <label>Email</label>
-                <input type="email" id="authUserEmail" class="form-control" placeholder="user@strutex.co.ke">
+        <div class="modal-content" style="max-width: 460px;">
+            <!-- Modal Tabs -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 15px;">
+                <button id="authTabBtn_login" type="button" style="background:none; border:none; padding:8px 12px; cursor:pointer; font-size:0.9rem; border-bottom:3px solid var(--primary-color); font-weight:700; color:var(--primary-color);" onclick="switchToAuthTab('login')">Log In</button>
+                <button id="authTabBtn_signup" type="button" style="background:none; border:none; padding:8px 12px; cursor:pointer; font-size:0.9rem; color:#64748b;" onclick="switchToAuthTab('signup')">Sign Up</button>
+                <button id="authTabBtn_forgot" type="button" style="background:none; border:none; padding:8px 12px; cursor:pointer; font-size:0.9rem; color:#64748b;" onclick="switchToAuthTab('forgot')">Reset Password</button>
             </div>
-            <div class="form-group" style="text-align: left;">
-                <label>Password</label>
-                <input type="password" id="authUserPassword" class="form-control" placeholder="••••••••">
+
+            <!-- View 1: Log In -->
+            <div id="authView_login">
+                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Sign In to Strutex</h3>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Access your petroleum infrastructure portal and live cloud sync.</p>
+                <div class="form-group" style="text-align: left;">
+                    <label>Email Address</label>
+                    <input type="email" id="authUserEmail" class="form-control" placeholder="user@strutex.co.ke">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Password</label>
+                    <input type="password" id="authUserPassword" class="form-control" placeholder="••••••••">
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                    <a href="javascript:void(0)" onclick="switchToAuthTab('forgot')" style="font-size:0.8rem; color: var(--accent-blue); text-decoration: none;">Forgot password?</a>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button>
+                        <button id="btnLoginSubmit" class="btn btn-success" onclick="handleLogin()">Sign In</button>
+                    </div>
+                </div>
             </div>
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
-                <button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button>
-                <button class="btn btn-success" onclick="handleLogin()">Sign In</button>
+
+            <!-- View 2: Sign Up -->
+            <div id="authView_signup" style="display: none;">
+                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Create Strutex Account</h3>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Register with email & password. Verification code will be sent via email.</p>
+                <div class="form-group" style="text-align: left;">
+                    <label>Full Name</label>
+                    <input type="text" id="authSignUpName" class="form-control" placeholder="e.g. Emmanuel Kimwaki">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Email Address</label>
+                    <input type="email" id="authSignUpEmail" class="form-control" placeholder="user@strutex.co.ke">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Password</label>
+                    <input type="password" id="authSignUpPassword" class="form-control" placeholder="Min. 6 characters">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Confirm Password</label>
+                    <input type="password" id="authSignUpPasswordConfirm" class="form-control" placeholder="Re-enter password">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button>
+                    <button id="btnSignUpSubmit" class="btn btn-success" onclick="handleSignUp()">Create Account</button>
+                </div>
+            </div>
+
+            <!-- View 3: Forgot Password -->
+            <div id="authView_forgot" style="display: none;">
+                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Reset Your Password</h3>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Enter your email to receive password reset instructions.</p>
+                <div class="form-group" style="text-align: left;">
+                    <label>Email Address</label>
+                    <input type="email" id="authForgotEmail" class="form-control" placeholder="user@strutex.co.ke">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="switchToAuthTab('login')">Back to Login</button>
+                    <button id="btnForgotSubmit" class="btn btn-success" onclick="handleForgotPassword()">Send Reset Link</button>
+                </div>
+            </div>
+
+            <!-- View 4: Email Code Verification (OTP) -->
+            <div id="authView_otp" style="display: none;">
+                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Email Verification Required</h3>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">We sent a 6-digit verification code to <b id="otpVerifyEmailDisplay">your email</b>.</p>
+                <input type="hidden" id="authOtpEmail">
+                <div class="form-group" style="text-align: left; margin-top: 15px;">
+                    <label>6-Digit Verification Code</label>
+                    <input type="text" id="authOtpCode" class="form-control" placeholder="123456" maxlength="8" style="text-align:center; letter-spacing: 4px; font-size: 1.2rem; font-weight: bold;">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="switchToAuthTab('signup')">Back</button>
+                    <button id="btnOtpSubmit" class="btn btn-success" onclick="handleVerifyOTP()">Verify & Complete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Directory & Activity Tracker Modal -->
+    <div id="userActivityModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin:0; color: var(--primary-color); font-size: 1.2rem;">👥 User Directory & Activity Log</h3>
+                <button class="btn btn-secondary" onclick="closeModal('userActivityModal')">✕ Close</button>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                <h4 style="margin:0 0 8px 0; font-size: 0.85rem; color: var(--primary-color); text-transform: uppercase;">Registered Platform Users</h4>
+                <div id="registeredUsersContainer" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 0.8rem; color: #64748b;">Loading user directory...</span>
+                </div>
+            </div>
+
+            <h4 style="margin:10px 0 8px 0; font-size: 0.85rem; color: #334155; text-transform: uppercase;">Recent System Activities</h4>
+            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 130px;">Time</th>
+                            <th style="width: 180px;">User</th>
+                            <th style="width: 130px;">Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityLogsTableBody">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('userActivityModal')">Close Window</button>
             </div>
         </div>
     </div>
