@@ -1456,9 +1456,6 @@
 
     <!-- Application Script Logic -->
     <script>
-
-    <!-- Application Script Logic -->
-    <script>
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://vdqewfakdjblhhpkmniv.supabase.co';
         
@@ -2112,6 +2109,29 @@
             const logsContainer = document.getElementById('jcLogsContainer');
             logsContainer.innerHTML = data.dailyLogs && data.dailyLogs.length ? `<table class="jc-table-clean"><thead><tr><th style="width:100px;">Date</th><th style="width:110px;">Hours</th><th>Progress</th></tr></thead><tbody>` + data.dailyLogs.map(log => `<tr><td>${log.date}</td><td>${log.timeIn}-${log.timeOut}</td><td>${log.progress}</td></tr>`).join('') + `</tbody></table>` : 'None';
         }
+        // --- MODAL & EDITOR HELPERS ---
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function openRichTextEditor(btn, field) {
+    activeRow = btn.closest('tr');
+    if (!activeRow) return;
+    
+    const preview = activeRow.querySelector(field === 'scope' ? '.scope-preview' : '.notes-preview');
+    activeRichTargetCell = preview;
+    
+    document.getElementById('richModalTitle').innerText = field === 'scope' ? 'Edit Scope of Work' : 'Edit Technician Notes';
+    document.getElementById('richEditorBody').innerHTML = preview ? preview.innerHTML : '';
+    openModal('richTextModal');
+}
+
+function formatDoc(cmd, value = null) {
+    document.execCommand(cmd, false, value);
+}
 
         function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
         
