@@ -2560,12 +2560,13 @@ function completePowStation(id) {
     site.target = completionDateStr;
     site.nextPainting = paintingDate.toISOString().split('T')[0];
     site.nextCleaning = cleaningDate.toISOString().split('T')[0];
+
     site.remarks = `Completed on ${completionDateStr}. Schedule auto-updated.`;
 
     renderPowTable();
     savePowLocally();
-    showToast(\${site.name} completed! Next service scheduled.`, "success");`
-}        
+    showToast(`${site.name} completed! Next service scheduled.`, "success");
+}
     function formatPowDate(dateStr) {
         if(!dateStr) return "";
         return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
