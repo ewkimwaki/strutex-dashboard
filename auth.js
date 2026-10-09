@@ -244,20 +244,32 @@ function updateAuthUI(user) {
     const logoutBtn = document.getElementById('logoutBtn');
     const activityBtn = document.getElementById('activityLogBtn');
     const userEmailTag = document.getElementById('userEmailTag');
+    
+    // UI Containers
     const landingBanner = document.getElementById('landingHeroBanner');
+    const protectedActions = document.getElementById('protectedActions');
+    const mainDashboardArea = document.getElementById('mainDashboardArea');
 
     if (user) {
         if (loginBtn) loginBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'inline-flex';
         if (activityBtn) activityBtn.style.display = 'inline-flex';
         if (userEmailTag) userEmailTag.innerText = user.email;
+        
+        // Show protected areas, hide landing
         if (landingBanner) landingBanner.style.display = 'none';
+        if (protectedActions) protectedActions.style.display = 'flex';
+        if (mainDashboardArea) mainDashboardArea.style.display = 'block';
     } else {
         if (loginBtn) loginBtn.style.display = 'inline-flex';
         if (logoutBtn) logoutBtn.style.display = 'none';
         if (activityBtn) activityBtn.style.display = 'none';
         if (userEmailTag) userEmailTag.innerText = '';
+        
+        // Show landing, hide protected areas
         if (landingBanner) landingBanner.style.display = 'block';
+        if (protectedActions) protectedActions.style.display = 'none';
+        if (mainDashboardArea) mainDashboardArea.style.display = 'none';
     }
 
     // Refresh table view to reflect read-only vs editable state
@@ -378,10 +390,74 @@ async function initAuth() {
         const { data: { session } } = await dbClient.auth.getSession();
         updateAuthUI(session ? session.user : null);
 
-        dbClient.auth.onAuthStateChange((_event, session) => {
+        dbClient.auth.onAuthStateChange((event, session) => {
             updateAuthUI(session ? session.user : null);
+            
+            // Listen for Password Recovery Redirect
+            if (event === 'PASSWORD_RECOVERY') {
+                closeModal('authModal');
+                openModal('updatePasswordModal');
+            }
         });
+        
+        // Fallback catch for Hash fragment if event listener misses it (GitHub Pages latency)
+        if (window.location.hash.includes('type=recovery')) {
+            openModal('updatePasswordModal');
+        }
     } catch (e) {
         console.warn("Auth initialization error:", e);
+    }
+}
+
+/**
+ * Handle Update Password Execution
+ */
+async function handleUpdatePassword() {
+    const newPass = document.getElementById('authNewPassword').value;
+    const confirmPass = document.getElementById('authNewPasswordConfirm').value;
+
+    if (!newPass || newPass.length < 6) {
+        return showToast("Password must be at least 6 characters long.", "warning");
+    }
+    if (newPass !== confirmPass) {
+        return showToast("Passwords do not match.", "warning");
+    }
+
+    const btn = document.getElementById('btnUpdatePasswordSubmit');
+    if (btn) { btn.disabled = true; btn.innerText = "Updating Securely..."; }
+
+    try {
+        const { error } = await dbClient.auth.updateUser({ password: newPass });
+        if (error) throw error;
+
+        showToast("Password updated successfully! You are now logged in.", "success");
+        closeModal('updatePasswordModal');
+        
+        // Clean URL hash
+        window.history.replaceState(null, null, window.location.pathname);
+        
+        await logActivity("Password Changed", `User successfully updated their password via recovery link.`);
+    } catch (err) {
+        showToast("Failed to update password: " + err.message, "error");
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerText = "Save New Password"; }
+    }
+}
+
+/**
+ * Toggle Password Visibility UI Helper
+ */
+function togglePasswordVisibility(inputId, iconElement) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    if (input.type === "password") {
+        input.type = "text";
+        iconElement.innerText = "🔒"; 
+        iconElement.title = "Hide Password";
+    } else {
+        input.type = "password";
+        iconElement.innerText = "👁️";
+        iconElement.title = "Show Password";
     }
 }
