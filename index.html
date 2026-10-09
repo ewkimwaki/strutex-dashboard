@@ -1763,7 +1763,6 @@
         const defaultStations = [
             {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", mapQuery: "Rubis Mesora Kenya", info: "Emmanuel", scope: "Review civil deficiencies & canopy repainting", status: "Pending", comments: "Awaiting site clearance", jobCardSaved: false, jobCardPayload: null},
             {rank: 2, tier: "Tier 2: Medium Risk", name: "Rubis Magumu", mapQuery: "Rubis Magumu Kenya", info: "Kelvin", scope: "Drainage culvert inspection", status: "Ongoing", comments: "Materials on site", jobCardSaved: false, jobCardPayload: null}
-        ];
 
             // 4. Initialize Auth Session from auth.js
             if (typeof initAuth === 'function') {
@@ -3506,6 +3505,11 @@ function completePowStation(id) {
             await loadScheduleC();
             await loadStations();
             setupRealtimeSubscriptions();
+
+            // 4. Initialize Auth Session from auth.js
+            if (typeof initAuth === 'function') {
+                await initAuth();
+            }
         };
     </script>
 </body>
