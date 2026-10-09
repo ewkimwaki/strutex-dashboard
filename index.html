@@ -1450,6 +1450,9 @@
         let activeRow = null;
         let activeRichTargetCell = null;
         let cachedJobCardData = {};
+        
+        // NEW: Centralized Single Source of Truth for the Matrix
+        let masterStationsData = [];
 
         // --- PHASE 1: MODERN TOAST NOTIFICATIONS ---
         function showToast(message, type = "info") {
@@ -1512,8 +1515,49 @@
 
         let scheduleCCatalog = []; // Will hold live cloud data
 
-        /* SCHEDULE C SEARCH & CRAWLER ENGINE */
+        /* SCHEDULE C SEARCH & CRAWLER ENGINE (DEBOUNCED) */
+        let schedSearchTimeout;
         function filterScheduleCSearch(query) {
+            clearTimeout(schedSearchTimeout);
+            schedSearchTimeout = setTimeout(() => {
+                executeScheduleCSearch(query);
+            }, 300); // Waits 300ms after the last keystroke
+        }
+
+        function executeScheduleCSearch(query) {
+            const resultsList = document.getElementById('scheduleSearchResults');
+            if (!query || query.trim().length < 2) {
+                resultsList.style.display = 'none';
+                resultsList.innerHTML = '';
+                return;
+            }
+
+            const cleanQuery = query.toLowerCase().trim();
+            const matches = scheduleCCatalog.filter(item => 
+                item.code.toLowerCase().includes(cleanQuery) || 
+                item.desc.toLowerCase().includes(cleanQuery)
+            ).slice(0, 8);
+
+            if (matches.length === 0) {
+                resultsList.innerHTML = `<li style="color:#94a3b8; cursor:default;">No Schedule C items match "${query}"</li>`;
+                resultsList.style.display = 'block';
+                return;
+            }
+
+            resultsList.innerHTML = matches.map(item => `
+                <li onclick="selectScheduleCItem('${item.code}', '${item.desc.replace(/'/g, "\\'")}', '${item.uom}', '${item.rate}')">
+                    <div>
+                        <span class="sched-tag-code">${item.code}</span>
+                        <span style="font-size:0.8rem; color:#1e293b; margin-left:4px;">${item.desc}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.75rem; color:#64748b;">${item.uom ? '['+item.uom+']' : ''}</span>
+                        <span class="sched-tag-rate">${item.rate}</span>
+                    </div>
+                </li>
+            `).join('');
+            resultsList.style.display = 'block';
+        }
             const resultsList = document.getElementById('scheduleSearchResults');
             if (!query || query.trim().length < 2) {
                 resultsList.style.display = 'none';
@@ -1670,7 +1714,6 @@
         }
 
         async function loadStations() {
-            let stations = null;
             const indicator = document.getElementById("autosaveIndicator");
 
             if (dbClient) {
@@ -1678,7 +1721,7 @@
                     indicator.innerText = "Syncing from Supabase...";
                     const { data, error } = await dbClient.from('strutex_stations').select('*').order('rank', { ascending: true });
                     if (!error && data && data.length > 0) {
-                        stations = data.map(d => ({
+                        masterStationsData = data.map(d => ({
                             rank: d.rank,
                             tier: d.tier,
                             name: d.name,
@@ -1705,24 +1748,25 @@
                 indicator.style.color = "#b91c1c";
             }
 
-            if (!stations || stations.length === 0) {
+            // Fallbacks
+            if (!masterStationsData || masterStationsData.length === 0) {
                 const localData = localStorage.getItem('strutex_stations_cloud_sync');
                 if (localData) {
-                    try { stations = JSON.parse(localData); } catch(e) {}
+                    try { masterStationsData = JSON.parse(localData); } catch(e) {}
                 }
             }
-
-            if (!stations || stations.length === 0) {
-                stations = defaultStations;
+            if (!masterStationsData || masterStationsData.length === 0) {
+                masterStationsData = [...defaultStations];
             }
 
-            renderTable(stations);
+            renderTable();
         }
 
-       function renderTable(stations) {
+        function renderTable() {
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
-            stations.forEach((s, index) => {
+            
+            masterStationsData.forEach((s, index) => {
                 const tr = document.createElement("tr");
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.mapQuery || s.name)}`;
                 
@@ -1754,18 +1798,19 @@
                     `;
                 }
 
+                // Inputs now instantly update masterStationsData on keystroke
                 tr.innerHTML = `
-                    <td><input type="number" class="editable-cell" value="${s.rank || (index + 1)}" style="width:40px; text-align:center;" oninput="saveLocally();"></td>
+                    <td><input type="number" class="editable-cell" value="${s.rank || (index + 1)}" style="width:40px; text-align:center;" oninput="masterStationsData[${index}].rank = parseInt(this.value) || 0; saveLocally();"></td>
                     <td>
-                        <select class="status-select" onchange="saveLocally();">
+                        <select class="status-select" onchange="masterStationsData[${index}].tier = this.value; saveLocally();">
                             <option ${s.tier === 'Tier 1: High Risk' ? 'selected' : ''}>Tier 1: High Risk</option>
                             <option ${s.tier === 'Tier 2: Medium Risk' ? 'selected' : ''}>Tier 2: Medium Risk</option>
                             <option ${s.tier === 'Tier 3: Low Risk' ? 'selected' : ''}>Tier 3: Low Risk</option>
                         </select>
                     </td>
-                    <td><input type="text" class="editable-cell" value="${s.name || ''}" oninput="saveLocally();" style="font-weight:bold;"></td>
+                    <td><input type="text" class="editable-cell" value="${s.name || ''}" oninput="masterStationsData[${index}].name = this.value; saveLocally();" style="font-weight:bold;"></td>
                     <td><a href="${mapsUrl}" target="_blank" class="map-link">📍 Map</a></td>
-                    <td><input type="text" class="editable-cell" value="${s.info || ''}" oninput="saveLocally();"></td>
+                    <td><input type="text" class="editable-cell" value="${s.info || ''}" oninput="masterStationsData[${index}].info = this.value; saveLocally();"></td>
                     <td>
                         <div style="display:flex; flex-direction:column; gap:4px;">
                             <div class="preview-snippet scope-preview">${s.scope || 'No scope defined...'}</div>
@@ -1773,7 +1818,7 @@
                         </div>
                     </td>
                     <td>
-                        <select class="status-select" onchange="saveLocally();">
+                        <select class="status-select" onchange="masterStationsData[${index}].status = this.value; saveLocally();">
                             <option ${s.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option ${s.status === 'Ongoing' ? 'selected' : ''}>Ongoing</option>
                             <option ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
@@ -1791,16 +1836,20 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
-                tr._stationIndex = index;
-                tr._jobCardPayload = s.jobCardPayload || null;
-                tr._jobCardSaved = s.jobCardSaved || false;
+                tr._stationIndex = index; // Keep for legacy modal tracking
             });
         }
 
-        /* ==========================================
-           GLOBAL MATRIX SEARCH & FILTER LOGIC
-           ========================================== */
+        let masterFilterTimeout;
         function filterMasterTable() {
+            clearTimeout(masterFilterTimeout);
+            masterFilterTimeout = setTimeout(executeMasterFilter, 300);
+        }
+
+        function executeMasterFilter() {
+            // ... keep the existing logic of filterMasterTable here ...
+            const nameFilter = document.getElementById('filterStationName').value.toLowerCase();
+            // ... (rest of the original function)
             const nameFilter = document.getElementById('filterStationName').value.toLowerCase();
             const engFilter = document.getElementById('filterEngineer').value.toLowerCase();
             const tierFilter = document.getElementById('filterTier').value;
@@ -1837,63 +1886,32 @@
         }
 
         function getTableStationsFromDOM() {
-            const rows = document.querySelectorAll("#tableBody tr");
-            const stations = [];
-            rows.forEach((tr, index) => {
-                const rank = parseInt(tr.cells[0].querySelector('input').value) || (index + 1);
-                const tier = tr.cells[1].querySelector('select').value;
-                const name = tr.cells[2].querySelector('input').value;
-                const mapQuery = name + " Kenya";
-                const info = tr.cells[4].querySelector('input').value;
-                const scope = tr.querySelector('.scope-preview').innerHTML;
-                const status = tr.cells[6].querySelector('select').value;
-                const comments = tr.querySelector('.notes-preview').innerHTML;
-                
-                stations.push({
-                    rank: rank,
-                    tier: tier,
-                    name: name,
-                    mapQuery: mapQuery,
-                    info: info,
-                    scope: scope,
-                    status: status,
-                    comments: comments,
-                    jobCardSaved: tr._jobCardSaved || false,
-                    jobCardPayload: tr._jobCardPayload || null
-                });
-            });
-            return stations;
-        }
-
-        function openRichTextEditor(btn, type) {
-            activeRow = btn.closest('tr');
-            activeRichTargetCell = type === 'scope' ? activeRow.querySelector('.scope-preview') : activeRow.querySelector('.notes-preview');
-            
-            const title = type === 'scope' ? 'Edit Scope of Work (Rich Text)' : 'Edit Technician Notes (Rich Text)';
-            document.getElementById('richModalTitle').innerText = title;
-            document.getElementById('richEditorBody').innerHTML = activeRichTargetCell.innerHTML;
-            document.getElementById('richTextModal').style.display = 'flex';
-        }
-
-        function formatDoc(command, value = null) {
-            document.execCommand(command, false, value);
-            document.getElementById('richEditorBody').focus();
+            // Obsolete! Bypassed to maintain compatibility without DOM scraping.
+            return masterStationsData;
         }
 
         function saveRichTextContent() {
-            if (activeRichTargetCell) {
-                activeRichTargetCell.innerHTML = document.getElementById('richEditorBody').innerHTML;
+            if (activeRichTargetCell && activeRow) {
+                const newContent = document.getElementById('richEditorBody').innerHTML;
+                activeRichTargetCell.innerHTML = newContent;
+                
+                // Save to state instantly
+                const index = activeRow._stationIndex;
+                if (activeRichTargetCell.classList.contains('scope-preview')) {
+                    masterStationsData[index].scope = newContent;
+                } else {
+                    masterStationsData[index].comments = newContent;
+                }
             }
             closeModal('richTextModal');
             saveLocally();
         }
 
         function addNewRow() {
-            const stations = getTableStationsFromDOM();
-            stations.push({
-                rank: stations.length + 1,
+            masterStationsData.push({
+                rank: masterStationsData.length + 1,
                 tier: "Tier 2: Medium Risk",
-                name: "New Rubis Station " + (stations.length + 1),
+                name: "New Rubis Station " + (masterStationsData.length + 1),
                 mapQuery: "Kenya",
                 info: "Emmanuel Simano",
                 scope: "General site inspection & repairs",
@@ -1902,33 +1920,30 @@
                 jobCardSaved: false,
                 jobCardPayload: null
             });
-            renderTable(stations);
+            renderTable();
             saveLocally();
         }
 
         function deleteStation(index) {
             if (confirm("Are you sure you want to delete this station row?")) {
-                let stations = getTableStationsFromDOM();
-                stations.splice(index, 1);
-                renderTable(stations);
+                masterStationsData.splice(index, 1);
+                renderTable();
                 saveLocally();
             }
         }
 
         function resetStationCycle(index) {
             if (confirm("Reset this station for a new maintenance cycle? This clears the existing Job Card and reverts the Status to 'Pending'.")) {
-                let stations = getTableStationsFromDOM();
-                stations[index].jobCardSaved = false;
-                stations[index].jobCardPayload = null;
-                stations[index].status = "Pending";
-                renderTable(stations);
+                masterStationsData[index].jobCardSaved = false;
+                masterStationsData[index].jobCardPayload = null;
+                masterStationsData[index].status = "Pending";
+                renderTable();
                 saveLocally();
             }
         }
 
         function saveLocally() {
-            const stations = getTableStationsFromDOM();
-            localStorage.setItem('strutex_stations_cloud_sync', JSON.stringify(stations));
+            localStorage.setItem('strutex_stations_cloud_sync', JSON.stringify(masterStationsData));
         }
 
         async function saveToCloud() {
@@ -1941,11 +1956,10 @@
             }
 
             indicator.innerText = "Syncing to Supabase...";
-            const stations = getTableStationsFromDOM();
-            const localNames = stations.map(s => s.name);
+            const localNames = masterStationsData.map(s => s.name);
 
             try {
-                // 1. Bulk delete removed stations in ONE single request
+                // Bulk delete removed stations in ONE single request
                 const { data: cloudStations, error: fetchError } = await dbClient.from('strutex_stations').select('name');
                 if (!fetchError && cloudStations && cloudStations.length > 0) {
                     const namesToDelete = cloudStations
@@ -1957,8 +1971,8 @@
                     }
                 }
 
-                // 2. Prepare the complete array of all stations for bulk batch upsert
-                const payloads = stations.map(s => ({
+                // Sync full array
+                const payloads = masterStationsData.map(s => ({
                     rank: s.rank,
                     tier: s.tier,
                     name: s.name,
@@ -1971,7 +1985,6 @@
                     job_card_payload: s.jobCardPayload
                 }));
 
-                // 3. Send ALL stations to Supabase in ONE single network round-trip!
                 const { error: upsertError } = await dbClient.from('strutex_stations').upsert(payloads, { onConflict: 'name' });
                 if (upsertError) throw upsertError;
 
@@ -2118,37 +2131,15 @@
         
         function completeAndSaveJobCard() {
             if (!activeRow) return;
-            activeRow._jobCardSaved = true;
-            activeRow._jobCardPayload = cachedJobCardData;
-            
-            const statusSelect = activeRow.cells[6].querySelector('select');
-            if (statusSelect) {
-                statusSelect.value = "Completed";
-            }
-
             const rowIndex = activeRow._stationIndex;
-            const payloadSafe = JSON.stringify(cachedJobCardData).replace(/'/g, "&#39;");
             
-            // 1. Re-render the View/Edit buttons
-            activeRow.querySelector('.jc-cell').innerHTML = `
-                <div style="display: flex; gap: 4px; width: 100%; margin-bottom: 4px;">
-                    <button class="btn btn-success" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick='viewSavedJobCard(${payloadSafe})'>👁️ Card</button>
-                    <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${payloadSafe}, ${rowIndex})'>✏️ Edit</button>
-                </div>
-                <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; width: 100%; background-color: #0f766e; font-weight: bold;" onclick='viewBoQ(${payloadSafe})'>💰 View BoQ / Costs</button>
-            `;
-            
-            // 2. CRITICAL FIX: Re-render the Clone/Reset action buttons instantly
-            const actionCell = activeRow.cells[9];
-            actionCell.innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
-                    <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #f59e0b; color: #0f172a; font-weight: bold;" onclick="openCloneModal(${rowIndex})">📄 Clone Scope</button>
-                    <div style="display:flex; width: 100%; gap: 4px;">
-                        <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #64748b;" onclick="resetStationCycle(${rowIndex})">🔄 Reset</button>
-                        <button class="btn btn-danger" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick="deleteStation(${rowIndex})" title="Delete row">✕</button>
-                    </div>
-                </div>
-            `;
+            // Save payload to global array instead of the DOM
+            masterStationsData[rowIndex].jobCardSaved = true;
+            masterStationsData[rowIndex].jobCardPayload = cachedJobCardData;
+            masterStationsData[rowIndex].status = "Completed";
+
+            // Instantly re-render the matrix to show the new buttons securely
+            renderTable();
             
             closeModal('jobCardModal');
             saveLocally();
@@ -2243,9 +2234,10 @@
         function deleteJobCard() {
             if (confirm("Are you sure you want to delete/reset the job card & BoQ for this station?")) {
                 if (activeRow) {
-                    activeRow._jobCardSaved = false;
-                    activeRow._jobCardPayload = null;
-                    activeRow.querySelector('.jc-cell').innerHTML = `<span style="font-size:0.75rem; color:#94a3b8;">No Card</span>`;
+                    const rowIndex = activeRow._stationIndex;
+                    masterStationsData[rowIndex].jobCardSaved = false;
+                    masterStationsData[rowIndex].jobCardPayload = null;
+                    renderTable(); // Strip out the action buttons visually
                 }
                 closeModal('jobCardModal');
                 saveLocally();
