@@ -24,8 +24,8 @@ function switchToAuthTab(tab) {
         const tabBtn = document.getElementById(`authTabBtn_${t}`);
         if (tabBtn) {
             if (t === tab) {
-                tabBtn.style.borderBottom = '3px solid #ea580c'; // Sahara Orange
-                tabBtn.style.color = '#ea580c';
+                tabBtn.style.borderBottom = '3px solid #0284c7'; // BoQ Blue theme
+                tabBtn.style.color = '#0284c7';
                 tabBtn.style.fontWeight = '700';
             } else {
                 tabBtn.style.borderBottom = '3px solid transparent';
@@ -60,7 +60,6 @@ async function handleLogin() {
         const { data, error } = await dbClient.auth.signInWithPassword({ email, password });
         
         if (error) {
-            // Requirement #7: Logic flow if user account does not exist
             const errLower = error.message.toLowerCase();
             if (errLower.includes("invalid login credentials") || errLower.includes("user not found") || error.status === 400) {
                 showToast("Account not found or password incorrect.", "error");
@@ -82,7 +81,7 @@ async function handleLogin() {
     } catch (err) {
         showToast("Login failed: " + err.message, "error");
     } finally {
-        if (loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "Sign In"; }
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "Sign in"; }
     }
 }
 
@@ -101,7 +100,7 @@ async function handleLogout() {
 }
 
 /**
- * 3. SIGN UP PROCESS & 6. EMAIL VERIFICATION INITIATION
+ * 3. SIGN UP PROCESS
  */
 async function handleSignUp() {
     const fullName = document.getElementById('authSignUpName').value.trim();
@@ -136,15 +135,12 @@ async function handleSignUp() {
         const { data, error } = await dbClient.auth.signUp({
             email,
             password,
-            options: {
-                data: { full_name: fullName }
-            }
+            options: { data: { full_name: fullName } }
         });
 
         if (error) throw error;
 
         showToast("Verification code sent to your email!", "info");
-        
         document.getElementById('otpVerifyEmailDisplay').innerText = email;
         document.getElementById('authOtpEmail').value = email;
         switchToAuthTab('otp');
@@ -176,14 +172,8 @@ async function handleVerifyOTP() {
     if (otpBtn) { otpBtn.disabled = true; otpBtn.innerText = "Verifying..."; }
 
     try {
-        let { data, error } = await dbClient.auth.verifyOtp({
-            email,
-            token,
-            type: 'signup'
-        });
-
+        let { data, error } = await dbClient.auth.verifyOtp({ email, token, type: 'signup' });
         if (error) {
-            // Secondary attempt for magic link or email tokens
             const altResult = await dbClient.auth.verifyOtp({ email, token, type: 'email' });
             if (altResult.error) throw error;
             data = altResult.data;
@@ -192,7 +182,6 @@ async function handleVerifyOTP() {
         showToast("Email verified successfully! Welcome to Strutex.", "success");
         closeModal('authModal');
         updateAuthUI(data.user);
-        
         await logActivity("Account Verified", `Registered & verified new user ${email}`);
     } catch (err) {
         showToast("Verification failed: " + err.message, "error");
@@ -206,16 +195,8 @@ async function handleVerifyOTP() {
  */
 async function handleForgotPassword() {
     const email = document.getElementById('authForgotEmail').value.trim();
-
-    if (!email) {
-        showToast("Please enter your email address.", "warning");
-        return;
-    }
-
-    if (!dbClient) {
-        showToast("Database client not initialized.", "error");
-        return;
-    }
+    if (!email) { showToast("Please enter your email address.", "warning"); return; }
+    if (!dbClient) { showToast("Database client not initialized.", "error"); return; }
 
     const forgotBtn = document.getElementById('btnForgotSubmit');
     if (forgotBtn) { forgotBtn.disabled = true; forgotBtn.innerText = "Sending..."; }
@@ -224,7 +205,6 @@ async function handleForgotPassword() {
         const { error } = await dbClient.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin
         });
-
         if (error) throw error;
 
         showToast("Password reset link sent to your email!", "success");
@@ -258,7 +238,6 @@ function updateAuthUI(user) {
     const activityBtn = document.getElementById('activityLogBtn');
     const userEmailTag = document.getElementById('userEmailTag');
     
-    // UI Containers
     const landingBanner = document.getElementById('landingHeroBanner');
     const protectedActions = document.getElementById('protectedActions');
     const mainDashboardArea = document.getElementById('mainDashboardArea');
@@ -270,7 +249,6 @@ function updateAuthUI(user) {
         if (activityBtn) activityBtn.style.display = 'inline-flex';
         if (userEmailTag) userEmailTag.innerText = user.email;
         
-        // Logged In: Hide landing wall, reveal header and dashboard
         if (landingBanner) landingBanner.style.display = 'none';
         if (dashboardHeader) dashboardHeader.style.display = 'flex';
         if (protectedActions) protectedActions.style.display = 'flex';
@@ -281,7 +259,6 @@ function updateAuthUI(user) {
         if (activityBtn) activityBtn.style.display = 'none';
         if (userEmailTag) userEmailTag.innerText = '';
         
-        // Logged Out: Engage full-screen landing wall, hide dashboard completely
         if (landingBanner) landingBanner.style.display = 'flex';
         if (dashboardHeader) dashboardHeader.style.display = 'none';
         if (protectedActions) protectedActions.style.display = 'none';
@@ -293,88 +270,52 @@ function updateAuthUI(user) {
     }
 }
 
-/**
- * 8. USER DIRECTORY & ACTIVITY TRACKING LOGIC
- */
 async function logActivity(action, details) {
     const userEmail = currentAuthUser ? currentAuthUser.email : 'Guest / System';
     const timestamp = new Date().toISOString();
     
-    const logEntry = {
-        user_email: userEmail,
-        action: action,
-        details: details,
-        timestamp: timestamp
-    };
-
-    // Store in local buffer
+    const logEntry = { user_email: userEmail, action: action, details: details, timestamp: timestamp };
     let logs = JSON.parse(localStorage.getItem('strutex_activity_logs') || '[]');
     logs.unshift(logEntry);
     if (logs.length > 150) logs = logs.slice(0, 150);
     localStorage.setItem('strutex_activity_logs', JSON.stringify(logs));
 
-    // Store in Supabase Cloud table if available
     if (dbClient) {
         try {
             await dbClient.from('strutex_activity_logs').insert([{
-                user_email: userEmail,
-                action: action,
-                details: details,
-                created_at: timestamp
+                user_email: userEmail, action: action, details: details, created_at: timestamp
             }]);
-        } catch (err) {
-            console.warn("Cloud activity log notice:", err.message);
-        }
+        } catch (err) {}
     }
 }
 
-/**
- * Opens and renders the User Directory & Activity Log Modal
- */
 async function openActivityLogModal() {
     openModal('userActivityModal');
     await renderActivityLogs();
 }
 
-/**
- * Render list of activity logs and registered user badges
- */
 async function renderActivityLogs() {
     const tbody = document.getElementById('activityLogsTableBody');
     const userListContainer = document.getElementById('registeredUsersContainer');
     if (!tbody) return;
 
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading activity logs...</td></tr>';
-
     let logs = JSON.parse(localStorage.getItem('strutex_activity_logs') || '[]');
 
     if (dbClient) {
         try {
             const { data, error } = await dbClient.from('strutex_activity_logs').select('*').order('created_at', { ascending: false }).limit(50);
             if (!error && data && data.length > 0) {
-                logs = data.map(d => ({
-                    user_email: d.user_email,
-                    action: d.action,
-                    details: d.details,
-                    timestamp: d.created_at
-                }));
+                logs = data.map(d => ({ user_email: d.user_email, action: d.action, details: d.details, timestamp: d.created_at }));
             }
-        } catch (e) {
-            console.warn("Using local activity log fallback.", e);
-        }
+        } catch (e) {}
     }
 
     if (userListContainer) {
         const uniqueUsers = Array.from(new Set(logs.map(l => l.user_email).filter(e => e && e !== 'Guest / System')));
-        if (uniqueUsers.length === 0) {
-            userListContainer.innerHTML = `<span style="font-size:0.8rem; color:#64748b;">No registered user sessions logged yet.</span>`;
-        } else {
-            userListContainer.innerHTML = uniqueUsers.map(u => `
-                <div style="background:#e0f2fe; border:1px solid #bae6fd; color:#0369a1; padding:4px 10px; border-radius:15px; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:5px;">
-                    👤 ${u}
-                </div>
-            `).join('');
-        }
+        userListContainer.innerHTML = uniqueUsers.length === 0 ? 
+            `<span style="font-size:0.8rem; color:#64748b;">No registered user sessions logged yet.</span>` :
+            uniqueUsers.map(u => `<div style="background:#e0f2fe; border:1px solid #bae6fd; color:#0369a1; padding:4px 10px; border-radius:15px; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:5px;">👤 ${u}</div>`).join('');
     }
 
     if (logs.length === 0) {
@@ -384,95 +325,38 @@ async function renderActivityLogs() {
 
     tbody.innerHTML = logs.map(l => {
         const dt = new Date(l.timestamp).toLocaleString('en-KE', { dateStyle: 'short', timeStyle: 'short' });
-        return `
-            <tr>
-                <td style="font-size:0.75rem; color:#64748b;">${dt}</td>
-                <td><strong style="color:#0f172a; font-size:0.8rem;">${l.user_email}</strong></td>
-                <td><span class="badge badge-active" style="font-size:0.7rem;">${l.action}</span></td>
-                <td style="font-size:0.8rem; color:#334155;">${l.details}</td>
-            </tr>
-        `;
+        return `<tr><td style="font-size:0.75rem; color:#64748b;">${dt}</td><td><strong style="color:#0f172a; font-size:0.8rem;">${l.user_email}</strong></td><td><span class="badge badge-active" style="font-size:0.7rem;">${l.action}</span></td><td style="font-size:0.8rem; color:#334155;">${l.details}</td></tr>`;
     }).join('');
 }
 
-/**
- * Initialize Session and Listeners
- */
 async function initAuth() {
     if (!dbClient) return;
-
     try {
         const { data: { session } } = await dbClient.auth.getSession();
         updateAuthUI(session ? session.user : null);
 
         dbClient.auth.onAuthStateChange((event, session) => {
             updateAuthUI(session ? session.user : null);
-            
-            // Listen for Password Recovery Redirect
             if (event === 'PASSWORD_RECOVERY') {
                 closeModal('authModal');
                 openModal('updatePasswordModal');
             }
         });
         
-        // Fallback catch for Hash fragment if event listener misses it (GitHub Pages latency)
         if (window.location.hash.includes('type=recovery')) {
             openModal('updatePasswordModal');
         }
-    } catch (e) {
-        console.warn("Auth initialization error:", e);
-    }
+    } catch (e) {}
 }
 
-/**
- * Handle Update Password Execution
- */
-async function handleUpdatePassword() {
-    const newPass = document.getElementById('authNewPassword').value;
-    const confirmPass = document.getElementById('authNewPasswordConfirm').value;
-
-    if (!newPass || newPass.length < 6) {
-        return showToast("Password must be at least 6 characters long.", "warning");
-    }
-    if (newPass !== confirmPass) {
-        return showToast("Passwords do not match.", "warning");
-    }
-
-    const btn = document.getElementById('btnUpdatePasswordSubmit');
-    if (btn) { btn.disabled = true; btn.innerText = "Updating Securely..."; }
-
-    try {
-        const { error } = await dbClient.auth.updateUser({ password: newPass });
-        if (error) throw error;
-
-        showToast("Password updated successfully! You are now logged in.", "success");
-        closeModal('updatePasswordModal');
-        
-        // Clean URL hash
-        window.history.replaceState(null, null, window.location.pathname);
-        
-        await logActivity("Password Changed", `User successfully updated their password via recovery link.`);
-    } catch (err) {
-        showToast("Failed to update password: " + err.message, "error");
-    } finally {
-        if (btn) { btn.disabled = false; btn.innerText = "Save New Password"; }
-    }
-}
-
-/**
- * Toggle Password Visibility UI Helper
- */
 function togglePasswordVisibility(inputId, iconElement) {
     const input = document.getElementById(inputId);
     if (!input) return;
-    
     if (input.type === "password") {
         input.type = "text";
         iconElement.innerText = "🔒"; 
-        iconElement.title = "Hide Password";
     } else {
         input.type = "password";
         iconElement.innerText = "👁️";
-        iconElement.title = "Show Password";
     }
 }
