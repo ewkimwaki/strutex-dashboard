@@ -909,13 +909,17 @@
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
                     <div class="btn-group no-print">
-                        <span id="autosaveIndicator">Connecting to Supabase...</span>
-                        <button class="btn btn-secondary" onclick="openScheduleCManager()">📋 Manage Schedule C</button>
-                        <button class="btn btn-secondary" onclick="openProgramOfWorksModal()">📅 Program of Works</button>
-                        <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
-                        <button class="btn btn-secondary" onclick="saveLocally()">Save Local</button>
-                        <button class="btn" onclick="saveToCloud()">☁️ Sync to Cloud</button>
+                    <span id="autosaveIndicator">Connecting to Supabase...</span>
+                    <div id="authControls">
+                        <button id="loginBtn" class="btn btn-secondary" onclick="openModal('authModal')">🔑 Log In</button>
+                        <button id="logoutBtn" class="btn btn-danger" onclick="handleLogout()" style="display:none;">🔒 Log Out (<span id="userEmailTag"></span>)</button>
                     </div>
+                    <button class="btn btn-secondary" onclick="openScheduleCManager()">📋 Manage Schedule C</button>
+                    <button class="btn btn-secondary" onclick="openProgramOfWorksModal()">📅 Program of Works</button>
+                    <button class="btn btn-secondary" onclick="addNewRow()">+ Add Station</button>
+                    <button class="btn btn-secondary" onclick="saveLocally()">Save Local</button>
+                    <button class="btn" onclick="saveToCloud()">☁️ Sync to Cloud</button>
+                </div>
                 </div>
             </header>
 
@@ -1430,6 +1434,29 @@
         </div>
     </div>
 
+    <!-- Auth / Login Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 style="margin-top:0; color: #003366;">Strutex Authentication</h3>
+            <p style="font-size: 0.8rem; color: #64748b;">Sign in to sync changes to Supabase Cloud.</p>
+            <div class="form-group" style="text-align: left;">
+                <label>Email</label>
+                <input type="email" id="authUserEmail" class="form-control" placeholder="user@strutex.co.ke">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>Password</label>
+                <input type="password" id="authUserPassword" class="form-control" placeholder="••••••••">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button>
+                <button class="btn btn-success" onclick="handleLogin()">Sign In</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+
     <!-- Application Script Logic -->
     <script>
         // --- SUPABASE CONFIGURATION ---
@@ -1847,11 +1874,6 @@
             document.getElementById('filterTier').value = '';
             document.getElementById('filterStatus').value = '';
             filterMasterTable();
-        }
-
-        function getTableStationsFromDOM() {
-            // Obsolete! Bypassed to maintain compatibility without DOM scraping.
-            return masterStationsData;
         }
 
         function saveRichTextContent() {
@@ -2662,48 +2684,42 @@ function completePowStation(id) {
     }
 
     function executeClone() {
-        const index = parseInt(document.getElementById('cloneSourceIndex').value);
-        const stations = getTableStationsFromDOM();
-        const sourceStation = stations[index];
-        
-        if (!sourceStation) return;
+    const index = parseInt(document.getElementById('cloneSourceIndex').value);
+    const sourceStation = masterStationsData[index];
 
-        const newStationName = document.getElementById('cloneNewStation').value.trim() || (sourceStation.name + " (Clone)");
-        const newEngineer = document.getElementById('cloneNewEngineer').value.trim() || sourceStation.info;
-        
-        // Deep copy the background payload so modifying the clone doesn't alter the original
-        const clonedPayload = JSON.parse(JSON.stringify(sourceStation.jobCardPayload));
-        
-        // Dynamically update the cloned payload data to fit the new destination
-        clonedPayload.stationName = newStationName;
-        clonedPayload.engineer = newEngineer;
-        clonedPayload.dateIssued = new Date().toISOString().split('T')[0];
-        clonedPayload.workOrder = "C" + Math.floor(10000 + Math.random() * 90000) + "-CLONED"; 
-        
-        // Push the brand new fully loaded row to the array
-        stations.push({
-            rank: stations.length + 1,
-            tier: sourceStation.tier,
-            name: newStationName,
-            mapQuery: newStationName + " Kenya",
-            info: newEngineer,
-            scope: sourceStation.scope,
-            status: "Pending", // Set as pending so the team knows it hasn't actually been executed yet
-            comments: `Cloned scope from ${sourceStation.name}`,
-            jobCardSaved: true,
-            jobCardPayload: clonedPayload
-        });
+    if (!sourceStation) return;
 
-        // Re-render and Sync
-        renderTable(stations);
-        saveLocally();
-        closeModal('cloneModal');
-        
-        // Ping Supabase Cloud silently
-        if (dbClient) { saveToCloud(); }
-        
-        showToast("Job Card cloned successfully!", "success");
-    }    
+    const newStationName = document.getElementById('cloneNewStation').value.trim() || (sourceStation.name + " (Clone)");
+    const newEngineer = document.getElementById('cloneNewEngineer').value.trim() || sourceStation.info;
+
+    const clonedPayload = JSON.parse(JSON.stringify(sourceStation.jobCardPayload));
+
+    clonedPayload.stationName = newStationName;
+    clonedPayload.engineer = newEngineer;
+    clonedPayload.dateIssued = new Date().toISOString().split('T')[0];
+    clonedPayload.workOrder = "C" + Math.floor(10000 + Math.random() * 90000) + "-CLONED"; 
+
+    masterStationsData.push({
+        rank: masterStationsData.length + 1,
+        tier: sourceStation.tier,
+        name: newStationName,
+        mapQuery: newStationName + " Kenya",
+        info: newEngineer,
+        scope: sourceStation.scope,
+        status: "Pending",
+        comments: `Cloned scope from ${sourceStation.name}`,
+        jobCardSaved: true,
+        jobCardPayload: clonedPayload
+    });
+
+    renderTable();
+    saveLocally();
+    closeModal('cloneModal');
+
+    if (dbClient) { saveToCloud(); }
+
+    showToast("Job Card cloned successfully!", "success");
+}    
 
     /* ==========================================
        PROGRAM OF WORKS AUTO-SORT LOGIC
@@ -3280,6 +3296,68 @@ function completePowStation(id) {
 
     function changeMonth(dir) { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir); renderSamsungCalendar(); }
     function goToToday() { currentCalendarDate = new Date(); selectedCalendarDate = new Date().toISOString().split('T')[0]; renderSamsungCalendar(); }
+
+    /* ==========================================
+       AUTHENTICATION & SESSION LOGIC
+       ========================================== */
+    async function handleLogin() {
+        const email = document.getElementById('authUserEmail').value.trim();
+        const password = document.getElementById('authUserPassword').value;
+
+        if (!email || !password) {
+            showToast("Please provide both email and password.", "warning");
+            return;
+        }
+
+        try {
+            const { data, error } = await dbClient.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+
+            showToast(`Welcome back, ${data.user.email}!`, "success");
+            closeModal('authModal');
+            updateAuthUI(data.user);
+        } catch (err) {
+            showToast("Login failed: " + err.message, "error");
+        }
+    }
+
+    async function handleLogout() {
+        if (dbClient) {
+            await dbClient.auth.signOut();
+            showToast("Logged out successfully.", "info");
+            updateAuthUI(null);
+        }
+    }
+
+    function updateAuthUI(user) {
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userEmailTag = document.getElementById('userEmailTag');
+
+        if (user) {
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+            if (userEmailTag) userEmailTag.innerText = user.email;
+        } else {
+            if (loginBtn) loginBtn.style.display = 'inline-flex';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            if (userEmailTag) userEmailTag.innerText = '';
+        }
+    }
+
+    // Session check on initial window load
+    const originalOnload = window.onload;
+    window.onload = async function() {
+        if (typeof originalOnload === 'function') await originalOnload();
+        if (dbClient) {
+            const { data: { session } } = await dbClient.auth.getSession();
+            updateAuthUI(session ? session.user : null);
+
+            dbClient.auth.onAuthStateChange((_event, session) => {
+                updateAuthUI(session ? session.user : null);
+            });
+        }
+    };
     </script>
 </body>
 </html>
