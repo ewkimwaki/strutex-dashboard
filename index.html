@@ -1763,12 +1763,7 @@
         const defaultStations = [
             {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", mapQuery: "Rubis Mesora Kenya", info: "Emmanuel", scope: "Review civil deficiencies & canopy repainting", status: "Pending", comments: "Awaiting site clearance", jobCardSaved: false, jobCardPayload: null},
             {rank: 2, tier: "Tier 2: Medium Risk", name: "Rubis Magumu", mapQuery: "Rubis Magumu Kenya", info: "Kelvin", scope: "Drainage culvert inspection", status: "Ongoing", comments: "Materials on site", jobCardSaved: false, jobCardPayload: null}
-
-            // 4. Initialize Auth Session from auth.js
-            if (typeof initAuth === 'function') {
-                await initAuth();
-            }
-        };
+        ];
 
         async function loadScheduleC() {
             if (dbClient) {
@@ -3485,32 +3480,26 @@ function completePowStation(id) {
     function goToToday() { currentCalendarDate = new Date(); selectedCalendarDate = new Date().toISOString().split('T')[0]; renderSamsungCalendar(); }
 
     window.onload = async function() {
-            // 1. Initialize PWA Service Worker for Offline Capabilities
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js')
-                    .then(() => console.log('🛠️ PWA Service Worker Registered'))
-                    .catch(err => console.warn('PWA SW Registration Failed:', err));
-            }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
 
-            // 2. Network Status Listeners
-            window.addEventListener('online', () => {
-                showToast("📡 Connection restored. Syncing pending data to Cloud...", "success");
-                if (dbClient) saveToCloud(); // Auto-sync on reconnection
-            });
-            window.addEventListener('offline', () => {
-                showToast("⚠️ Offline Mode. Data will save securely to your device.", "warning");
-            });
+        window.addEventListener('online', () => {
+            showToast("📡 Connection restored. Syncing to Cloud...", "success");
+            if (dbClient) saveToCloud();
+        });
+        window.addEventListener('offline', () => {
+            showToast("⚠️ Offline Mode active.", "warning");
+        });
 
-            // 3. Load Data & Activate Sync
-            await loadScheduleC();
-            await loadStations();
-            setupRealtimeSubscriptions();
+        await loadScheduleC();
+        await loadStations();
+        setupRealtimeSubscriptions();
 
-            // 4. Initialize Auth Session from auth.js
-            if (typeof initAuth === 'function') {
-                await initAuth();
-            }
-        };
+        if (typeof initAuth === 'function') {
+            await initAuth();
+        }
+    };
     </script>
 </body>
 </html>
