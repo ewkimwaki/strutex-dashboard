@@ -222,6 +222,19 @@ async function handleForgotPassword() {
 }
 
 /**
+ * Global Guard to block actions for unauthenticated users
+ */
+function requireAuth(actionName = "make changes") {
+    if (!currentAuthUser) {
+        showToast(`🔒 Authentication required to ${actionName}. Please log in.`, "warning");
+        switchToAuthTab('login');
+        openModal('authModal');
+        return false;
+    }
+    return true;
+}
+
+/**
  * 5. LANDING PAGE & AUTH STATE MANAGEMENT
  */
 function updateAuthUI(user) {
@@ -245,6 +258,11 @@ function updateAuthUI(user) {
         if (activityBtn) activityBtn.style.display = 'none';
         if (userEmailTag) userEmailTag.innerText = '';
         if (landingBanner) landingBanner.style.display = 'block';
+    }
+
+    // Refresh table view to reflect read-only vs editable state
+    if (typeof renderTable === 'function') {
+        renderTable();
     }
 }
 
