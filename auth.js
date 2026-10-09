@@ -7,15 +7,31 @@ let currentAuthUser = null;
  */
 function switchToAuthTab(tab) {
     const tabs = ['login', 'signup', 'forgot', 'otp'];
+    
+    // Update Dynamic Title Text
+    const titleEl = document.getElementById('authDynamicTitle');
+    if (titleEl) {
+        if (tab === 'login') titleEl.innerText = 'Sign in';
+        if (tab === 'signup') titleEl.innerText = 'Create Account';
+        if (tab === 'forgot') titleEl.innerText = 'Reset Password';
+        if (tab === 'otp') titleEl.innerText = 'Verify Email';
+    }
+
     tabs.forEach(t => {
         const el = document.getElementById(`authView_${t}`);
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
         
         const tabBtn = document.getElementById(`authTabBtn_${t}`);
         if (tabBtn) {
-            tabBtn.style.borderBottom = (t === tab) ? '3px solid var(--primary-color)' : 'none';
-            tabBtn.style.fontWeight = (t === tab) ? '700' : '500';
-            tabBtn.style.color = (t === tab) ? 'var(--primary-color)' : '#64748b';
+            if (t === tab) {
+                tabBtn.style.borderBottom = '3px solid #ea580c'; // Sahara Orange
+                tabBtn.style.color = '#ea580c';
+                tabBtn.style.fontWeight = '700';
+            } else {
+                tabBtn.style.borderBottom = '3px solid transparent';
+                tabBtn.style.color = '#94a3b8';
+                tabBtn.style.fontWeight = '600';
+            }
         }
     });
 }
@@ -234,9 +250,6 @@ function requireAuth(actionName = "make changes") {
     return true;
 }
 
-/**
- * 5. LANDING PAGE & AUTH STATE MANAGEMENT
- */
 function updateAuthUI(user) {
     currentAuthUser = user;
 
@@ -249,6 +262,7 @@ function updateAuthUI(user) {
     const landingBanner = document.getElementById('landingHeroBanner');
     const protectedActions = document.getElementById('protectedActions');
     const mainDashboardArea = document.getElementById('mainDashboardArea');
+    const dashboardHeader = document.querySelector('header');
 
     if (user) {
         if (loginBtn) loginBtn.style.display = 'none';
@@ -256,8 +270,9 @@ function updateAuthUI(user) {
         if (activityBtn) activityBtn.style.display = 'inline-flex';
         if (userEmailTag) userEmailTag.innerText = user.email;
         
-        // Show protected areas, hide landing
+        // Logged In: Hide landing wall, reveal header and dashboard
         if (landingBanner) landingBanner.style.display = 'none';
+        if (dashboardHeader) dashboardHeader.style.display = 'flex';
         if (protectedActions) protectedActions.style.display = 'flex';
         if (mainDashboardArea) mainDashboardArea.style.display = 'block';
     } else {
@@ -266,13 +281,13 @@ function updateAuthUI(user) {
         if (activityBtn) activityBtn.style.display = 'none';
         if (userEmailTag) userEmailTag.innerText = '';
         
-        // Show landing, hide protected areas
-        if (landingBanner) landingBanner.style.display = 'block';
+        // Logged Out: Engage full-screen landing wall, hide dashboard completely
+        if (landingBanner) landingBanner.style.display = 'flex';
+        if (dashboardHeader) dashboardHeader.style.display = 'none';
         if (protectedActions) protectedActions.style.display = 'none';
         if (mainDashboardArea) mainDashboardArea.style.display = 'none';
     }
 
-    // Refresh table view to reflect read-only vs editable state
     if (typeof renderTable === 'function') {
         renderTable();
     }
