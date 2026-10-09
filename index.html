@@ -1887,6 +1887,7 @@
         function renderTable() {
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
+            const isAuth = Boolean(currentAuthUser);
             
             masterStationsData.forEach((s, index) => {
                 const tr = document.createElement("tr");
@@ -1900,47 +1901,48 @@
                     jcButtonHtml = `
                         <div style="display: flex; gap: 4px; width: 100%; margin-bottom: 4px;">
                             <button class="btn btn-success" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick='viewSavedJobCard(${payloadSafe})'>👁️ Card</button>
-                            <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #0284c7;" onclick='editSavedJobCard(${payloadSafe},${index})'>✏️ Edit</button>
+                            <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #0284c7;" ${!isAuth ? 'disabled title="Login required"' : ''} onclick='if(requireAuth("edit job cards")) editSavedJobCard(${payloadSafe},${index})'>✏️ Edit</button>
                         </div>
                         <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; width: 100%; background-color: #0f766e; font-weight: bold;" onclick='viewBoQ(${payloadSafe})'>💰 View BoQ / Costs</button>
                     `;
                     actionButtonsHtml = `
                         <div style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
-                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #f59e0b; color: #0f172a; font-weight: bold;" onclick="openCloneModal(${index})">📄 Clone Scope</button>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; background-color: #f59e0b; color: #0f172a; font-weight: bold;" ${!isAuth ? 'disabled' : ''} onclick="if(requireAuth('clone scope')) openCloneModal(${index})">📄 Clone Scope</button>
                             <div style="display:flex; width: 100%; gap: 4px;">
-                                <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #64748b;" onclick="resetStationCycle(${index})">🔄 Reset</button>
-                                <button class="btn btn-danger" style="padding: 4px; font-size: 0.7rem; flex: 1;" onclick="deleteStation(${index})" title="Delete row">✕</button>
+                                <button class="btn btn-secondary" style="padding: 4px; font-size: 0.7rem; flex: 1; background-color: #64748b;" ${!isAuth ? 'disabled' : ''} onclick="if(requireAuth('reset cycle')) resetStationCycle(${index})">🔄 Reset</button>
+                                <button class="btn btn-danger" style="padding: 4px; font-size: 0.7rem; flex: 1;" ${!isAuth ? 'disabled' : ''} onclick="if(requireAuth('delete station')) deleteStation(${index})" title="Delete row">✕</button>
                             </div>
                         </div>
                     `;
                 } else {
                     actionButtonsHtml = `
-                        <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChecklist(this)">Deploy #${s.rank || (index + 1)}</button>
-                        <button class="btn btn-danger" style="padding: 4px 6px; font-size: 0.7rem;" onclick="deleteStation(${index})" title="Delete row">✕</button>
+                        <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" ${!isAuth ? 'disabled title="Login required"' : ''} onclick="if(requireAuth('deploy station')) openChecklist(this)">Deploy #${s.rank || (index + 1)}</button>
+                        <button class="btn btn-danger" style="padding: 4px 6px; font-size: 0.7rem;" ${!isAuth ? 'disabled title="Login required"' : ''} onclick="if(requireAuth('delete station')) deleteStation(${index})" title="Delete row">✕</button>
                     `;
                 }
 
-                // Inputs now instantly update masterStationsData on keystroke
+                const disAttr = !isAuth ? 'disabled' : '';
+
                 tr.innerHTML = `
-                    <td><input type="number" class="editable-cell" value="${s.rank || (index + 1)}" style="width:40px; text-align:center;" oninput="masterStationsData[${index}].rank = parseInt(this.value) || 0; saveLocally();"></td>
+                    <td><input type="number" class="editable-cell" value="${s.rank || (index + 1)}" style="width:40px; text-align:center;" ${disAttr} oninput="if(requireAuth('edit rank')){ masterStationsData[${index}].rank = parseInt(this.value) || 0; saveLocally(); }"></td>
                     <td>
-                        <select class="status-select" onchange="masterStationsData[${index}].tier = this.value; saveLocally();">
+                        <select class="status-select" ${disAttr} onchange="if(requireAuth('change tier')){ masterStationsData[${index}].tier = this.value; saveLocally(); }">
                             <option ${s.tier === 'Tier 1: High Risk' ? 'selected' : ''}>Tier 1: High Risk</option>
                             <option ${s.tier === 'Tier 2: Medium Risk' ? 'selected' : ''}>Tier 2: Medium Risk</option>
                             <option ${s.tier === 'Tier 3: Low Risk' ? 'selected' : ''}>Tier 3: Low Risk</option>
                         </select>
                     </td>
-                    <td><input type="text" class="editable-cell" value="${s.name || ''}" oninput="masterStationsData[${index}].name = this.value; saveLocally();" style="font-weight:bold;"></td>
+                    <td><input type="text" class="editable-cell" value="${s.name || ''}" ${disAttr} oninput="if(requireAuth('edit station name')){ masterStationsData[${index}].name = this.value; saveLocally(); }" style="font-weight:bold;"></td>
                     <td><a href="${mapsUrl}" target="_blank" class="map-link">📍 Map</a></td>
-                    <td><input type="text" class="editable-cell" value="${s.info || ''}" oninput="masterStationsData[${index}].info = this.value; saveLocally();"></td>
+                    <td><input type="text" class="editable-cell" value="${s.info || ''}" ${disAttr} oninput="if(requireAuth('edit engineer')){ masterStationsData[${index}].info = this.value; saveLocally(); }"></td>
                     <td>
                         <div style="display:flex; flex-direction:column; gap:4px;">
                             <div class="preview-snippet scope-preview">${s.scope || 'No scope defined...'}</div>
-                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size:0.7rem; align-self:flex-start;" onclick="openRichTextEditor(this, 'scope')">✏️ Edit Scope</button>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size:0.7rem; align-self:flex-start;" ${disAttr} onclick="if(requireAuth('edit scope')) openRichTextEditor(this, 'scope')">✏️ Edit Scope</button>
                         </div>
                     </td>
                     <td>
-                        <select class="status-select" onchange="masterStationsData[${index}].status = this.value; saveLocally();">
+                        <select class="status-select" ${disAttr} onchange="if(requireAuth('change status')){ masterStationsData[${index}].status = this.value; saveLocally(); }">
                             <option ${s.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option ${s.status === 'Ongoing' ? 'selected' : ''}>Ongoing</option>
                             <option ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
@@ -1949,7 +1951,7 @@
                     <td>
                         <div style="display:flex; flex-direction:column; gap:4px;">
                             <div class="preview-snippet notes-preview">${s.comments || 'No notes recorded...'}</div>
-                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size:0.7rem; align-self:flex-start;" onclick="openRichTextEditor(this, 'notes')">✏️ Edit Notes</button>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size:0.7rem; align-self:flex-start;" ${disAttr} onclick="if(requireAuth('edit notes')) openRichTextEditor(this, 'notes')">✏️ Edit Notes</button>
                         </div>
                     </td>
                     <td class="jc-cell" style="text-align: center; vertical-align: middle;">${jcButtonHtml}</td>
@@ -1958,10 +1960,9 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
-                tr._stationIndex = index; // Keep for legacy modal tracking
+                tr._stationIndex = index;
             });
         }
-
         let masterFilterTimeout;
         function filterMasterTable() {
             clearTimeout(masterFilterTimeout);
@@ -2005,16 +2006,19 @@
         }
 
         function saveRichTextContent() {
+            if (!requireAuth("save rich text changes")) return;
             if (activeRichTargetCell && activeRow) {
                 const newContent = document.getElementById('richEditorBody').innerHTML;
                 activeRichTargetCell.innerHTML = newContent;
                 
-                // Save to state instantly
                 const index = activeRow._stationIndex;
+                const stationName = masterStationsData[index]?.name || "Station";
                 if (activeRichTargetCell.classList.contains('scope-preview')) {
                     masterStationsData[index].scope = newContent;
+                    if (typeof logActivity === 'function') logActivity("Updated Scope", `Updated scope for ${stationName}`);
                 } else {
                     masterStationsData[index].comments = newContent;
+                    if (typeof logActivity === 'function') logActivity("Updated Notes", `Updated technician notes for ${stationName}`);
                 }
             }
             closeModal('richTextModal');
@@ -2022,10 +2026,12 @@
         }
 
         function addNewRow() {
+            if (!requireAuth("add new stations")) return;
+            const newName = "New Rubis Station " + (masterStationsData.length + 1);
             masterStationsData.push({
                 rank: masterStationsData.length + 1,
                 tier: "Tier 2: Medium Risk",
-                name: "New Rubis Station " + (masterStationsData.length + 1),
+                name: newName,
                 mapQuery: "Kenya",
                 info: "Emmanuel Simano",
                 scope: "General site inspection & repairs",
@@ -2036,13 +2042,17 @@
             });
             renderTable();
             saveLocally();
+            if (typeof logActivity === 'function') logActivity("Added Station", `Created new matrix station entry: ${newName}`);
         }
 
         function deleteStation(index) {
-            if (confirm("Are you sure you want to delete this station row?")) {
+            if (!requireAuth("delete stations")) return;
+            const stName = masterStationsData[index]?.name || "Station";
+            if (confirm(`Are you sure you want to delete ${stName}?`)) {
                 masterStationsData.splice(index, 1);
                 renderTable();
                 saveLocally();
+                if (typeof logActivity === 'function') logActivity("Deleted Station", `Removed station: ${stName}`);
             }
         }
 
@@ -2061,6 +2071,7 @@
         }
 
         async function saveToCloud() {
+            if (!requireAuth("sync data to cloud")) return;
             saveLocally();
             const indicator = document.getElementById("autosaveIndicator");
             
@@ -2267,19 +2278,21 @@ function formatDoc(cmd, value = null) {
         function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
         
         function completeAndSaveJobCard() {
+            if (!requireAuth("complete job cards")) return;
             if (!activeRow) return;
             const rowIndex = activeRow._stationIndex;
             
-            // Save payload to global array instead of the DOM
             masterStationsData[rowIndex].jobCardSaved = true;
             masterStationsData[rowIndex].jobCardPayload = cachedJobCardData;
             masterStationsData[rowIndex].status = "Completed";
 
-            // Instantly re-render the matrix to show the new buttons securely
             renderTable();
-            
             closeModal('jobCardModal');
             saveLocally();
+            
+            if (typeof logActivity === 'function') {
+                logActivity("Job Card Generated", `Completed Job Card & BoQ for ${masterStationsData[rowIndex].name}`);
+            }
             showToast("Job Card & BoQ Completed Successfully!", "success");
         }
 
