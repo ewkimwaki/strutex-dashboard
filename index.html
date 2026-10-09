@@ -1583,93 +1583,6 @@
                 </div>
             </div>
 
-            <!-- View 1: Log In -->
-            <div id="authView_login">
-                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Sign In to Strutex</h3>
-                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Access your petroleum infrastructure portal and live cloud sync.</p>
-                <div class="form-group" style="text-align: left;">
-                    <label>Email Address</label>
-                    <input type="email" id="authUserEmail" class="form-control" placeholder="user@strutex.co.ke">
-                </div>
-                <div class="form-group" style="text-align: left;">
-                    <label>Password</label>
-                    <div style="position: relative;">
-                        <input type="password" id="authUserPassword" class="form-control" placeholder="••••••••" style="padding-right: 40px;">
-                        <span onclick="togglePasswordVisibility('authUserPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #64748b; font-size: 1.1rem;" title="Show Password">👁️</span>
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                    <a href="javascript:void(0)" onclick="switchToAuthTab('forgot')" style="font-size:0.8rem; color: var(--accent-blue); text-decoration: none;">Forgot password?</a>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button>
-                        <button id="btnLoginSubmit" class="btn btn-success" onclick="handleLogin()">Sign In</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- View 2: Sign Up -->
-            <div id="authView_signup" style="display: none;">
-                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Create Strutex Account</h3>
-                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Register with email & password. Verification code will be sent via email.</p>
-                <div class="form-group" style="text-align: left;">
-                    <label>Full Name</label>
-                    <input type="text" id="authSignUpName" class="form-control" placeholder="e.g. Emmanuel Kimwaki">
-                </div>
-                <div class="form-group" style="text-align: left;">
-                    <label>Email Address</label>
-                    <input type="email" id="authSignUpEmail" class="form-control" placeholder="user@strutex.co.ke">
-                </div>
-                <div class="form-group" style="text-align: left;">
-                    <label>Password</label>
-                    <div style="position: relative;">
-                        <input type="password" id="authSignUpPassword" class="form-control" placeholder="Min. 6 characters" style="padding-right: 40px;">
-                        <span onclick="togglePasswordVisibility('authSignUpPassword', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #64748b; font-size: 1.1rem;" title="Show Password">👁️</span>
-                    </div>
-                </div>
-                <div class="form-group" style="text-align: left;">
-                    <label>Confirm Password</label>
-                    <div style="position: relative;">
-                        <input type="password" id="authSignUpPasswordConfirm" class="form-control" placeholder="Re-enter password" style="padding-right: 40px;">
-                        <span onclick="togglePasswordVisibility('authSignUpPasswordConfirm', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #64748b; font-size: 1.1rem;" title="Show Password">👁️</span>
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button>
-                    <button id="btnSignUpSubmit" class="btn btn-success" onclick="handleSignUp()">Create Account</button>
-                </div>
-            </div>
-
-            <!-- View 3: Forgot Password -->
-            <div id="authView_forgot" style="display: none;">
-                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Reset Your Password</h3>
-                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Enter your email to receive password reset instructions.</p>
-                <div class="form-group" style="text-align: left;">
-                    <label>Email Address</label>
-                    <input type="email" id="authForgotEmail" class="form-control" placeholder="user@strutex.co.ke">
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="switchToAuthTab('login')">Back to Login</button>
-                    <button id="btnForgotSubmit" class="btn btn-success" onclick="handleForgotPassword()">Send Reset Link</button>
-                </div>
-            </div>
-
-            <!-- View 4: Email Code Verification (OTP) -->
-            <div id="authView_otp" style="display: none;">
-                <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem;">Email Verification Required</h3>
-                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">We sent a 6-digit verification code to <b id="otpVerifyEmailDisplay">your email</b>.</p>
-                <input type="hidden" id="authOtpEmail">
-                <div class="form-group" style="text-align: left; margin-top: 15px;">
-                    <label>6-Digit Verification Code</label>
-                    <input type="text" id="authOtpCode" class="form-control" placeholder="123456" maxlength="8" style="text-align:center; letter-spacing: 4px; font-size: 1.2rem; font-weight: bold;">
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="switchToAuthTab('signup')">Back</button>
-                    <button id="btnOtpSubmit" class="btn btn-success" onclick="handleVerifyOTP()">Verify & Complete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- User Directory & Activity Tracker Modal -->
     <div id="userActivityModal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
@@ -1851,28 +1764,6 @@
             {rank: 1, tier: "Tier 1: High Risk", name: "Rubis Mesora", mapQuery: "Rubis Mesora Kenya", info: "Emmanuel", scope: "Review civil deficiencies & canopy repainting", status: "Pending", comments: "Awaiting site clearance", jobCardSaved: false, jobCardPayload: null},
             {rank: 2, tier: "Tier 2: Medium Risk", name: "Rubis Magumu", mapQuery: "Rubis Magumu Kenya", info: "Kelvin", scope: "Drainage culvert inspection", status: "Ongoing", comments: "Materials on site", jobCardSaved: false, jobCardPayload: null}
         ];
-
-        window.onload = async function() {
-            // 1. Initialize PWA Service Worker for Offline Capabilities
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js')
-                    .then(() => console.log('🛠️ PWA Service Worker Registered'))
-                    .catch(err => console.warn('PWA SW Registration Failed:', err));
-            }
-
-            // 2. Network Status Listeners
-            window.addEventListener('online', () => {
-                showToast("📡 Connection restored. Syncing pending data to Cloud...", "success");
-                if (dbClient) saveToCloud(); // Auto-sync on reconnection
-            });
-            window.addEventListener('offline', () => {
-                showToast("⚠️ Offline Mode. Data will save securely to your device.", "warning");
-            });
-
-            // 3. Load Data & Activate Sync
-            await loadScheduleC();
-            await loadStations();
-            setupRealtimeSubscriptions();
 
             // 4. Initialize Auth Session from auth.js
             if (typeof initAuth === 'function') {
@@ -2403,7 +2294,12 @@ function formatDoc(cmd, value = null) {
     document.execCommand(cmd, false, value);
 }
 
-        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        function closeModal(modalId) { 
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none'; 
+    }
+}
         
         function completeAndSaveJobCard() {
             if (!requireAuth("complete job cards")) return;
