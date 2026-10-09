@@ -6,6 +6,9 @@
     <title>Strutex Builders - Operations & Job Card Ecosystem</title>
     <!-- Supabase Library CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Authentication Module -->
+    <script src="auth.js"></script>
     
     <!-- ExcelJS & FileSaver for Professional Excel Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -1619,6 +1622,11 @@
             await loadScheduleC();
             await loadStations();
             setupRealtimeSubscriptions();
+
+            // 4. Initialize Auth Session from auth.js
+            if (typeof initAuth === 'function') {
+                await initAuth();
+            }
         };
 
         async function loadScheduleC() {
@@ -3317,67 +3325,28 @@ function completePowStation(id) {
     function changeMonth(dir) { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + dir); renderSamsungCalendar(); }
     function goToToday() { currentCalendarDate = new Date(); selectedCalendarDate = new Date().toISOString().split('T')[0]; renderSamsungCalendar(); }
 
-    /* ==========================================
-       AUTHENTICATION & SESSION LOGIC
-       ========================================== */
-    async function handleLogin() {
-        const email = document.getElementById('authUserEmail').value.trim();
-        const password = document.getElementById('authUserPassword').value;
-
-        if (!email || !password) {
-            showToast("Please provide both email and password.", "warning");
-            return;
-        }
-
-        try {
-            const { data, error } = await dbClient.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-
-            showToast(`Welcome back, ${data.user.email}!`, "success");
-            closeModal('authModal');
-            updateAuthUI(data.user);
-        } catch (err) {
-            showToast("Login failed: " + err.message, "error");
-        }
-    }
-
-    async function handleLogout() {
-        if (dbClient) {
-            await dbClient.auth.signOut();
-            showToast("Logged out successfully.", "info");
-            updateAuthUI(null);
-        }
-    }
-
-    function updateAuthUI(user) {
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userEmailTag = document.getElementById('userEmailTag');
-
-        if (user) {
-            if (loginBtn) loginBtn.style.display = 'none';
-            if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-            if (userEmailTag) userEmailTag.innerText = user.email;
-        } else {
-            if (loginBtn) loginBtn.style.display = 'inline-flex';
-            if (logoutBtn) logoutBtn.style.display = 'none';
-            if (userEmailTag) userEmailTag.innerText = '';
-        }
-    }
-
-    // Session check on initial window load
-    const originalOnload = window.onload;
     window.onload = async function() {
-        if (typeof originalOnload === 'function') await originalOnload();
-        if (dbClient) {
-            const { data: { session } } = await dbClient.auth.getSession();
-            updateAuthUI(session ? session.user : null);
+            // 1. Initialize PWA Service Worker for Offline Capabilities
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log('🛠️ PWA Service Worker Registered'))
+                    .catch(err => console.warn('PWA SW Registration Failed:', err));
+            }
 
-            dbClient.auth.onAuthStateChange((_event, session) => {
-                updateAuthUI(session ? session.user : null);
+            // 2. Network Status Listeners
+            window.addEventListener('online', () => {
+                showToast("📡 Connection restored. Syncing pending data to Cloud...", "success");
+                if (dbClient) saveToCloud(); // Auto-sync on reconnection
             });
-        }
-    };
+            window.addEventListener('offline', () => {
+                showToast("⚠️ Offline Mode. Data will save securely to your device.", "warning");
+            });
+
+            // 3. Load Data & Activate Sync
+            await loadScheduleC();
+            await loadStations();
+            setupRealtimeSubscriptions();
+        };
     </script>
 </body>
 </html>
