@@ -218,6 +218,38 @@ async function handleForgotPassword() {
 }
 
 /**
+ * 5. UPDATE PASSWORD PROCESS (Post-Recovery)
+ */
+async function handleUpdatePassword() {
+    const newPassword = document.getElementById('newRecoveredPassword').value;
+    
+    if (!newPassword || newPassword.length < 6) {
+        showToast("Password must be at least 6 characters.", "warning");
+        return;
+    }
+
+    if (!dbClient) return;
+
+    const updateBtn = document.getElementById('btnUpdatePassword');
+    if (updateBtn) { updateBtn.disabled = true; updateBtn.innerText = "Updating..."; }
+
+    try {
+        const { error } = await dbClient.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+
+        showToast("Password updated successfully! Welcome back.", "success");
+        closeModal('updatePasswordModal');
+        await logActivity("Password Updated", "User completed password recovery flow.");
+        
+        // Strip the recovery token from the URL for a clean state
+        window.history.replaceState(null, document.title, window.location.pathname);
+    } catch (err) {
+        showToast("Failed to update password: " + err.message, "error");
+    } finally {
+        if (updateBtn) { updateBtn.disabled = false; updateBtn.innerText = "Update Password"; }
+    }
+}
+/**
  * Global Guard to block actions for unauthenticated users
  */
 function requireAuth(actionName = "make changes") {
