@@ -5,9 +5,6 @@ let currentAuthUser = null;
 /**
  * Switch tabs within the Authentication Modal Hub
  */
-/**
- * Switch tabs within the Authentication Modal Hub
- */
 function switchToAuthTab(tab) {
     const tabs = ['login', 'signup', 'forgot', 'otp', 'reset'];
     
@@ -18,6 +15,12 @@ function switchToAuthTab(tab) {
         if (tab === 'forgot') titleEl.innerText = 'Reset Password';
         if (tab === 'otp') titleEl.innerText = 'Verify Email';
         if (tab === 'reset') titleEl.innerText = 'Secure Account';
+    }
+
+    // Hide the 'Log In / Register' tabs when actively in the recovery or verification flows
+    const tabNav = document.getElementById('authTabNav');
+    if (tabNav) {
+        tabNav.style.display = (tab === 'login' || tab === 'signup') ? 'flex' : 'none';
     }
 
     tabs.forEach(t => {
