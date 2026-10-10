@@ -1562,6 +1562,20 @@
                 </div>
             </div>
 
+    <!-- UPDATE PASSWORD MODAL (Triggered via Email Reset Link) -->
+<div id="updatePasswordModal" class="modal" style="z-index: 10000;">
+    <div class="modal-content" style="max-width: 400px; padding: 30px; text-align: center;">
+        <h3 style="margin-top:0; color: #003366; font-size: 1.2rem;">Set New Password</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">Please enter your new password to secure your account.</p>
+        
+        <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px;">New Password</label>
+            <input type="password" id="newRecoveredPassword" class="form-control" placeholder="Min 6 characters">
+        </div>
+        
+        <button id="btnUpdatePassword" class="btn" style="width: 100%; padding: 12px; background: #E2001A; color: white; border: none; font-weight: bold; font-size: 1rem; border-radius: 6px;" onclick="handleUpdatePassword()">Update Password</button>
+    </div>
+</div>
     <!-- User Directory & Activity Tracker Modal -->
     <div id="userActivityModal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
