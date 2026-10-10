@@ -5,16 +5,19 @@ let currentAuthUser = null;
 /**
  * Switch tabs within the Authentication Modal Hub
  */
+/**
+ * Switch tabs within the Authentication Modal Hub
+ */
 function switchToAuthTab(tab) {
-    const tabs = ['login', 'signup', 'forgot', 'otp'];
+    const tabs = ['login', 'signup', 'forgot', 'otp', 'reset'];
     
-    // Update Dynamic Title Text
     const titleEl = document.getElementById('authDynamicTitle');
     if (titleEl) {
         if (tab === 'login') titleEl.innerText = 'Sign in';
         if (tab === 'signup') titleEl.innerText = 'Create Account';
         if (tab === 'forgot') titleEl.innerText = 'Reset Password';
         if (tab === 'otp') titleEl.innerText = 'Verify Email';
+        if (tab === 'reset') titleEl.innerText = 'Secure Account';
     }
 
     tabs.forEach(t => {
@@ -24,7 +27,7 @@ function switchToAuthTab(tab) {
         const tabBtn = document.getElementById(`authTabBtn_${t}`);
         if (tabBtn) {
             if (t === tab) {
-                tabBtn.style.borderBottom = '3px solid #0284c7'; // BoQ Blue theme
+                tabBtn.style.borderBottom = '3px solid #0284c7';
                 tabBtn.style.color = '#0284c7';
                 tabBtn.style.fontWeight = '700';
             } else {
@@ -193,6 +196,9 @@ async function handleVerifyOTP() {
 /**
  * 4. FORGOT PASSWORD PROCESS
  */
+/**
+ * 4. FORGOT PASSWORD PROCESS (OTP Generation)
+ */
 async function handleForgotPassword() {
     const email = document.getElementById('authForgotEmail').value.trim();
     if (!email) { showToast("Please enter your email address.", "warning"); return; }
@@ -202,14 +208,16 @@ async function handleForgotPassword() {
     if (forgotBtn) { forgotBtn.disabled = true; forgotBtn.innerText = "Sending..."; }
 
     try {
-        const { error } = await dbClient.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + window.location.pathname
-        });
+        // Remove redirectTo to prevent URL redirects and enforce the OTP flow
+        const { error } = await dbClient.auth.resetPasswordForEmail(email);
         if (error) throw error;
 
-        showToast("Password reset link sent to your email!", "success");
-        await logActivity("Password Reset Requested", `Reset link requested for ${email}`);
-        switchToAuthTab('login');
+        showToast("Recovery code sent to your email!", "success");
+        await logActivity("Password Reset Requested", `Reset code requested for ${email}`);
+        
+        // Transition directly to the new reset tab
+        document.getElementById('authResetEmail').value = email;
+        switchToAuthTab('reset');
     } catch (err) {
         showToast("Password reset failed: " + err.message, "error");
     } finally {
@@ -218,35 +226,51 @@ async function handleForgotPassword() {
 }
 
 /**
- * 5. UPDATE PASSWORD PROCESS (Post-Recovery)
+ * 5. COMPLETE PASSWORD RESET (Atomic OTP Verification & Password Update)
  */
-async function handleUpdatePassword() {
-    const newPassword = document.getElementById('newRecoveredPassword').value;
-    
+async function handleCompletePasswordReset() {
+    const email = document.getElementById('authResetEmail').value.trim();
+    const token = document.getElementById('authResetCode').value.trim();
+    const newPassword = document.getElementById('authResetNewPassword').value;
+
+    if (!token || token.length < 6) {
+        showToast("Please enter the 6-digit recovery code.", "warning");
+        return;
+    }
     if (!newPassword || newPassword.length < 6) {
-        showToast("Password must be at least 6 characters.", "warning");
+        showToast("New password must be at least 6 characters.", "warning");
         return;
     }
 
-    if (!dbClient) return;
-
-    const updateBtn = document.getElementById('btnUpdatePassword');
-    if (updateBtn) { updateBtn.disabled = true; updateBtn.innerText = "Updating..."; }
+    const resetBtn = document.getElementById('btnCompleteReset');
+    if (resetBtn) { resetBtn.disabled = true; resetBtn.innerText = "Securing..."; }
 
     try {
-        const { error } = await dbClient.auth.updateUser({ password: newPassword });
-        if (error) throw error;
+        // Step 1: Verify the OTP to establish a trusted temporary session
+        const { error: verifyError } = await dbClient.auth.verifyOtp({
+            email,
+            token,
+            type: 'recovery'
+        });
+        
+        if (verifyError) throw verifyError;
+
+        // Step 2: Immediately update the password for the newly authorized session
+        const { data, error: updateError } = await dbClient.auth.updateUser({ 
+            password: newPassword 
+        });
+        
+        if (updateError) throw updateError;
 
         showToast("Password updated successfully! Welcome back.", "success");
-        closeModal('updatePasswordModal');
-        await logActivity("Password Updated", "User completed password recovery flow.");
+        closeModal('authModal');
+        updateAuthUI(data.user);
+        await logActivity("Password Updated", "User completed OTP password reset.");
         
-        // Strip the recovery token from the URL for a clean state
-        window.history.replaceState(null, document.title, window.location.pathname);
     } catch (err) {
-        showToast("Failed to update password: " + err.message, "error");
+        showToast("Reset failed: " + err.message, "error");
     } finally {
-        if (updateBtn) { updateBtn.disabled = false; updateBtn.innerText = "Update Password"; }
+        if (resetBtn) { resetBtn.disabled = false; resetBtn.innerText = "Secure Account & Login"; }
     }
 }
 /**
@@ -361,6 +385,9 @@ async function renderActivityLogs() {
     }).join('');
 }
 
+/**
+ * Cleaned-up initAuth removing the obsolete URL hash listeners
+ */
 async function initAuth() {
     if (!dbClient) return;
     try {
@@ -369,16 +396,10 @@ async function initAuth() {
 
         dbClient.auth.onAuthStateChange((event, session) => {
             updateAuthUI(session ? session.user : null);
-            if (event === 'PASSWORD_RECOVERY') {
-                closeModal('authModal');
-                openModal('updatePasswordModal');
-            }
         });
-        
-        if (window.location.hash.includes('type=recovery')) {
-            openModal('updatePasswordModal');
-        }
-    } catch (e) {}
+    } catch (e) {
+        console.warn("Auth initialization failed:", e);
+    }
 }
 
 function togglePasswordVisibility(inputId, iconElement) {
