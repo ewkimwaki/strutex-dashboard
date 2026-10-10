@@ -1478,7 +1478,7 @@
                         </div>
 
                         <!-- Tabbed Navigation -->
-                        <div style="display: flex; border-bottom: 2px solid #f1f5f9; margin-bottom: 25px;">
+                        <div id="authTabNav" style="display: flex; border-bottom: 2px solid #f1f5f9; margin-bottom: 25px;">
                             <button id="authTabBtn_login" onclick="switchToAuthTab('login')" style="flex: 1; padding: 10px 0; background: none; border: none; font-size: 1rem; font-weight: 700; color: #0284c7; border-bottom: 3px solid #0284c7; cursor: pointer; transition: all 0.2s;">Log In</button>
                             <button id="authTabBtn_signup" onclick="switchToAuthTab('signup')" style="flex: 1; padding: 10px 0; background: none; border: none; font-size: 1rem; font-weight: 600; color: #94a3b8; border-bottom: 3px solid transparent; cursor: pointer; transition: all 0.2s;">Register</button>
                         </div>
@@ -1544,7 +1544,7 @@
                             </div>
                         </div>
 
-                        <!-- VIEW 4: OTP / VERIFICATION -->
+                       <!-- VIEW 4: OTP / VERIFICATION -->
                         <div id="authView_otp" style="display: none;">
                             <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 20px; line-height: 1.5;">We sent a 6-digit verification code to <b id="otpVerifyEmailDisplay" style="color: #0f172a;">your email</b>.</p>
                             <input type="hidden" id="authOtpEmail">
@@ -1558,11 +1558,34 @@
                             </div>
                         </div>
 
+                        <!-- VIEW 5: COMPLETE PASSWORD RESET (OTP + New Password) -->
+                        <div id="authView_reset" style="display: none;">
+                            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 20px; line-height: 1.5;">Enter the 6-digit recovery code sent to your email and set your new password.</p>
+                            <input type="hidden" id="authResetEmail">
+                            
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Recovery Code</label>
+                                <input type="text" id="authResetCode" placeholder="123456" maxlength="6" style="width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; text-align: center; letter-spacing: 8px; font-size: 1.4rem; font-weight: 800; color: #0f172a; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 25px;">
+                                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">New Password</label>
+                                <div style="position: relative;">
+                                    <input type="password" id="authResetNewPassword" placeholder="Min 6 characters" style="width: 100%; padding: 12px 15px; padding-right: 45px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
+                                    <span onclick="togglePasswordVisibility('authResetNewPassword', this)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;">👁️</span>
+                                </div>
+                            </div>
+                            
+                            <button id="btnCompleteReset" onclick="handleCompletePasswordReset()" style="width: 100%; padding: 14px; background: #003366; color: white; border: none; border-radius: 8px; font-size: 1.05rem; font-weight: 700; cursor: pointer; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);">Secure Account & Login</button>
+                            <div style="text-align: center;">
+                                <a href="javascript:void(0)" onclick="switchToAuthTab('login')" style="font-size: 0.85rem; color: #64748b; text-decoration: none; font-weight: 600;">← Cancel Reset</a>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
             </div>
-    <!-- VIEW 5: COMPLETE PASSWORD RESET (OTP + New Password) -->
-<div id="authView_reset" style="display: none;">
+    
     <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 20px; line-height: 1.5;">Enter the 6-digit recovery code sent to your email and set your new password.</p>
     <input type="hidden" id="authResetEmail">
     
