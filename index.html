@@ -1462,7 +1462,7 @@
                     
                     <div style="position: relative; z-index: 2; padding: 45px 50px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="background: #ea580c; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(234,88,12,0.3);">S</div>
+                            <div style="background: #E2001A; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(226,0,26,0.3);">S</div>
                             <span style="font-size: 1.5rem; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">STRUTEX<span style="color: #64748b; font-weight: 400;">DASHBOARD</span></span>
                         </div>
                     </div>
@@ -1479,7 +1479,7 @@
 
                         <!-- Tabbed Navigation -->
                         <div style="display: flex; border-bottom: 2px solid #f1f5f9; margin-bottom: 25px;">
-                            <button id="authTabBtn_login" onclick="switchToAuthTab('login')" style="flex: 1; padding: 10px 0; background: none; border: none; font-size: 1rem; font-weight: 700; color: #ea580c; border-bottom: 3px solid #ea580c; cursor: pointer; transition: all 0.2s;">Log In</button>
+                            <button id="authTabBtn_login" onclick="switchToAuthTab('login')" style="flex: 1; padding: 10px 0; background: none; border: none; font-size: 1rem; font-weight: 700; color: #0284c7; border-bottom: 3px solid #0284c7; cursor: pointer; transition: all 0.2s;">Log In</button>
                             <button id="authTabBtn_signup" onclick="switchToAuthTab('signup')" style="flex: 1; padding: 10px 0; background: none; border: none; font-size: 1rem; font-weight: 600; color: #94a3b8; border-bottom: 3px solid transparent; cursor: pointer; transition: all 0.2s;">Register</button>
                         </div>
 
@@ -1487,44 +1487,44 @@
                         <div id="authView_login">
                             <div class="form-group" style="margin-bottom: 20px;">
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Email Address</label>
-                                <input type="email" id="authUserEmail" placeholder="Enter your email" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='#cbd5e1'">
+                                <input type="email" id="authUserEmail" placeholder="Enter your email" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
                             </div>
                             <div class="form-group" style="margin-bottom: 15px;">
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Password</label>
                                 <div style="position: relative;">
-                                    <input type="password" id="authUserPassword" placeholder="Enter your password" style="width: 100%; padding: 12px 15px; padding-right: 45px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='#cbd5e1'">
+                                    <input type="password" id="authUserPassword" placeholder="Enter your password" style="width: 100%; padding: 12px 15px; padding-right: 45px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
                                     <span onclick="togglePasswordVisibility('authUserPassword', this)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; font-size: 1.1rem;">👁️</span>
                                 </div>
                             </div>
                             
                             <div style="text-align: right; margin-bottom: 25px;">
-                                <a href="javascript:void(0)" onclick="switchToAuthTab('forgot')" style="font-size: 0.85rem; color: #ea580c; text-decoration: none; font-weight: 600;">Forgot Password?</a>
+                                <a href="javascript:void(0)" onclick="switchToAuthTab('forgot')" style="font-size: 0.85rem; color: #0284c7; text-decoration: none; font-weight: 600;">Forgot Password?</a>
                             </div>
                             
-                            <button id="btnLoginSubmit" onclick="handleLogin()" style="width: 100%; padding: 14px; background: #ea580c; color: white; border: none; border-radius: 8px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);">Sign in</button>
+                            <button id="btnLoginSubmit" onclick="handleLogin()" style="width: 100%; padding: 14px; background: #003366; color: white; border: none; border-radius: 8px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);">Sign in</button>
                         </div>
 
                         <!-- VIEW 2: SIGN UP -->
                         <div id="authView_signup" style="display: none;">
                             <div class="form-group" style="margin-bottom: 15px;">
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Full Name</label>
-                                <input type="text" id="authSignUpName" placeholder="e.g. Emmanuel Kimwaki" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='#cbd5e1'">
+                                <input type="text" id="authSignUpName" placeholder="e.g. Emmanuel Kimwaki" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
                             </div>
                             <div class="form-group" style="margin-bottom: 15px;">
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Email Address</label>
-                                <input type="email" id="authSignUpEmail" placeholder="Enter your email" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='#cbd5e1'">
+                                <input type="email" id="authSignUpEmail" placeholder="Enter your email" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
                             </div>
                             <div class="form-group" style="margin-bottom: 15px;">
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Password</label>
                                 <div style="position: relative;">
-                                    <input type="password" id="authSignUpPassword" placeholder="Min. 6 characters" style="width: 100%; padding: 12px 15px; padding-right: 45px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='#cbd5e1'">
+                                    <input type="password" id="authSignUpPassword" placeholder="Min. 6 characters" style="width: 100%; padding: 12px 15px; padding-right: 45px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
                                     <span onclick="togglePasswordVisibility('authSignUpPassword', this)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;">👁️</span>
                                 </div>
                             </div>
                             <div class="form-group" style="margin-bottom: 25px;">
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Confirm Password</label>
                                 <div style="position: relative;">
-                                    <input type="password" id="authSignUpPasswordConfirm" placeholder="Re-enter password" style="width: 100%; padding: 12px 15px; padding-right: 45px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='#cbd5e1'">
+                                    <input type="password" id="authSignUpPasswordConfirm" placeholder="Re-enter password" style="width: 100%; padding: 12px 15px; padding-right: 45px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
                                     <span onclick="togglePasswordVisibility('authSignUpPasswordConfirm', this)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;">👁️</span>
                                 </div>
                             </div>
@@ -1536,7 +1536,7 @@
                             <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 20px; line-height: 1.5;">Enter your email address and we'll send you a secure link to reset your password.</p>
                             <div class="form-group" style="margin-bottom: 25px;">
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: none;">Email Address</label>
-                                <input type="email" id="authForgotEmail" placeholder="user@strutex.co.ke" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0f172a'" onblur="this.style.borderColor='#cbd5e1'">
+                                <input type="email" id="authForgotEmail" placeholder="user@strutex.co.ke" style="width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
                             </div>
                             <button id="btnForgotSubmit" onclick="handleForgotPassword()" style="width: 100%; padding: 14px; background: #0f172a; color: white; border: none; border-radius: 8px; font-size: 1.05rem; font-weight: 700; cursor: pointer; margin-bottom: 15px;">Send Reset Link</button>
                             <div style="text-align: center;">
