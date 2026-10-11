@@ -2426,9 +2426,11 @@
                 btnTable.style.borderColor = 'transparent';
                 btnTable.style.color = '#334155';
                 
-                // Trigger Kanban render from external script
-                if (typeof populateKanbanBoard === 'function') populateKanbanBoard();
-            } else {
+                // Trigger Kanban render & SortableJS initialization from strutex-features.js
+                    if (typeof renderKanbanBoard === 'function') {
+                        renderKanbanBoard();
+                    }
+                } else {
                 tableArea.style.setProperty('display', 'block', 'important'); // Show table
                 kanbanArea.style.setProperty('display', 'none', 'important'); // Strictly hide Kanban
                 
