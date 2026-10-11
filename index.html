@@ -2169,6 +2169,11 @@
                 tbody.appendChild(tr);
                 tr._stationIndex = index;
             });
+            
+            // FIXED: Force the Kanban Board to stay perfectly in sync with the Table's data state
+            if (typeof populateKanbanBoard === 'function') {
+                populateKanbanBoard();
+            }
         }
         let masterFilterTimeout;
         function filterMasterTable() {
@@ -2401,6 +2406,85 @@
                 btnKanban.style.borderColor = 'transparent';
                 btnKanban.style.color = '#334155';
             }
+        };
+
+        // FIXED: Native Kanban Renderer. Replaces external dependency and guarantees UI population
+        window.populateKanbanBoard = function() {
+            const pendingList = document.querySelector('#kanban-pending .kanban-list');
+            const ongoingList = document.querySelector('#kanban-ongoing .kanban-list');
+            const completedList = document.querySelector('#kanban-completed .kanban-list');
+            
+            if (!pendingList || !ongoingList || !completedList) return;
+
+            // Clear existing lists to prevent duplication
+            pendingList.innerHTML = '';
+            ongoingList.innerHTML = '';
+            completedList.innerHTML = '';
+
+            let counts = { Pending: 0, Ongoing: 0, Completed: 0 };
+            
+            // Fallback for Auth check in case it's not initialized yet
+            const isAuth = typeof currentAuthUser !== 'undefined' ? Boolean(currentAuthUser) : true;
+
+            masterStationsData.forEach((s, index) => {
+                const card = document.createElement('div');
+                card.className = 'kanban-card';
+                card.setAttribute('data-index', index);
+                
+                let tierColor = s.tier.includes('1') ? '#E2001A' : (s.tier.includes('2') ? '#d97706' : '#15803d');
+                let tierShort = s.tier.split(':')[0] || s.tier;
+                
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 0.7rem; font-weight: 800; color: ${tierColor}; text-transform: uppercase;">${tierShort}</span>
+                        <span style="font-size: 0.7rem; color: #64748b; font-weight: bold;">Rank: ${s.rank || index + 1}</span>
+                    </div>
+                    <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${s.name}</div>
+                    <div style="font-size: 0.75rem; color: #475569; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
+                        <span>👷</span> ${s.info || 'Unassigned'}
+                    </div>
+                    <div class="kanban-actions" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                `;
+
+                // Safe event listener attachments for buttons
+                const actionsDiv = card.querySelector('.kanban-actions');
+                
+                if (s.jobCardSaved && s.jobCardPayload) {
+                    const btnView = document.createElement('button');
+                    btnView.className = 'btn btn-success';
+                    btnView.style.cssText = 'padding: 4px 8px; font-size: 0.7rem; flex: 1;';
+                    btnView.innerText = '👁️ View Card';
+                    btnView.onclick = () => viewSavedJobCard(masterStationsData[index].jobCardPayload);
+                    
+                    const btnEdit = document.createElement('button');
+                    btnEdit.className = 'btn btn-secondary';
+                    btnEdit.style.cssText = 'padding: 4px 8px; font-size: 0.7rem; flex: 1; background-color: #0284c7; color: white; border: none;';
+                    btnEdit.innerText = '✏️ Edit';
+                    btnEdit.disabled = !isAuth;
+                    btnEdit.onclick = () => { if(typeof requireAuth === 'function' && requireAuth('edit job cards')) editSavedJobCard(masterStationsData[index].jobCardPayload, index); };
+                    
+                    actionsDiv.appendChild(btnView);
+                    actionsDiv.appendChild(btnEdit);
+                } else {
+                    const btnDeploy = document.createElement('button');
+                    btnDeploy.className = 'btn';
+                    btnDeploy.style.cssText = 'padding: 4px 8px; font-size: 0.7rem; width: 100%; border-color: #0284c7; color: #0284c7;';
+                    btnDeploy.innerText = 'Deploy Station';
+                    btnDeploy.disabled = !isAuth;
+                    btnDeploy.onclick = function() { if(typeof requireAuth === 'function' && requireAuth('deploy station')) openChecklist(this); };
+                    actionsDiv.appendChild(btnDeploy);
+                }
+
+                // Append card to corresponding column
+                if (s.status === 'Pending') { pendingList.appendChild(card); counts.Pending++; }
+                else if (s.status === 'Ongoing') { ongoingList.appendChild(card); counts.Ongoing++; }
+                else if (s.status === 'Completed') { completedList.appendChild(card); counts.Completed++; }
+            });
+
+            // Update Header Counts
+            document.getElementById('kanban-count-pending').innerText = counts.Pending;
+            document.getElementById('kanban-count-ongoing').innerText = counts.Ongoing;
+            document.getElementById('kanban-count-completed').innerText = counts.Completed;
         };
 
         function openJobCardWizard() {
