@@ -260,6 +260,7 @@ function renderKanbanBoard() {
     Object.values(columns).forEach(col => {
         const sortable = Sortable.create(col, {
             group: 'matrix',
+            handle: '.kanban-drag-handle', // Restricts dragging to the grip icon only
             animation: 150,
             ghostClass: 'sortable-ghost',
             onEnd: async function (evt) {
