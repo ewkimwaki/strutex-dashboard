@@ -21,9 +21,6 @@
 <!-- IndexedDB Offline Storage Wrapper (LocalForage) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
 
-<!-- Link to the new features file (Add this at the bottom of your body, before the closing </body> tag) -->
-<!-- <script src="strutex-features.js"></script> -->
-
 <style>
     /* ==========================================
        PHASE 6: EXECUTIVE DASHBOARD & KANBAN UI
@@ -1056,6 +1053,7 @@
                     <div id="protectedActions" style="display:none;">
                         <!-- The inner container permanently enforces the flexbox toolbar UI -->
                         <div class="toolbar-container">
+                            <button class="btn btn-secondary" style="background: white; border: 1px solid #0284c7; color: #0284c7; font-weight: bold;" onclick="openExecutiveDashboardModal()">📊 Financial Dashboard</button>
                             <button class="btn btn-secondary" style="background: white;" onclick="openScheduleCManager()">📋 Manage Schedule C</button>
                             <button class="btn btn-secondary" style="background: white;" onclick="openProgramOfWorksModal()">📅 Program of Works</button>
                             <button class="btn btn-secondary" style="background: white;" onclick="addNewRow()">+ Add Station</button>
@@ -1068,33 +1066,6 @@
 
             <!-- Protected Main Dashboard Area -->
             <div id="mainDashboardArea" class="card" style="display: none;">
-                
-                <!-- 1. NEW EXECUTIVE DASHBOARD (KPIs & Chart) -->
-                <div id="executiveDashboard" style="margin-bottom: 25px;">
-                    <div class="kpi-grid">
-                        <div class="kpi-card" style="border-top-color: #0284c7;">
-                            <span class="kpi-title">Total Quoted Value (KES)</span>
-                            <span class="kpi-value" id="kpiTotalQuoted">0</span>
-                            <span class="kpi-subtext">Cumulative BoQ Gross Total (Inc. VAT)</span>
-                        </div>
-                        <div class="kpi-card" style="border-top-color: #f59e0b;">
-                            <span class="kpi-title">Station Completion Status</span>
-                            <span class="kpi-value" id="kpiCompletionRatio">0 / 0</span>
-                            <span class="kpi-subtext">Completed vs Pending / Ongoing</span>
-                        </div>
-                        <div class="kpi-card" style="border-top-color: #E2001A;">
-                            <span class="kpi-title">Active Field Tasks</span>
-                            <span class="kpi-value" id="kpiActiveTasks">0</span>
-                            <span class="kpi-subtext">Ongoing stations requiring attention</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Financial Run-Rate Chart Container -->
-                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
-                        <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1e293b; text-transform: uppercase;">Financial Run-Rate (Monthly Quoted KES)</h4>
-                        <div id="financialRunRateChart" style="height: 250px; width: 100%;"></div>
-                    </div>
-                </div>
 
                 <!-- 2. UPGRADED VIEW TOGGLE CONTROLS -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
@@ -1765,6 +1736,45 @@
                 </div>
             </div>
     
+
+    <!-- 8. NEW: Executive Dashboard Modal -->
+    <div id="executiveDashboardModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px;">
+                <h3 style="margin:0; color: #003366; font-size: 1.2rem;">📊 Executive Financial Dashboard</h3>
+                <button class="btn btn-secondary" onclick="closeModal('executiveDashboardModal')">✕ Close</button>
+            </div>
+            
+            <div id="executiveDashboard" style="margin-bottom: 15px;">
+                <div class="kpi-grid">
+                    <div class="kpi-card" style="border-top-color: #0284c7;">
+                        <span class="kpi-title">Total Quoted Value (KES)</span>
+                        <span class="kpi-value" id="kpiTotalQuoted">0</span>
+                        <span class="kpi-subtext">Cumulative BoQ Gross Total (Inc. VAT)</span>
+                    </div>
+                    <div class="kpi-card" style="border-top-color: #f59e0b;">
+                        <span class="kpi-title">Station Completion Status</span>
+                        <span class="kpi-value" id="kpiCompletionRatio">0 / 0</span>
+                        <span class="kpi-subtext">Completed vs Pending / Ongoing</span>
+                    </div>
+                    <div class="kpi-card" style="border-top-color: #E2001A;">
+                        <span class="kpi-title">Active Field Tasks</span>
+                        <span class="kpi-value" id="kpiActiveTasks">0</span>
+                        <span class="kpi-subtext">Ongoing stations requiring attention</span>
+                    </div>
+                </div>
+                
+                <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #1e293b; text-transform: uppercase;">Financial Run-Rate (Monthly Quoted KES)</h4>
+                    <div id="financialRunRateChart" style="height: 300px; width: 100%;"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('executiveDashboardModal')">Close Window</button>
+            </div>
+        </div>
+    </div>
 
     <!-- User Directory & Activity Tracker Modal -->
     <div id="userActivityModal" class="modal">
@@ -2477,6 +2487,16 @@ function formatDoc(cmd, value = null) {
         modal.style.display = 'none'; 
     }
 }
+
+        function openExecutiveDashboardModal() {
+            openModal('executiveDashboardModal');
+            // Slight delay ensures the modal is fully visible before ApexCharts tries to draw
+            setTimeout(() => {
+                if (typeof updateExecutiveDashboard === 'function') {
+                    updateExecutiveDashboard();
+                }
+            }, 100);
+        }
         
         function completeAndSaveJobCard() {
             if (!requireAuth("complete job cards")) return;
@@ -3682,7 +3702,10 @@ function completePowStation(id) {
         if (typeof initAuth === 'function') {
             await initAuth();
         }
-    };
+   };
     </script>
+
+    <!-- ACTIVE: External features file for Kanban, Offline DB, and Analytics -->
+    <script src="strutex-features.js"></script>
 </body>
 </html>
