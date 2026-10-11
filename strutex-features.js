@@ -227,9 +227,12 @@ function renderKanbanBoard() {
         card.className = 'kanban-card';
         card.dataset.index = index;
         card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                <span style="background: ${headerColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">${station.tier.split(':')[0]}</span>
-                <span style="font-size: 0.7rem; color: #94a3b8; font-weight: bold;">#${station.rank}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="kanban-drag-handle" style="cursor: grab; color: #64748b; font-size: 1.1rem; letter-spacing: -1.5px; padding: 2px 6px; background: #e2e8f0; border-radius: 4px; border: 1px solid #cbd5e1; user-select: none;" title="Drag to move">⋮⋮</div>
+                    <span style="background: ${headerColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">${station.tier.split(':')[0]}</span>
+                </div>
+                <span style="font-size: 0.7rem; color: #64748b; font-weight: bold;">#${station.rank}</span>
             </div>
             <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a; margin-bottom: 4px; line-height: 1.2;">${station.name}</div>
             <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 4px;">
