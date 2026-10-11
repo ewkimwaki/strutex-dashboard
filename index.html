@@ -1074,8 +1074,9 @@
                         <span style="font-size: 0.75rem; color: #64748b;">IndexedDB Background Sync Active</span>
                     </div>
                     <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                        <button class="btn" id="btnTableView" style="background: #ffffff; border-color: #0284c7; color: #0284c7;" onclick="switchMatrixView('table')">📋 Table View</button>
-                        <button class="btn" id="btnKanbanView" style="background: transparent; border-color: transparent;" onclick="switchMatrixView('kanban')">🎫 Kanban Board</button>
+                        <!-- FIXED: Buttons now call the robust local override function -->
+                        <button class="btn" id="btnTableView" style="background: #ffffff; border-color: #0284c7; color: #0284c7;" onclick="toggleMatrixViewMode('table')">📋 Table View</button>
+                        <button class="btn" id="btnKanbanView" style="background: transparent; border-color: transparent;" onclick="toggleMatrixViewMode('kanban')">🎫 Kanban Board</button>
                     </div>
                 </div>
 
@@ -2330,12 +2331,77 @@
             }
         }
 
+        // FIXED: Supports both Table Row clicks and Kanban Card clicks
         function openChecklist(btn) {
-            activeRow = btn.closest('tr');
-            const stationName = activeRow.cells[2].querySelector('input').value;
+            let stationName = "Unknown Station";
+            
+            // Scenario 1: Clicked from Table View (Has a closest <tr>)
+            let tr = btn.closest('tr');
+            if (tr) {
+                activeRow = tr;
+                stationName = tr.cells[2].querySelector('input').value;
+            } 
+            // Scenario 2: Clicked from Kanban Board (No <tr>, inside a kanban-card)
+            else {
+                const card = btn.closest('.kanban-card');
+                if (card) {
+                    const index = card.getAttribute('data-index');
+                    if (index !== null && index !== undefined) {
+                        activeRow = document.getElementById("tableBody").rows[index];
+                        stationName = masterStationsData[index].name;
+                    } else {
+                        // Fallback: match by title text in the card if data-index is missing
+                        const cardText = card.innerText;
+                        const matchedIndex = masterStationsData.findIndex(s => cardText.includes(s.name));
+                        if (matchedIndex > -1) {
+                            activeRow = document.getElementById("tableBody").rows[matchedIndex];
+                            stationName = masterStationsData[matchedIndex].name;
+                        }
+                    }
+                }
+            }
+
+            if (!activeRow) {
+                showToast("Could not locate station row data.", "error");
+                return;
+            }
+
             document.getElementById("modalStationTitle").innerText = "Pre-Deployment: " + stationName;
             document.getElementById("checklistModal").style.display = "flex";
         }
+
+        // FIXED: Custom View Toggle to ensure Table is strictly hidden when Kanban is active
+        window.toggleMatrixViewMode = function(viewType) {
+            const tableArea = document.getElementById('tableViewArea');
+            const kanbanArea = document.getElementById('kanbanBoardArea');
+            const btnTable = document.getElementById('btnTableView');
+            const btnKanban = document.getElementById('btnKanbanView');
+
+            if (viewType === 'kanban') {
+                tableArea.style.setProperty('display', 'none', 'important'); // Strictly hide table
+                kanbanArea.style.setProperty('display', 'flex', 'important'); // Show Kanban
+                
+                btnKanban.style.background = '#ffffff';
+                btnKanban.style.borderColor = '#0284c7';
+                btnKanban.style.color = '#0284c7';
+                btnTable.style.background = 'transparent';
+                btnTable.style.borderColor = 'transparent';
+                btnTable.style.color = '#334155';
+                
+                // Trigger Kanban render from external script
+                if (typeof populateKanbanBoard === 'function') populateKanbanBoard();
+            } else {
+                tableArea.style.setProperty('display', 'block', 'important'); // Show table
+                kanbanArea.style.setProperty('display', 'none', 'important'); // Strictly hide Kanban
+                
+                btnTable.style.background = '#ffffff';
+                btnTable.style.borderColor = '#0284c7';
+                btnTable.style.color = '#0284c7';
+                btnKanban.style.background = 'transparent';
+                btnKanban.style.borderColor = 'transparent';
+                btnKanban.style.color = '#334155';
+            }
+        };
 
         function openJobCardWizard() {
             closeModal('checklistModal');
