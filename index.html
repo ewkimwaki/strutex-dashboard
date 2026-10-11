@@ -961,7 +961,40 @@
     /* ==========================================
        MOBILE RESPONSIVE & STATION NAME FIX
        ========================================== */
-    
+    /* --- STATE-OF-THE-ART KANBAN MOBILE VIEW --- */
+    @media (max-width: 768px) {
+        .kanban-container {
+            flex-direction: column !important; /* Stack columns vertically */
+            overflow-x: hidden !important;     /* Strictly kill horizontal scroll */
+            height: auto !important;
+            min-height: unset !important;
+            gap: 20px !important;
+            padding: 5px !important;
+        }
+        .kanban-column {
+            width: 100% !important;
+            min-width: unset !important;
+            box-sizing: border-box !important;
+            border: 2px solid #cbd5e1 !important;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06) !important; /* App-like lifted UI */
+            background: #f8fafc !important;
+        }
+        .kanban-list {
+            min-height: 80px !important;  /* Ensures an empty column remains a valid drop target */
+            max-height: 350px !important; /* Prevents one column from taking over the screen */
+            overflow-y: auto !important;  /* Internal scroll for overflowing cards */
+            padding-right: 5px !important;
+        }
+        
+        /* Mobile scrollbar styling for the inner columns */
+        .kanban-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .kanban-list::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+    }
     .table-responsive {
         display: block !important;
         width: 100% !important;
