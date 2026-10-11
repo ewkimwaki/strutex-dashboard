@@ -2469,7 +2469,10 @@
                 
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 0.7rem; font-weight: 800; color: ${tierColor}; text-transform: uppercase;">${tierShort}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="kanban-drag-handle" style="cursor: grab; color: #64748b; font-size: 1.1rem; letter-spacing: -1.5px; padding: 2px 6px; background: #e2e8f0; border-radius: 4px; border: 1px solid #cbd5e1; user-select: none;" title="Drag to move">⋮⋮</div>
+                            <span style="font-size: 0.7rem; font-weight: 800; color: ${tierColor}; text-transform: uppercase;">${tierShort}</span>
+                        </div>
                         <span style="font-size: 0.7rem; color: #64748b; font-weight: bold;">Rank: ${s.rank || index + 1}</span>
                     </div>
                     <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${s.name}</div>
